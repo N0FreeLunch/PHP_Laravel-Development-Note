@@ -26,11 +26,27 @@ $kernel->terminate($request, $response);
 - 오토로더 -> bootstrap/app.php -> kernel -> response -> terminate 순으로 호출된다. 각각에 대해 살펴 보자.
 
 
-### HTTP/console 커널 
--  app/Http/Kernel.php
--
--
+### HTTP/console 커널
+HTTP 커널
+- app/Http/Kernel.php
+- Illuminate\Foundation\Http\Kernel을 상속 받아 정의 됨
+- 라라벨 프레임워크로 리퀘스트를 처리하기 위해 기본적으로 로드할 것들을 배열로 정의 하는 곳.
+- 라라벨 프레임워크 시작 시 실행할 목록들을 bootstrappers라고 하며 라라벨 커널 부분에 정의한다.
+- 라라벨 프레임워크는 리퀘스트를 처리하기 위한 동작을 정의하는 곳이므로 리퀘스트 처리를 위해 미리 세팅해야 할 기본 동작들을 로드하는 곳이라고 할 수 있다.
+- 기능적으로 중요한 점은 미들웨어를 정의하는 곳이라는 것이다. 
+console 커널
+- 관련 정보 습득시 추가
 
+#### HTTP 커널의 handle 메소드
+https://laravel.com/api/8.x/Illuminate/Contracts/Http/Kernel.html
+- handle 함수를 오버라이딩해서 사용할 수 있음
+```
+public function handle (Request $request)
+{
+    // code
+    return $response;
+}
+```
 
 
 ---
