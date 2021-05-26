@@ -1,7 +1,6 @@
 
 # 서비스 컨테이너
 - 클래스의 의존성을 관리하고 의존성을 주입하는 강력한 도구
-- 클래스간의 의존성은 클래스 생성될 때 또는 경우에 따라 "setter" 메소드에 의해서 "주입" 된다는 의미입니다.
 
 ```
 <?php
@@ -79,13 +78,25 @@ class UserController extends Controller
 ### 바인딩
 - 컨트롤러를 호출할 때는 개발자의 코드레벨에서는 new UserController로 호출하지 않는다. 프레임워크가 라우터에서 지정한 컨트롤러 클래스를 객체화 하면서 알아서 UserRepository를 주입한다.
 
-
+### 간단한 바인딩
+- app\Providers\AppServiceProvider.php 파일의 boot 또는 register 메서드 안에서 바인딩할 대상을 작성한다.
+- boot와 register에 관해서는 [lifecycle](./RequestLifeCycle.md) 부분을 참고하자.
+```
+$this->app->bind('HelpSpot\API', function ($app) {
+    return new \HelpSpot\API($app->make('HttpClient'));
+});
+```
+- 위 코드는 AppServiceProvider의 boot 또는 register 메서드 안에 위치한다.
+- $this->app : 라라벨 서비스 컨테이너 인스턴스에 접근하는 부분
+- 컨테이너 인스턴스의 bind 메소드를 사용하여 클래스나 인터페이스 이름에 대한 의존성을 생성
+- 클래스나 인터페이스인 대상은 Closure를 등록하여 바인딩시킨다.
 
 
 ---
 Reference : https://laravel.kr/docs/8.x/container
-https://stackoverflow.com/questions/47200527/how-does-reflection-in-laravel-work
 
+
+https://stackoverflow.com/questions/47200527/how-does-reflection-in-laravel-work
 
 
 descripted by N0FreeLunch
