@@ -96,7 +96,7 @@ sudo git clone https://계정@저장소/개인 또는 조직명/리포지토리�
 sudo chown nginx:nginx -R your_repository
 ```
 
-# prepare to install php package
+### prepare to install php package
 - 프로젝트의 의존성 패키지를 설치하기 위한 쓰기 권한 부여
 ```
 sudo mkdir vendor
