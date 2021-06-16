@@ -85,7 +85,7 @@ cd /usr/share/nginx
 ```
 sudo git clone https://저장소/개인 또는 조직명/리포지토리명.git
 ```
-> tips| 서버는 여러명이 관리할 수 있기 때문에 개인이 관리하는 저장소인 다음과 같이 적지 않는 것이 좋아 보임
+> tips | 서버는 여러명이 관리할 수 있기 때문에 개인이 관리하는 저장소인 다음과 같이 적지 않는 것이 좋아 보임
 ```
 sudo git clone https://계정@저장소/개인 또는 조직명/리포지토리명.git
 ```
@@ -97,7 +97,7 @@ sudo chown nginx:nginx -R your_repository
 ```
 
 # prepare to install php package
-프로젝트의 의존성 패키지를 설치하기 위한 쓰기 권한 부여
+- 프로젝트의 의존성 패키지를 설치하기 위한 쓰기 권한 부여
 ```
 sudo mkdir vendor
 sudo chmod 777 vendor
@@ -174,17 +174,17 @@ fastcgi_pass unix:/var/run/php-fpm/www.sock;
 ```
 > 으로 사용해야 됨 php-fpm이 들어 있는 .sock 파일의 경로를 찾아서 적어 줘야 한다.
 
-### run php fpm
+### Run php fpm
 ```
 sudo service php-fpm start
 ```
 
-### run nginx
+### Run nginx
 ```
 sudo service nginx start
 ```
 
-### php-fpm과 nginx가 정상 독작하는지 확인
+### php-fpm과 nginx가 정상 작하는지 확인
 ```
 sudo service php-fpm status
 sudo service nginx status
