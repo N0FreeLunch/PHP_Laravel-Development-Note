@@ -43,8 +43,7 @@ composer require laravel/sanctum
 ```
 
 ## Config
-### migration
-- 마이그레이션의 경우, 토큰 기반 인증에만 사용하는 것으로 보인다.
+### 토큰 기반의 셍텀 설치
 - 토큰을 저장하고 관리하기 위한 테이블을 만드는 것.
 ```
 php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
@@ -55,7 +54,7 @@ php artisan migrate
 
 ### SPA용 인증 설정
 - 토큰 기반인 마이그레이션 설정을 할 필요가 없다. 대신 마이그레이션 설정을 무시한다는 세팅을 해 줘야 한다.
-app\Providers\AppServiceProvider.php
+- app\Providers\AppServiceProvider.php
 ```
 use Laravel\Sanctum\Sanctum;
 
