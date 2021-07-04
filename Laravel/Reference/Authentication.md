@@ -79,7 +79,12 @@
 - 웹 브라우저에서는 발급된 세션쿠키(session cookie)를 보내고 Sanctum이 해당 세션이 인증된 세션인지 확인한다.
 - 세션 쿠키를 통한 인증이 이뤄지지 않을 경우 Sanctum은 요청에서 API 토큰을 검사한다. (API 토큰이 있으면 세션 인증을 무시하는 것 같던데 실제 경험이랑 문서랑 다름 확인할 필요가 있음)
 
-# 빠른 인증 구성
+# 수동인증
+- 라라벨 Facades(`Illuminate\Support\Facades`)를 사용한다. 파사드는 파사드가 동작하는 범위 내에서 컨트롤러, 모델, 라우터 등등의 모든 곳에서 호출할 수 있다.
+- 보통 인증은 컨트롤러(`app\Http\Controllers`) 부분에서 이뤄진다.
+```
+use Illuminate\Support\Facades\Auth;
+```
 
 
 
