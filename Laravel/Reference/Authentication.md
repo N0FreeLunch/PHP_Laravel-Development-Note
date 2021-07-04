@@ -59,17 +59,29 @@
 - 쿠키 기반 인증
 - 2단계 인증
 - 이메일 확인
-- 헤드리스 인증 백앤드 : 프론트 앤드 없이 백앤드 기능으로 제공
+- 헤드리스 인증 백앤드 (프론트 앤드 없이 백앤드 기능으로 제공)
 
 ### Jetstream
-- 헤드리스가 아닌 프론트 화면을 포함 : Tailwind CSS, Laravel Livewire, Inertia.js 에서 제공하는 아름답고 현대적인 UI를 사용한다.
+- 헤드리스가 아닌 프론트 화면을 포함 : Tailwind CSS, Laravel Livewire, Inertia.js를 사용한 아름답고 현대적인 UI를 사용제공
 - 쿠키 기반 세션 인증 + API 토큰 인증을 제공
 
 ### Passport
 - OAuth2
-- grant types 
+- grant types : 설명 추가
 
 ### Sanctum
+- OAuth2의 복잡함을 피하기 위해 간단한 인증을 제공
+- 같은 도메인을 공유하는 자사 웹 UI 어플리케이션에 권장되는 인증 패키지로 사용 되어야 함 (이런 인증에서는 완벽한 인증이 될 수 있기 때문에 가능한 한 채택되어야 한다고 설명하고 있음)
+#### Sanctum의 사용처
+- SPA (싱글 페이지 어플리케이션)
+- 모바일 클라이언트
+#### Sanctum의 특징
+- 웹 브라우저에서는 발급된 세션쿠키(session cookie)를 보내고 Sanctum이 해당 세션이 인증된 세션인지 확인한다.
+- 세션 쿠키를 통한 인증이 이뤄지지 않을 경우 Sanctum은 요청에서 API 토큰을 검사한다. (API 토큰이 있으면 세션 인증을 무시하는 것 같던데 실제 경험이랑 문서랑 다름 확인할 필요가 있음)
+
+# 빠른 인증 구성
+
+
 
 ## Reference
 https://laravel.kr/docs/8.x/authentication#%EC%8B%9C%EC%9E%91%ED%95%98%EA%B8%B0
