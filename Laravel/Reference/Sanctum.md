@@ -84,5 +84,39 @@ php artisan vendor:publish --tag=sanctum-migrations
 ```
 
 
+## API 토큰 발행 방식
+### API 토큰 인증 방식 종류
+- API 토큰을 발행하여 인증 
+- 개인 액세스 토큰을 발행하여 인증
+
+### http(S) 요청 시 필요한 항목
+```
+Authorization : Bearer 토큰
+```
+- 위와 같은 방식으로 http(s) 요청 시 헤더와 토큰을 붙여서 서버에 전송한다.
+- 보통은 ajax 요청의 헤더 값을 세팅할 때, 위와 같이 키 벨류를 작성한다.
+- 'Bearer 토큰' 한 단어가 아니라 `Bearer `문자에 토큰 값을 붙여서 Bearer를 포함해서 Authorization의 값을 설정해야 한다.
+- 이런 토큰 전송 때 붙이는 값은 Bearer 뿐만 아니라 여러가지 존재한다.
+
+### 토큰 발급하기
+```
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable
+{
+    use HasApiTokens, Notifiable;
+}
+```
+- Notifiable은 User 모델에 기본적으로 들어가 있는 것. 패스워드 재설정 기능을 사용하기 위해서는 Illuminate\Notifications\Notifiable 트레이트가 있어야 한다.
+- 토큰 기능을 사용하기 위해서는 HasApiTokens 트레이트를 추가해 줘야 한다.
+
+### 토큰 발행
+```
+$token = $user->createToken('token-name');
+return $token->plainTextToken;
+```
+
+
+
 ## Reference
 https://laravel.kr/docs/8.x/sanctum
