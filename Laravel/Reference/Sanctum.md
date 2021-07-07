@@ -107,15 +107,31 @@ class User extends Authenticatable
     use HasApiTokens, Notifiable;
 }
 ```
-- Notifiable은 User 모델에 기본적으로 들어가 있는 것. 패스워드 재설정 기능을 사용하기 위해서는 Illuminate\Notifications\Notifiable 트레이트가 있어야 한다.
+- Notifiable은 User 모델에 기본적으로 들어가 있는 것. 패스워드 재설정 기능을 사용하기 위해서는 Illuminate\Notifications\Notifiable 트레이트가 있어야 한다. 하지만 토큰 기능과는 상관이 없는 부분이다.
 - 토큰 기능을 사용하기 위해서는 HasApiTokens 트레이트를 추가해 줘야 한다.
 
 ### 토큰 발행
+#### 토큰 생성
 ```
 $token = $user->createToken('token-name');
-return $token->plainTextToken;
+```
+- createToken는 Laravel\Sanctum\NewAccessToken 인스턴스를 반환
+
+#### 평문 엑세스
+```
+$token->plainTextToken;
 ```
 
+#### 토큰 값 접근 
+- 토큰은 user 테이블에 저장하므로 user 모델을 사용해서 접근한다.
+```
+$user->tokens
+```
+
+```
+foreach ($user->tokens as $token) {
+}
+```
 
 
 ## Reference
