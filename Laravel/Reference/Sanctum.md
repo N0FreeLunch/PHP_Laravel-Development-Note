@@ -111,6 +111,11 @@ class User extends Authenticatable
 - 토큰 기능을 사용하기 위해서는 HasApiTokens 트레이트를 추가해 줘야 한다.
 
 ### 토큰 발행
+#### 토큰 저장 방식
+- SHA-256 해싱을 이용해서 해싱한 값을 저장
+- SHA-256 해싱된 값은 복호화가 불가능하다.
+- 해싱 된 값이 저장되기 때문에 해싱된 비밀번호가 노출 되어도 사용자의 실제 토큰 값은 보호된다.
+
 #### 토큰 생성
 ```
 $token = $user->createToken('token-name');
@@ -118,15 +123,20 @@ $token = $user->createToken('token-name');
 - createToken는 Laravel\Sanctum\NewAccessToken 인스턴스를 반환
 
 #### 평문 엑세스
+- Sanctum\NewAccessToken 인스턴스로 접근을 한다.
+- 토큰 저장은 해시화 되기 때문에 복호화가 불가능하다.
+- 따라서 가장 처음 토큰을 만들 때, 토큰 값이 무엇인지 값을 반환 해 줘야 한다. 그리고 이 원본 토큰을 해시해서 유저 테이블에 저장한다.
 ```
 $token->plainTextToken;
 ```
 
 #### 토큰 값 접근 
 - 토큰은 user 테이블에 저장하므로 user 모델을 사용해서 접근한다.
+- 엘리퀀트 모델 클래스에 HasApiTokens이라는 트레이트를 집어 넣은 것으로 인해서 엘리퀀트 모델의 멤버 변수로 token 값을 저장한다.
 ```
-$user->tokens
+$user -> tokens
 ```
+
 
 ```
 foreach ($user->tokens as $token) {
