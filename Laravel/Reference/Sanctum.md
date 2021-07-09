@@ -140,10 +140,35 @@ $user -> tokens
 ```
 
 
+### 토큰에 권한 부여 하기
+#### 권한 부여
+- 문자열로 권한을 부여한다.
 ```
-foreach ($user->tokens as $token) {
+return $user->createToken('token-name', ['server:update'])->plainTextToken;
+```
+- 토큰에 부여한 문자열을 체크하여 권한이 있는 토큰인지 확인한다.
+```
+if ($user->tokenCan('server:update')) {
 }
 ```
+> 세션 인증으로 인증 요청을 했을 때는 권한에 관계 없이 항상 참으로 인정한다.
+
+### 토큰 해지
+- HasApiTokens 트레이트를 사용한다.
+#### 모든 토큰 해지
+```
+$user->tokens()->delete();
+```
+#### 현재 유저로 로그인 된 대상의 토큰 해지하기
+```
+$request -> user() -> currentAccessToken() -> delete();
+```
+#### 지정된 토큰 해지
+```
+$user->tokens()->where('id', $id)->delete();
+```
+- where로 id를 기준으로 제거 했지만 다른 것을 기준으로 해도 제거 할 수 있다.
+
 
 
 ## Reference
