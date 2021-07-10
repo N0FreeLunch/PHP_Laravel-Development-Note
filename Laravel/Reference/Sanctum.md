@@ -36,6 +36,8 @@
 - 라라벨 내장 세션 인증을 통해 강력한 기본 보안 기능 제공
 
 ### XSS 방어
+- 인증 자격 증명(uthentication credentials) 유출을 방어한다.
+- 세션 인증 방식은 통신이 일어나면 세션값이 바뀌게 되기 때문에 인증 정보가 유출이 되어도 변경 주기가 굉장히 짧기 때문에 안전하다고 볼 수 있다.
 
 ## Install
 ```
@@ -168,6 +170,53 @@ $request -> user() -> currentAccessToken() -> delete();
 $user->tokens()->where('id', $id)->delete();
 ```
 - where로 id를 기준으로 제거 했지만 다른 것을 기준으로 해도 제거 할 수 있다.
+
+
+## 라우터에 sancturm guard 달기
+### guard란?
+https://stackoverflow.com/questions/34896130/laravel-what-is-a-guard
+```
+They're the definition of how the system should store and retrieve information about your users.
+```
+- 라라벨 어플리케이션 시스템이 유저의 정보를 저장하고 검색을 어떻게 할지에 대한 정의이다. 이런 의견도 있지만
+
+```
+A guard is a way of supplying the logic that is used to identify authenticated users.
+```
+- 이 설명이 더 guard란 이름에 적절한 것으로 보인다.
+
+### guard
+- 라라벨에서 guard란 인증된 사용자를 식별하는 로직을 의미한다.
+- 라라벨에서의 인증은 인증되지 않은 유저의 접근을 차단하는 로직을 사용하기 때문에 guard라는 방어의 의미를 가진 용어를 사용한다.
+```
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+```
+- 위를 보면 라우터에 미들웨어를 달아 주었다.
+- 미들웨어를 컨트롤러에 달아 줄 수도 있지만, 특정 라우트에 대한 접근을 허용할지 말지 sanctum guard를 통해서 방어하는 방식으로 사용하고 있다.
+- 미들웨어를 사용해서 유저의 권한을 나눠서 개발 할 수 있도록 설정
+
+#### sanctum middleware의 역할
+- 라라벨 셍텀의 세션 인증으로 들어 왔을 때, 라라벨 세션의 토큰 인증으로 들어 왔을 때 셍텀 가드가 이를 허용한다.
+
+#### stateful 인증
+- 백앤드에서의 상태저장을 stateful이라고 하며, 서버에서 상태저장을 하지 않는 방식을 stateless라고 한다.
+- JWT 토큰과 같이 서버에 상태저장을 하지 않는 방식이 아니라, 서버에서 세션이나 토큰을 관리할 수 있도록 데이터베이스와 같은 저장소에 저장하는 방식을 사용하는 것이 stateful 방식이다. JWT는 stateless 방식이라고 할 수 있다.
+- 라라벨에서 sanctum은 stateful 방식을 사용하고 있다. 세션이나 토큰을 저장소에 저장하는 방식으로 사용한다.
+
+## SPA 인증
+- Sanctum을 이용한 싱글페이지 어플리케이션(SPA) 인증을 하기 위한 간단한 방법을 제공
+- 동일한 루트 도메인을 공유해야 한다. (도큐먼트에 top-level domain 이라고 적혀 있는데, top-level domain은 맨 뒤의 .com .kr .jp .org .net 등을 의미한다. 루트 도메인 단위로 인증을 허용해야 보안적인 위협을 방지할 수 있기 때문에 루트 도메인을 사용하는 것이라고 본다.)
+- 라라케스트에서 나온 답변( https://laracasts.com/discuss/channels/laravel/set-multiple-domain-names-to-api-in-order-to-use-sanctum-with-frontends-on-different-top-level-domains) 을 보면 root 도메인을 최상위 도메인으로 보고 있다.
+- 서브도메인은 화이트리스트 방식으로 허용할 수 있다.
+- 동일한 root 도메인을 공유하면 되기 때문에 라라벨 프로젝트 안에 SPA 코드가 있어서 라라벨 어플리케이션를 통한 배포로 sanctum 세션 인증을 할 수도 있고, 라라벨과는 독립적인 저장소에서 SPA 인증을 할 수도 있다.
+- SPA 인증은 세션을 통한 인증이기 때문에 어떤 종류의 토큰도 사용하지 않는다.
+
+### First party Domain 설정
+- First party Domain은 자사 도메인을 의미한다.
+- 서버와 프론트가 공유하는 root 도메인이 무엇인지 설정하는 것이다.
+- 로컬 개발 등의 IP주소를 통해 도메인을 공유할 경우에는 포트번호 127.0.0.1:8000 까지 설정해 줘야 세션인증 방식이 정상적으로 작동한다.
 
 
 
