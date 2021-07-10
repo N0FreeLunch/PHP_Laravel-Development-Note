@@ -5,6 +5,7 @@
 - 모바일 어플리케이션을 위한 토큰 기반의 API 인증
 > 필요에 따라 두 기능 중 하나만 사용하는 것을 권한다.
 
+---
 
 ## the motive of sanctum
 - 깃 허브 access token을 모티브로 만들어 짐
@@ -13,6 +14,7 @@
 - 매우 긴 만료기간을 가진 토큰
 - 사용자에 의해 언제든지 해지(revoke) 가능
 
+---
 
 ## 라라벨 Sanctum API의 특징
 ### 중앙 집중적인 톤큰 관리
@@ -25,19 +27,23 @@
 - API 토큰 인증을 사용하지 않는다. (토큰을 통해서 인증을 할 경우 세션 인증 방식이 무효화 된다.)
 - 라라벨 내장 쿠키 기반의 세션 인증 서비스를 사용한다.
 
-## Sanctum 세션 인증의 보안 
+---
+
+### Sanctum 세션 인증의 보안 
 - API 인증의 토큰기반이 아닌 세션 인증의 보안에 대한 설명이다.
 
-### CSRF 보호
+#### CSRF 보호
 - CSRF는 요청 위조 기법이다. 보통은 쿠키 세션에 저장된 인증 세션을 탈취하여 서비스 제공사가 아닌 다른 서비스에서 위조 요청을 하는 해킹 방법이다.
 - 라라벨의 셍텀은 인증 세션 뿐만 아니라 도메인 기반 확인을 하기 때문에 CSRF 위조에 좀 더 강력하다.
 
-### session 인증
+#### session 인증
 - 라라벨 내장 세션 인증을 통해 강력한 기본 보안 기능 제공
 
-### XSS 방어
+#### XSS 방어
 - 인증 자격 증명(uthentication credentials) 유출을 방어한다.
 - 세션 인증 방식은 통신이 일어나면 세션값이 바뀌게 되기 때문에 인증 정보가 유출이 되어도 변경 주기가 굉장히 짧기 때문에 안전하다고 볼 수 있다.
+
+---
 
 ## Install
 ```
@@ -85,6 +91,7 @@ use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 php artisan vendor:publish --tag=sanctum-migrations
 ```
 
+---
 
 ## API 토큰 발행 방식
 ### API 토큰 인증 방식 종류
@@ -172,6 +179,8 @@ $user->tokens()->where('id', $id)->delete();
 - where로 id를 기준으로 제거 했지만 다른 것을 기준으로 해도 제거 할 수 있다.
 
 
+---
+
 ## 라우터에 sancturm guard 달기
 ### guard란?
 https://stackoverflow.com/questions/34896130/laravel-what-is-a-guard
@@ -205,6 +214,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 - JWT 토큰과 같이 서버에 상태저장을 하지 않는 방식이 아니라, 서버에서 세션이나 토큰을 관리할 수 있도록 데이터베이스와 같은 저장소에 저장하는 방식을 사용하는 것이 stateful 방식이다. JWT는 stateless 방식이라고 할 수 있다.
 - 라라벨에서 sanctum은 stateful 방식을 사용하고 있다. 세션이나 토큰을 저장소에 저장하는 방식으로 사용한다.
 
+---
+
 ## SPA 인증
 - Sanctum을 이용한 싱글페이지 어플리케이션(SPA) 인증을 하기 위한 간단한 방법을 제공
 - 동일한 루트 도메인을 공유해야 한다. (도큐먼트에 top-level domain 이라고 적혀 있는데, top-level domain은 맨 뒤의 .com .kr .jp .org .net 등을 의미한다. 루트 도메인 단위로 인증을 허용해야 보안적인 위협을 방지할 수 있기 때문에 루트 도메인을 사용하는 것이라고 본다.)
@@ -216,9 +227,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 ### First party Domain 설정
 - First party Domain은 자사 도메인을 의미한다.
 - 서버와 프론트가 공유하는 root 도메인이 무엇인지 설정하는 것이다.
-- 로컬 개발 등의 IP주소를 통해 도메인을 공유할 경우에는 포트번호 127.0.0.1:8000 까지 설정해 줘야 세션인증 방식이 정상적으로 작동한다.
+- 로컬 개발 등의 IP주소를 통해 도메인을 공유할 경우에는 포트번호 127.0.0.1:8000 까지 설정해 줘야 셍텀인증 방식이 정상적으로 작동한다.
+- 셍텀 가드에 허용할 도메인 리스트를 설정해야 한다.
+- 도메인 설정을 통한 가드는 셍텀의 세션 인증 방식 또는 쿠키 인증 방식 모두에 적용되는 부분이다.
 
 
+
+---
 
 ## Reference
 https://laravel.kr/docs/8.x/sanctum
