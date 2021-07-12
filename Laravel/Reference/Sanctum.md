@@ -231,6 +231,23 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 - 셍텀 가드에 허용할 도메인 리스트를 설정해야 한다.
 - 도메인 설정을 통한 가드는 셍텀의 세션 인증 방식 또는 쿠키 인증 방식 모두에 적용되는 부분이다.
 
+### sanctum middleware 설정
+- app/Http/Kernel.php 파일 내의 API 미들웨어 그룹에 Sanctum 미들웨어를 추가 해 줘야 한다.
+- 세션쿠키를 이용한 인증과 토큰을 이용한 인증 둘을 처리하는 미들웨어이다.
+
+```
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+
+'api' => [
+    EnsureFrontendRequestsAreStateful::class,
+    'throttle:60,1',
+    \Illuminate\Routing\Middleware\SubstituteBindings::class,
+],
+```
+-　Kernel.php 파일에는 api 미들웨어로 접근하는 방식이 있고, web 미들웨어로 접근하는 방법이 있다. 그런데 sanctum은 api 미들웨어로 세팅을 한다.
+-　라라벨의 route 폴더를 보면 api.php 와 web.php가 존재한다. web.php는 Kernel.php의 web 부분을 통해 미들웨어를 설정하며, api.php는 Kernel.php의 api 부분을 통해 미들웨어를 설정한다. 
+- 보통 토큰을 통한 인증은 API 쪽을 통해서 인증을 하고, 세션쿠키를 통한 인증은 web 쪽을 통해서 인증을 한다. 그런데 Sanctum 미들웨어는 세션쿠키를 통한 인증임에도 불구하고 api 쪽을 통해서 인증을 한다.
+
 
 
 ---
