@@ -246,8 +246,12 @@ use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 ```
 -　Kernel.php 파일에는 api 미들웨어로 접근하는 방식이 있고, web 미들웨어로 접근하는 방법이 있다. 그런데 sanctum은 api 미들웨어로 세팅을 한다.
 -　라라벨의 route 폴더를 보면 api.php 와 web.php가 존재한다. web.php는 Kernel.php의 web 부분을 통해 미들웨어를 설정하며, api.php는 Kernel.php의 api 부분을 통해 미들웨어를 설정한다. 
-- 보통 토큰을 통한 인증은 API 쪽을 통해서 인증을 하고, 세션쿠키를 통한 인증은 web 쪽을 통해서 인증을 한다. 그런데 Sanctum 미들웨어는 세션쿠키를 통한 인증임에도 불구하고 api 쪽을 통해서 인증을 한다.
-
+- 보통 토큰을 통한 인증은 API 쪽을 통해서 인증을 하고, 세션쿠키를 통한 인증은 web 쪽을 통해서 인증을 한다. 그런데 Sanctum 미들웨어는 세션쿠키를 통한 인증임에도 불구하고 api 쪽을 통해서 인증을 한다. 
+```
+EnsureFrontendRequestsAreStateful::class,
+```
+- 클래스 이름을 읽어보면 '프론트 앤드의 리퀘스트를 stateful 방식으로 허용'한다라는 의미이다.
+- 라라벨의 기본 stateful 방식은 세션인증을 디비에 저장하는 방식이며, Kernel.php의 web 미들웨어 세팅을 통해 리퀘스트가 서버 내부 로직에 전달 된다. 원래 Kernel.php의 api 미들웨어 쪽에는 세션쿠키의 값을 인식하고 처리하는 부분이 없지만, Kernel.php의 api 미들웨어 쪽에도 세션쿠키를 인식하여 처리하는 기능을 추가하는 것이다.
 
 
 ---
