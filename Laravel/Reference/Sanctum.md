@@ -253,6 +253,17 @@ EnsureFrontendRequestsAreStateful::class,
 - 클래스 이름을 읽어보면 '프론트 앤드의 리퀘스트를 stateful 방식으로 허용'한다라는 의미이다.
 - 라라벨의 기본 stateful 방식은 세션인증을 디비에 저장하는 방식이며, Kernel.php의 web 미들웨어 세팅을 통해 리퀘스트가 서버 내부 로직에 전달 된다. 원래 Kernel.php의 api 미들웨어 쪽에는 세션쿠키의 값을 인식하고 처리하는 부분이 없지만, Kernel.php의 api 미들웨어 쪽에도 세션쿠키를 인식하여 처리하는 기능을 추가하는 것이다.
 
+---
+
+## CORS and Cookie
+- 라라벨 어플리케이션의 API 도메인과 SPA 페이지의 도메인이 다를 경우 (root 도메인은 공유하고 서브 도메인이 다를 경우이다.) CORS 문제가 발생할 수 있다.
+- CORS란? Cross-Origin Resource Sharing 으로 라라벨 어플리케이션 서버가 다른 도메인에서 요청한 요청을 허용하는 것이다. 기본적으로는 SOP(same-origin policy) 상태이다.
+- CORS에 대한 설정은 config\cors.php에 되어 있으며 라라벨을 배포하는 Nginx나 Apache에 의해서도 가능하다. Nginx 나 Apache에서는 CORS 관련 설정을 하게되면 어플리케이션 수준에서 관리가 안 되는 문제가 발생할 수 있다.
+```
+axios.defaults.withCredentials = true;
+```
+
+
 
 ---
 
