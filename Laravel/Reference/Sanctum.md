@@ -259,16 +259,36 @@ EnsureFrontendRequestsAreStateful::class,
 - 라라벨 어플리케이션의 API 도메인과 SPA 페이지의 도메인이 다를 경우 (root 도메인은 공유하고 서브 도메인이 다를 경우이다.) CORS 문제가 발생할 수 있다.
 - CORS란? Cross-Origin Resource Sharing 으로 라라벨 어플리케이션 서버가 다른 도메인에서 요청한 요청을 허용하는 것이다. 기본적으로는 SOP(same-origin policy) 상태이다.
 - CORS에 대한 설정은 config\cors.php에 되어 있으며 라라벨을 배포하는 Nginx나 Apache에 의해서도 가능하다. Nginx 나 Apache에서는 CORS 관련 설정을 하게되면 어플리케이션 수준에서 관리가 안 되는 문제가 발생할 수 있다.
+
+### CORS
+- 
+
+### Request.credentials
+- Reference : https://developer.mozilla.org/ko/docs/Web/API/Request/credentials
+- 브라우저는 도메인이 서로 다를 때 한 도메인의 쿠키를 다른 도메인의 쿠키에 전송하지 못하게 하고 있다. 그런데 리퀘스트 설정에 따라서 이를 허용할 수도 있다.
+- 
+
+
+### Access-Control-Allow-Credentials
+- Reference : https://developer.mozilla.org/ko/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
+- 
+- 리스폰스 헤더 Access-Control-Allow-Credentials 브라우저들이 응답을 프로트엔드 자바스트립트 코드에 노출할지에 대해 알려준다.
+- 리퀘스트 헤더에 Access-Control-Allow-Credentials 옵션을 활성화를 해 줘야 한다.
+
+#### axios를 사용할 때
+- axios의 경우에는 라라벨에서 `resources/js/bootstrap.js` 부분에서 수정할 수 있다.
+- 
 ```
 axios.defaults.withCredentials = true;
 ```
-- 리퀘스트 헤더에 Access-Control-Allow-Credentials 옵션을 활성화 하는 것
-- XHR을 사용할 때
+
+#### XHR을 사용할 때
 ```
 var xhr = new XMLHttpRequest();
 xhr.withCredentials = true;
 ```
-- Fetch를 사용할 때
+
+#### Fetch를 사용할 때
 ```
 fetch(url, {
   credentials: 'include'
