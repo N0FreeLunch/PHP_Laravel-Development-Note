@@ -262,6 +262,18 @@ EnsureFrontendRequestsAreStateful::class,
 ```
 axios.defaults.withCredentials = true;
 ```
+- 리퀘스트 헤더에 Access-Control-Allow-Credentials 옵션을 활성화 하는 것
+- XHR을 사용할 때
+```
+var xhr = new XMLHttpRequest();
+xhr.withCredentials = true;
+```
+- Fetch를 사용할 때
+```
+fetch(url, {
+  credentials: 'include'
+})
+```
 
 
 
