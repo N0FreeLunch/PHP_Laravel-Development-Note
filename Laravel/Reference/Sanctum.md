@@ -274,8 +274,9 @@ EnsureFrontendRequestsAreStateful::class,
 - 리스폰스로 받는 Access-Control-Allow-Credentials 헤더 값과 리퀘스트를 보낼 때 자바스크립트 통신 API에 설정한 값이 모두 있어야 자격증명 부분에 자바스크립트 코드로 접근할 수 있다.
 
 ### Access-Control-Allow-Credentials의 리퀘스트 요청
-- 자바스크립트 통신 API에 설정한다.
+- 자바스크립트 통신 API에 credentials 설정을 한다. 브라우저의 통신 API가 데이터를 받게 되면, credentials 설정이 된 브라우저 API는 응답에서 자바스크립트 코드로 자격증명에 관한 부분을 접근할 수 있게 허용한다.
 - Access-Control-Allow-Credentials 헤더를 리스폰스에 받아서 자바스크립트 코드로 자격증명 부분에 접근하기 위해서는 반드시 설정 해 줘야 하는 부분이다.
+
 #### axios를 사용할 때
 - axios의 경우에는 라라벨에서 `resources/js/bootstrap.js` 부분에서 수정할 수 있다.
 ```
@@ -295,7 +296,28 @@ fetch(url, {
 })
 ```
 
+### 라라벨 설정에서 서브도메인 허용
+- config\session.php 경로에서
+```
+'domain' => env('SESSION_DOMAIN', null),
+```
+- 위 부분에 라라벨에서 WAS(web application)에서 허용하는 서브 도메인을 설정해 줘야 한다. `.env`파일의 SESSION_DOMAIN 부분에 서브 도메인을 설정할 수 있다.
+```
+SESSION_DOMAIN=sub.domain.com, domain.com:8000, localhost:8000
+```
 
+
+### 인증하기
+- CSRF란? Cross-site request forgery '교차 사이트 요청 위조'라고 할 수 있는데, 허용된 도메인이 아니라, 다른 서브도메인이 다르거나 루트 도메인이 다른 경우에도 웹서버에 요청을 허가하는 것이다.
+- CSRF 보호(protection)를 초기화란? 라라벨 Sanctum은 기본적으로 다른 도메인에서의 요청을 거부한다.
+- SPA 로그인 페이지에서 CSRF 보호(protection)를 초기화하기 위해서 `/sanctum/csrf-cookie` 라우트로 요청을 하게 되면 이 요청을 한 리퀘스트에 한해서 CSRF 보호를 해제해 준다.
+
+```
+axios.get('/sanctum/csrf-cookie').then(response => {
+    // Login...
+});
+```
+- 보안에 이점이 있는 이유?
 
 ---
 
