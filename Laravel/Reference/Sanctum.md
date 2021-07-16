@@ -256,28 +256,28 @@ EnsureFrontendRequestsAreStateful::class,
 ---
 
 ## CORS and Cookie
-- 라라벨 어플리케이션의 API 도메인과 SPA 페이지의 도메인이 다를 경우 (root 도메인은 공유하고 서브 도메인이 다를 경우이다.) CORS 문제가 발생할 수 있다.
-- CORS란? Cross-Origin Resource Sharing 으로 라라벨 어플리케이션 서버가 다른 도메인에서 요청한 요청을 허용하는 것이다. 기본적으로는 SOP(same-origin policy) 상태이다.
+### CORS
+- 라라벨 어플리케이션의 API 도메인과 SPA 페이지의 도메인이 다를 경우 (root 도메인은 같지만 서브 도메인이 다를 경우이다.) CORS 문제가 발생할 수 있다.
+- CORS란? Cross-Origin Resource Sharing 으로 라라벨 어플리케이션 서버가 다른 도메인에서 요청한 요청을 허용하는 것이다. 기본적으로는 SOP(same-origin policy) 상태로 서브 도메인이 다른 것을 포함하여 다른 도메인이면 
 - CORS에 대한 설정은 config\cors.php에 되어 있으며 라라벨을 배포하는 Nginx나 Apache에 의해서도 가능하다. Nginx 나 Apache에서는 CORS 관련 설정을 하게되면 어플리케이션 수준에서 관리가 안 되는 문제가 발생할 수 있다.
 
-### CORS
-- 
-
-### Request.credentials
-- Reference : https://developer.mozilla.org/ko/docs/Web/API/Request/credentials
+### third-party-cookie 제한
 - 브라우저는 도메인이 서로 다를 때 한 도메인의 쿠키를 다른 도메인의 쿠키에 전송하지 못하게 하고 있다. 그런데 리퀘스트 설정에 따라서 이를 허용할 수도 있다.
-- 
+- third-party-cookie를 제한하는 최근의(2010년 중/후반부터 시작 된) 브라우저 정책으로 기본적으로 서로 다른 도메인에 쿠키 전송을 차단한다.
 
 
 ### Access-Control-Allow-Credentials
 - Reference : https://developer.mozilla.org/ko/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
-- 
-- 리스폰스 헤더 Access-Control-Allow-Credentials 브라우저들이 응답을 프로트엔드 자바스트립트 코드에 노출할지에 대해 알려준다.
-- 리퀘스트 헤더에 Access-Control-Allow-Credentials 옵션을 활성화를 해 줘야 한다.
+- 자격 증명이란? 'authorization 헤더들' 또는 'TLS 클라이언트 인증서'에 관한 부분을 의미함
+- 기본적으로 브라우저는 자바스크립트 코드를 통해서 'authorization 헤더들' 또는 'TLS 클라이언트 인증서'에 해당하는 자격증명에 관한 부분에 접근을 못하게 막고 있다. 리스폰스 값으로 Access-Control-Allow-Credentials 헤더가 들어 있는 응답을 서버에서 받게 되면 프론트앤드 브라우저의 자바스크립트 코드가 자격증명에 관한 부분에 엑세스 할 수 있다.
+- 서버에서 보내는 리스폰스의 헤더에 붙는다. 리퀘스트 요청에서는 Access-Control-Allow-Credentials 헤더가 붙지 않는다.
+- 리스폰스로 받는 Access-Control-Allow-Credentials 헤더 값과 리퀘스트를 보낼 때 자바스크립트 통신 API에 설정한 값이 모두 있어야 자격증명 부분에 자바스크립트 코드로 접근할 수 있다.
 
+### Access-Control-Allow-Credentials의 리퀘스트 요청
+- 자바스크립트 통신 API에 설정한다.
+- Access-Control-Allow-Credentials 헤더를 리스폰스에 받아서 자바스크립트 코드로 자격증명 부분에 접근하기 위해서는 반드시 설정 해 줘야 하는 부분이다.
 #### axios를 사용할 때
 - axios의 경우에는 라라벨에서 `resources/js/bootstrap.js` 부분에서 수정할 수 있다.
-- 
 ```
 axios.defaults.withCredentials = true;
 ```
