@@ -244,8 +244,8 @@ use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
     \Illuminate\Routing\Middleware\SubstituteBindings::class,
 ],
 ```
--　Kernel.php 파일에는 api 미들웨어로 접근하는 방식이 있고, web 미들웨어로 접근하는 방법이 있다. 그런데 sanctum은 api 미들웨어로 세팅을 한다.
--　라라벨의 route 폴더를 보면 api.php 와 web.php가 존재한다. web.php는 Kernel.php의 web 부분을 통해 미들웨어를 설정하며, api.php는 Kernel.php의 api 부분을 통해 미들웨어를 설정한다. 
+- Kernel.php 파일에는 api 미들웨어로 접근하는 방식이 있고, web 미들웨어로 접근하는 방법이 있다. 그런데 sanctum은 api 미들웨어로 세팅을 한다.
+- 라라벨의 route 폴더를 보면 api.php 와 web.php가 존재한다. web.php는 Kernel.php의 web 부분을 통해 미들웨어를 설정하며, api.php는 Kernel.php의 api 부분을 통해 미들웨어를 설정한다. 
 - 보통 토큰을 통한 인증은 API 쪽을 통해서 인증을 하고, 세션쿠키를 통한 인증은 web 쪽을 통해서 인증을 한다. 그런데 Sanctum 미들웨어는 세션쿠키를 통한 인증임에도 불구하고 api 쪽을 통해서 인증을 한다. 
 ```
 EnsureFrontendRequestsAreStateful::class,
@@ -302,13 +302,17 @@ fetch(url, {
 'domain' => env('SESSION_DOMAIN', null),
 ```
 - 위 부분에 라라벨에서 WAS(web application)에서 허용하는 서브 도메인을 설정해 줘야 한다. `.env`파일의 SESSION_DOMAIN 부분에 서브 도메인을 설정할 수 있다.
+example
 ```
 SESSION_DOMAIN=sub.domain.com, domain.com:8000, localhost:8000
 ```
 
 
 ### Sanctum 가드에 접근하여 로그인 인증 받기
-- CSRF란? Cross-site request forgery '교차 사이트 요청 위조'라고 할 수 있는데, 허용된 도메인이 아니라, 다른 서브도메인이 다르거나 루트 도메인이 다른 경우에도 웹서버에 요청을 허가하는 것이다.
+#### CSRF란?
+- Cross-site request forgery '교차 사이트 요청 위조'라고 할 수 있는데, 허용된 도메인이 아니라, 다른 서브도메인이 다르거나 루트 도메인이 다른 경우에도 웹서버에 요청을 허가하는 것이다.
+
+#### CSRF 초기화
 - CSRF 보호(protection)를 초기화란? 라라벨 Sanctum은 기본적으로 다른 도메인에서의 요청을 거부한다. 따라서 라라벨 어플리케이션이 다른 도메인에서의 요청을 허가 해 줘야 하는데, 이를 가능하게 하는 것이 CSRF 초기화이다.
 - SPA 로그인 페이지에서 CSRF 보호(protection)를 초기화하기 위해서 `/sanctum/csrf-cookie` 라우트로 요청을 하게 되면 이 요청을 한 리퀘스트에 한해서 CSRF 보호를 해제해 준다.
 ```
@@ -317,7 +321,24 @@ axios.get('/sanctum/csrf-cookie').then(response => {
 });
 ```
 - 로그인을 하기 위해서는 로그인 데이터를 보내야 하는데, 다른 도메인에서 접근한다면 라라벨 sanctum 가드에 의해서 차단되기 때문에, 다른 도메인에서 온 요청이 차단되지 않게 하도록 서버에 부탁하는 과정이 필요하다.
+- 이 요청의 응답으로 쿠키를 받을 때, 쿠키에는 XSRF-TOKEN 값을 받는다. ajax 요청을 할 때, 쿠키에 저장된 XSRF-TOKEN 토큰을 리퀘스트의 헤더에 붙여서 전달 해 줘야 한다.
+- 헤더에 붙일 때 헤더의 key 이름은 X-XSRF-TOKEN로 한다.
+- Axios 및 Angular HttpClient 등의 라이브러리는 리퀘스트 헤더에 자동으로 붙여준다. 이런 기능이 있다는 것은 쿠키의 XSRF-TOKEN 값을 헤더의 X-XSRF-TOKEN으로 세팅하는 표준이 있다는 것을 알 수 있다.
 
+#### 로그인
+- 아래 부분을 통해 CSRF 초기화가 이뤄진 상태에서
+```
+axios.get('/sanctum/csrf-cookie').then(response => {
+    // Login을 하기 위한 통신을 하는 부분에 대한 코드를 입력한다.
+});
+```
+- 로그인 부분에 통신을 하기 위한 요청을 한다. 기본적으로는 라라벨 /login 라우트에 POST로 요청해야 합니다.
+- laravel/jetstream을 인증스케폴딩을 사용하면 sanctum으로 /login 라우트에 POST로 요청을 할 수 있다.
+- 기본인증을 사용하지 않고 커스텀 인증을 사용할 경우에는 다른 라우트를 통해 로그인을 할 수 있다. 이 때는 라라벨이 제공하는 세션기반 인증의 파사드인 Auth 및 Session 파사드를 통해서 인증을 컨트롤 할 수 있다.
+
+
+### 라우트 보호하기
+- sanctum 인증 가드는 미들웨어로 제공되고 있다.
 
 ---
 
