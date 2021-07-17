@@ -143,11 +143,13 @@ $token->plainTextToken;
 - 토큰은 user 테이블에 저장하므로 user 모델을 사용해서 접근한다.
 - 엘퀀트 모델 클래스에 HasApiTokens이라는 트레이트를 집어 넣은 것으로 인해서 엘로퀀트 모델의 멤버 변수로 token 값을 저장한다.
 - HasApiTokens 이라는 이름과 같이 토큰을 가지고 있는 유저들의 토큰들을 가져온다. 
-- 만약 엘로퀀트에서 특정 유저를 선택했다면 그 유저의 토큰을 가져오는가? (확인할 필요가 있음)
 ```
 $user -> tokens
 ```
-
+- 만약 엘로퀀트에서 특정 유저를 선택했다면 특정 유저의 토큰을 가져온다.
+```
+$user->tokens()->where('id', $id)
+```
 
 ### 토큰에 권한 부여 하기
 #### 권한 부여
@@ -360,9 +362,56 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 ## 모바일 어플리케이션 인증
 - 쿠키 세션을 이용한 방식이 아니라, 토큰을 사용한 요청이다.
-- 쿠키 세션을 사용하면, 요청할 때 마다 쿠키 세션이 달라지기 때문에 보안을 높일 수 있다. 하지만 토큰 방식의 경우, 요청시 마다 갱신이 되지 않는다. 한번 토큰을 발급 받으면 그 토큰을 계속적으로 사용하는 방식이다. 따라서 어플리케이션에 접속할 때 개인 인증등으로 어느 정도 보안 대책이 세워진 대상에 대해서 모바일 어플리케이션을 사용할 때 토큰을 어플리케이션에 저장하여 접속을 하는데 용이하다.
+- 쿠키 세션을 사용하면, 요청할 때 마다 쿠키 세션이 달라지기 때문에 보안을 높일 수 있다. 하지만 토큰 방식의 경우, 요청시 마다 갱신이 되지 않는다. 한번 토큰을 발급 받으면 그 토큰을 계속적으로 사용하는 방식이다. 따라서 어플리케이션에 접속할 때 개인 인증 등으로 어느 정도 보안 대책이 세워진 대상에 대해서 모바일 어플리케이션을 사용할 때 토큰을 어플리케이션에 저장을 하기 때문에 접속을 하는데 용이하다.
+- 리프레시 토큰을 만드는 방식도 있지만, 라라벨에서 지원하지는 않기 때문에 커스터마이징을 해야 한다.
 
-### API 토큰 발급하기
+### Sanctum API 토큰 발급하기
+- 토큰을 발급하는 것은 로그인을 한 후 토큰을 발급 받아, 로그인 대신 토큰을 저장하는 방식으로 사용한다.
+- 라라벨의 기본 인증을 통해서 토큰을 발급하지 않기 때문에 토큰을 발급하는 컨트롤러를 만들어 줘야 한다.
+- 로그인 할 때 토큰을 받기 때문에 로그인 관련 컨트롤러에 토큰 발급의 로직을 작성해 줘야 한다.
+- 예를 들어 app\Http\Controllers\api\authentication.php의 login 메서드를 작성하는 방식을 사용한다.
+토큰 발급의 예시
+```
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+
+Route::post('/sanctum/token', function (Request $request) {
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+        'device_name' => 'required',
+    ]);
+
+    $user = User::where('email', $request->email)->first();
+
+    if (! $user || ! Hash::check($request->password, $user->password)) {
+        throw ValidationException::withMessages([
+            'email' => ['The provided credentials are incorrect.'],
+        ]);
+    }
+
+    return $user->createToken($request->device_name)->plainTextToken;
+});
+```
+
+### Sanctum 토큰 해지하기
+- 토큰을 해지하는 메서드는 로그아웃에 포함시킬는 방법을 사용해도 된다.
+- 라라벨의 유저 테이블을 다루는 model인 user 엘로퀀트 모델에 HasApiTokens 트레잇을 세팅하면
+- 트레이트의 tokens 메서드가 user model에 할당되고 이를 통해 사용자의 API 토큰에 액세스할 수 있다.
+```
+use App\Models\User;
+
+... 
+// Revoke all tokens...
+// 모든 토큰 해지...
+$user->tokens()->delete();
+
+// Revoke a specific token...
+// 지정된 토큰 해지...
+$user->tokens()->where('id', $id)->delete();
+```
 
 
 
