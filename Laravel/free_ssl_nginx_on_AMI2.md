@@ -98,3 +98,10 @@ sudo certbot renew --dry-run
 ```
 sudo systemctl restart crond
 ```
+
+---
+
+### 자동갱신 일어나지 않을 때
+- AWS 환경에서 보안 그룹을 설정하는 경우가 많다. let's encrypt 인증을 할 때, 외부에서 서버로의 접속 인바운드 커넥션이 이뤄지지 않으면 안 된다. 따라서 보안그룹에 화이트리스트 설정을 하게 되면 let's encrypt 쪽에서 갱신된 값을 받기 위한 작업을 할 수 없게 된다.
+
+
