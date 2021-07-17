@@ -307,17 +307,17 @@ SESSION_DOMAIN=sub.domain.com, domain.com:8000, localhost:8000
 ```
 
 
-### 인증하기
+### Sanctum 가드에 접근하여 로그인 인증 받기
 - CSRF란? Cross-site request forgery '교차 사이트 요청 위조'라고 할 수 있는데, 허용된 도메인이 아니라, 다른 서브도메인이 다르거나 루트 도메인이 다른 경우에도 웹서버에 요청을 허가하는 것이다.
-- CSRF 보호(protection)를 초기화란? 라라벨 Sanctum은 기본적으로 다른 도메인에서의 요청을 거부한다.
+- CSRF 보호(protection)를 초기화란? 라라벨 Sanctum은 기본적으로 다른 도메인에서의 요청을 거부한다. 따라서 라라벨 어플리케이션이 다른 도메인에서의 요청을 허가 해 줘야 하는데, 이를 가능하게 하는 것이 CSRF 초기화이다.
 - SPA 로그인 페이지에서 CSRF 보호(protection)를 초기화하기 위해서 `/sanctum/csrf-cookie` 라우트로 요청을 하게 되면 이 요청을 한 리퀘스트에 한해서 CSRF 보호를 해제해 준다.
-
 ```
 axios.get('/sanctum/csrf-cookie').then(response => {
-    // Login...
+    // Login을 하기 위한 통신을 하는 부분에 대한 코드를 입력한다.
 });
 ```
-- 보안에 이점이 있는 이유?
+- 로그인을 하기 위해서는 로그인 데이터를 보내야 하는데, 다른 도메인에서 접근한다면 라라벨 sanctum 가드에 의해서 차단되기 때문에, 다른 도메인에서 온 요청이 차단되지 않게 하기 위한 통신이 필요하다. 
+
 
 ---
 
