@@ -307,8 +307,10 @@ example
 SESSION_DOMAIN=sub.domain.com, domain.com:8000, localhost:8000
 ```
 
+---
 
-### Sanctum 가드에 접근하여 로그인 인증 받기
+## Sanctum 가드에 접근하여 로그인 인증 받기
+### CSRF
 #### CSRF란?
 - Cross-site request forgery '교차 사이트 요청 위조'라고 할 수 있는데, 허용된 도메인이 아니라, 다른 서브도메인이 다르거나 루트 도메인이 다른 경우에도 웹서버에 요청을 허가하는 것이다.
 
@@ -325,20 +327,39 @@ axios.get('/sanctum/csrf-cookie').then(response => {
 - 헤더에 붙일 때 헤더의 key 이름은 X-XSRF-TOKEN로 한다.
 - Axios 및 Angular HttpClient 등의 라이브러리는 리퀘스트 헤더에 자동으로 붙여준다. 이런 기능이 있다는 것은 쿠키의 XSRF-TOKEN 값을 헤더의 X-XSRF-TOKEN으로 세팅하는 표준이 있다는 것을 알 수 있다.
 
-#### 로그인
+### 로그인
 - 아래 부분을 통해 CSRF 초기화가 이뤄진 상태에서
 ```
 axios.get('/sanctum/csrf-cookie').then(response => {
     // Login을 하기 위한 통신을 하는 부분에 대한 코드를 입력한다.
 });
 ```
-- 로그인 부분에 통신을 하기 위한 요청을 한다. 기본적으로는 라라벨 /login 라우트에 POST로 요청해야 합니다.
+- 로그인 부분에 통신을 하기 위한 요청을 한다. 기본적으로는 라라벨 /login 라우트에 POST로 요청한다.
 - laravel/jetstream을 인증스케폴딩을 사용하면 sanctum으로 /login 라우트에 POST로 요청을 할 수 있다.
 - 기본인증을 사용하지 않고 커스텀 인증을 사용할 경우에는 다른 라우트를 통해 로그인을 할 수 있다. 이 때는 라라벨이 제공하는 세션기반 인증의 파사드인 Auth 및 Session 파사드를 통해서 인증을 컨트롤 할 수 있다.
 
+---
 
-### 라우트 보호하기
-- sanctum 인증 가드는 미들웨어로 제공되고 있다.
+## 라우트 보호하기
+- sanctum 인증 가드는 미들웨어로 제공되고 있다. 
+- 라라벨의 kernel파일(app\Http\Kernel.php)에 등록된 `EnsureFrontendRequestsAreStateful::class`을 통해서 'auth:sanctum' 이름으로 등록된 미들웨어를 사용할 수 있다.
+```
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+```
+- 이 미들웨어에 의해서 sanctum에 의해 인증을 받아 인증된 요청만 받는다.
+- 미들웨어는 서비스 컨테이너나 라우트에 달아 줄 수 있는데, Sanctum 미들웨어는 인증된 사용자만 허용하게 하는 기능을 가졌으므로 모든 요청에 대해 추가 기능을 다는 서비스 컨테이너에는 달아주지 않는다. 특정 라우트의 접근에 인증 기능을 달아주는 방식으로 라우터의 접근제한을 하기 위한 장치이다.
+- 따라서 라우트를 만들 때에는 인증 권한에 따라 라우트를 만들어 줘야 한다.
+
+### 소켓 통신을 할 때 Sanctum 가드를 사용한 인증을 하는 방법
+- 라라벨의 브로드캐스트 채널을 이용할 때 Sanctum 요청을 하는 방법
+- 소켓 통신은 나중에 다루자.
+
+
+
+
+
 
 ---
 
