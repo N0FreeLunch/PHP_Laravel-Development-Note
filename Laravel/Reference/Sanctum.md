@@ -151,6 +151,9 @@ $user -> tokens
 $user->tokens()->where('id', $id)
 ```
 
+---
+
+## Token Abilities (토큰 기능)
 ### 토큰에 권한 부여 하기
 #### 권한 부여
 - 문자열로 권한을 부여한다.
@@ -413,6 +416,35 @@ $user->tokens()->delete();
 $user->tokens()->where('id', $id)->delete();
 ```
 
+---
+
+## TEST
+- 인증 처리를 한 이후의 단위 태스트를 위해서 위해서 TEST 모듈을 만들 수 있다.
+```
+use App\Models\User;
+use Laravel\Sanctum\Sanctum;
+
+public function test_task_list_can_be_retrieved()
+{
+    Sanctum::actingAs(
+        User::factory()->create(),
+        ['view-tasks']
+    );
+
+    $response = $this->get('/api/task');
+
+    $response->assertOk();
+}
+```
+- 태스트에 이 태스트를 작성하면 설정한 `/api/task` 라우터로 보내 처리하는 것과 같은 태스트를 실시한다.
+- `['view-tasks']` 부분은 'Token Abilities'(토큰 기능)를 설정했을 때 토큰 기능을 추가 해 주는 부분이다.
+- 모든 '토큰 기능'에 대해서 접근을 허가하려면 `*`을 사용할 수 있다.
+```
+Sanctum::actingAs(
+    User::factory()->create(),
+    ['*']
+);
+```
 
 
 
