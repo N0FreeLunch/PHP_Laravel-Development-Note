@@ -5,6 +5,46 @@
 ### 액티브 레코드 패턴
 > 마틴 파울러(Martin Fowler)는 그의 저서 Patterns of Enterprise Application Architecture 에서 액티브 레코드를 기술했다. 액티브 레코드에서 객체란 영구 데이터와 그 데이터를 다루는 동작을 모두 가지고 있다. 데이터 액세스 로직이 액티브 레코드 객체 내에 포함되어 있기 때문에, 그 객체를 사용하는 사람들은 객체내에 포함된 로직에 따라 데이터베이스로부터 읽고 쓰는 법을 알게 될 것이다.
 
+- 리펙토링의 대가인 마틴 파울러가 액티브레코드 패턴을 제시한 것을 보면 좀 더 이해하기 쉽고 다루기 쉬운 코드를 만들기 위해서 ORM 방식이 좋다라고 한 것으로 생각 될 수 있다.
+
+
+## 모델 정의하기
+- 일반적으로 모델에 대한 정의는 app\Models 디렉토리에 한다.
+- 네임스페이스를 생성하고 연결 해 주는 composer.json 파일에 의해서 오토로드 되는 곳이라면 어느 곳에든 위치해도 상관없다.
+- Eloquent를 사용하기 위해서는 Illuminate\Database\Eloquent\Model의 상속을 받아야 한다.
+- app\Models의 모델을 엘로퀀트를 사용하지 않고 쿼리빌더로 만들 수 있는데, 이 때는 Illuminate\Database\Eloquent\Model의 상속이 필요없다. 엘로퀀트 ORM을 사용하기 위해서 Illuminate\Database\Eloquent\Model를 상속한다.
+- 엘로쿼트 모델을 만들기 위한 기본 보일러 플레이트는
+```
+php artisan make:model Flight
+```
+를 통해서 쉽게 만들 수 있다.
+
+### 엘로퀀트 모델과 마이그레이션 스키마 동시에 생성하기
+- 엘리퀀트 모델을 생성 할 때, 마이그레이션 스키마를 만들 수 있다.
+```
+php artisan make:model Flight --migration
+```
+또는
+```
+php artisan make:model Flight -m
+```
+
+### Eloquent 모델 컨벤션
+- flights 테이블에서 정보를 찾거나 저장할 때 쓸 Flight 모델의 예
+- 앤터티에 관한 정보를 모아둔 테이블은 복수형을 쓰지만, 모델은 단수형으로 사용한다.
+```
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Flight extends Model
+{
+    //
+}
+```
+
 
 
 ---
