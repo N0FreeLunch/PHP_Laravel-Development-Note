@@ -151,22 +151,6 @@ $user -> tokens
 $user->tokens()->where('id', $id)
 ```
 
----
-
-## Token Abilities (토큰 기능)
-### 토큰에 권한 부여 하기
-#### 권한 부여
-- 문자열로 권한을 부여한다.
-```
-return $user->createToken('token-name', ['server:update'])->plainTextToken;
-```
-- 토큰에 부여한 문자열을 체크하여 권한이 있는 토큰인지 확인한다.
-```
-if ($user->tokenCan('server:update')) {
-}
-```
-> 세션 인증으로 인증 요청을 했을 때는 권한에 관계 없이 항상 참으로 인정한다.
-
 ### 토큰 해지
 - HasApiTokens 트레이트를 사용한다.
 #### 모든 토큰 해지
@@ -183,6 +167,22 @@ $user->tokens()->where('id', $id)->delete();
 ```
 - where로 id를 기준으로 제거 했지만 다른 것을 기준으로 해도 제거 할 수 있다.
 
+
+---
+
+## Token Abilities (토큰 기능)
+### 토큰에 권한 부여 하기
+#### 권한 부여
+- 문자열로 권한을 부여한다.
+```
+return $user->createToken('token-name', ['server:update'])->plainTextToken;
+```
+- 토큰에 부여한 문자열을 체크하여 권한이 있는 토큰인지 확인한다.
+```
+if ($user->tokenCan('server:update')) {
+}
+```
+> 세션 인증으로 인증 요청을 했을 때는 권한에 관계 없이 항상 참으로 인정한다.
 
 ---
 
@@ -268,7 +268,7 @@ EnsureFrontendRequestsAreStateful::class,
 
 ### third-party-cookie 제한
 - 브라우저는 도메인이 서로 다를 때 한 도메인의 쿠키를 다른 도메인의 쿠키에 전송하지 못하게 하고 있다. 그런데 리퀘스트 설정에 따라서 이를 허용할 수도 있다.
-- third-party-cookie를 제한하는 최근의(2010년 중/후반부터 시작 된) 브라우저 정책으로 기본적으로 서로 다른 도메인에 쿠키 전송을 차단한다.
+- third-party-cookie를 제한하는 최근의(2010년대 중/후반부터 시작 된) 브라우저 정책으로 기본적으로 서로 다른 도메인에 쿠키 전송을 차단한다.
 
 
 ### Access-Control-Allow-Credentials
