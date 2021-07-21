@@ -97,3 +97,30 @@ return $this->from('example@example.com')
 - 위 부분은 메서드 체인의 형식이다.
 
 #### global from
+- mailable에서 from을 지정하지 않았을 때, 기본적으로 보내는 주소를 설정하는 것.
+- `config/mail.php` 부분에서 어플리케이션 디폴트 발신자 주소를 지정
+```
+'from' => ['address' => 'example@example.com', 'name' => 'App Name'],
+```
+- global reply_to
+```
+'reply_to' => ['address' => 'example@example.com', 'name' => 'App Name'],
+```
+
+
+## 메일 HTML 작성하기
+- view의 블레이드 파일에 메일 양식의 HTML 파일을 작성한다.
+- `resource/view` 부분에 작성을 한다.
+```
+public function build()
+{
+    return $this->view('emails.orders.shipped');
+}
+```
+
+
+
+---
+
+## Reference
+https://laravel.kr/docs/8.x/mail
