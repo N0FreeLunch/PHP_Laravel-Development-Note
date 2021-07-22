@@ -145,8 +145,78 @@ public function build()
 - 확장자가 .html이나 .txt에서 동작하는지 확인을 해 봐야 함
 
 
-### 뷰 데이터
-- 기본적으로 블레이드 파일에 데이터를 전달하기 위해서는 컨트롤러나 라우터 쪽에서 보내는 값을 담아 줘야 한다. 메일 블레이드에도 데이터를 전달할 수 있으며 그 방법은 public 속성을 이용한다.
+### Mailable 클래스의 구조
+```
+<?php
+
+namespace App\Mail;
+
+use App\Models\Order;
+use Illuminate\Bus\Queueable;
+use Illuminate\Mail\Mailable;
+use Illuminate\Queue\SerializesModels;
+
+class OrderShipped extends Mailable
+{
+    use Queueable, SerializesModels;
+
+    /**
+     * The order instance.
+     *
+     * @var Order
+     */
+    public $order;
+
+    /**
+     * Create a new message instance.
+     *
+     * @param  \App\Models\Order  $order
+     * @return void
+     */
+    public function __construct(Order $order)
+    {
+        $this->order = $order;
+    }
+
+    /**
+     * Build the message.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+        return $this->view('emails.orders.shipped');
+    }
+}
+```
+- 메일에 관한 로직은 컨트롤러의 서비스 로직에서 불러 쓰는 하나의 단위이다. 디비의 데이터 조작에 관하는 부분을 의미론적 추상화를 한 것이 리포지토리이다. 
+- 메일에 관한 부분은 서비스 로직에서 불러다 쓰이는 것이기 때문에 리포지토리와 비슷한 수준의 레이어의 역할을 가진다.
+- 레포지토리의 경우 `App\Repository;`의 폴더 영역을 가지는 것과 같이 메일도 `App\Mail;`의 폴더 영역을 가진다.
+- 레포지토리와 비슷한 레이어 레벨을 가지기 때문에 `use App\Models\Order;`으로 모델을 주입 당하는 것.
+
+### 뷰에 데이터 전달
+- 기본적으로 블레이드 파일에 데이터를 전달하기 위해서는 컨트롤러나 라우터 쪽에서 보내는 값을 담아 줘야 한다.
+```
+return view('greetings', ['name' => 'Victoria']);
+``` 
+```
+return view('greeting')->with('name', 'Victoria');
+```
+- 컨트롤러나 라우터에서 뷰를 호출할 때 데이터를 담는 방식과는 달리 메일 기능을 사용할 때는 Mailable 클래스에서 public 속성을 이용한다.
+- Mailable 클래스에서 접근 제한자가 public으로 되어 있는 멤버 변수의 값을 블레이드에서 접근할 수 있다.
+```
+    public function __construct(Order $order)
+    {
+        $this->order = $order;
+    }
+```
+- 현재 `$this->order `는 public으로 접근할 수 있는 상태이기 때문에 view 메서드로 연결되는 블레이드 파일은 이 멤버를 접근할 수 있다.
+```
+<div>
+    Price: {{ $order->price }}
+</div>
+```
+
 
 
 ---
