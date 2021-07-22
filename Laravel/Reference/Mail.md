@@ -76,13 +76,13 @@ AWS_REGION='us-east-1'
 php artisan make:mail OrderShipped
 ```
 
-### Mailables 작성하기
-#### build 메서드
+## Mailables 작성하기
+### build 메서드
 - 메일 메서드들을 조합해서 하나의 전송 단위를 만드는 역할을 한다.
 
-#### from 메서드
+### from 메서드
 - 송신자를 설정한다.
-- build 메서드가 전송 단위를 만드는 역할을 하기 때문에 build 안에서 from 메서드를 사용ㅎ한다.
+- build 메서드가 전송 단위를 만드는 역할을 하기 때문에 build 안에서 from 메서드를 사용한다.
 ```
 public function build()
 {
@@ -96,28 +96,57 @@ return $this->from('example@example.com')
 ```
 - 위 부분은 메서드 체인의 형식이다.
 
-#### global from
-- mailable에서 from을 지정하지 않았을 때, 기본적으로 보내는 주소를 설정하는 것.
+### global from
+- mailable에서 from을 지정하지 않았을 때, 기본적으로 보내는 주소를 설정하는 것
 - `config/mail.php` 부분에서 어플리케이션 디폴트 발신자 주소를 지정
 ```
 'from' => ['address' => 'example@example.com', 'name' => 'App Name'],
 ```
-- global reply_to
+
+### global reply_to
+#### reply_to란?
+- 메일을 보내는 사람이 답장을 나에게 할지 다른 사람에게 할지를 적어 두는 것. 메일을 받은 사람은 회신을 할 때 reply_to에 적힌 대상에게 회신을 한다. 물론 받은 메일 쪽을 통해서 회신을 할 수도 있지만, 메일 서비스에서 제공하는 답장 버튼을 클릭하면 reply to에 기록된 사람에게 답신이 간다.
 ```
 'reply_to' => ['address' => 'example@example.com', 'name' => 'App Name'],
 ```
 
 
 ## 메일 HTML 작성하기
+- 메일의 템플릿을 작성할 수 있는 기능이다.
+### .blade 파일을 사용할 때
 - view의 블레이드 파일에 메일 양식의 HTML 파일을 작성한다.
 - `resource/view` 부분에 작성을 한다.
 ```
+/**
+ * Build the message.
+ *
+ * @return $this
+ */
 public function build()
 {
     return $this->view('emails.orders.shipped');
 }
 ```
+- Mailables 클래스의 view 메서드를 사용하여 메일 템플릿으로 지정할 블레이드 파일을 설정한다.
 
+### HTML이나 TXT를 사용할 때
+```
+/**
+ * Build the message.
+ *
+ * @return $this
+ */
+public function build()
+{
+    return $this->view('emails.orders.shipped')
+                ->text('emails.orders.shipped_plain');
+}
+```
+- 확장자가 .html이나 .txt에서 동작하는지 확인을 해 봐야 함
+
+
+### 뷰 데이터
+- 기본적으로 블레이드 파일에 데이터를 전달하기 위해서는 컨트롤러나 라우터 쪽에서 보내는 값을 담아 줘야 한다. 메일 블레이드에도 데이터를 전달할 수 있으며 그 방법은 public 속성을 이용한다.
 
 
 ---
