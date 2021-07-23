@@ -348,6 +348,53 @@ public function build()
 
 
 ## 메일 발송하기
+- Mail 파사드를 사용해서 메일을 보낼 수 있다.
+- mailable 클래스는 메일을 작성하기 위해 사용하며 Mail 파사드의 send 메서드의 send(mailable)
+```
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use App\Mail\OrderShipped;
+use App\Models\Order;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+
+class OrderController extends Controller
+{
+    /**
+     * Ship the given order.
+     *
+     * @param  Request  $request
+     * @param  int  $orderId
+     * @return Response
+     */
+    public function ship(Request $request, $orderId)
+    {
+        $order = Order::findOrFail($orderId);
+
+        // Ship order...
+
+        Mail::to($request->user())->send(new OrderShipped($order));
+    }
+}
+```
+- `use Illuminate\Support\Facades\Mail;` 메일 파사드를 사용한다.
+- `use App\Mail\OrderShipped;` OrderShipped은 mailable 클래스로 만들어진 대상이다.
+```
+Mail::to($request->user())->send(new OrderShipped($order));
+```
+- Mail 파사드의 send 메서드를 통해서 mailable에 지정한 설정을 담아 메일 전송을 시도한다.
+
+### Mail 파사드의 역할
+#### to
+https://laravel.com/api/5.8/Illuminate/Mail/PendingMail.html
+> $this to(mixed $users)
+
+#### send
+> mixed send(Mailable $mailable)
+Send a new mailable message instance.
 
 ---
 
