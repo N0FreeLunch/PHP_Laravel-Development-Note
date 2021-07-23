@@ -145,7 +145,7 @@ public function build()
 - 확장자가 .html이나 .txt에서 동작하는지 확인을 해 봐야 함
 
 
-### Mailable 클래스의 구조
+## Mailable 클래스의 구조
 ```
 <?php
 
@@ -194,7 +194,7 @@ class OrderShipped extends Mailable
 - 레포지토리의 경우 `App\Repository;`의 폴더 영역을 가지는 것과 같이 메일도 `App\Mail;`의 폴더 영역을 가진다.
 - 레포지토리와 비슷한 레이어 레벨을 가지기 때문에 `use App\Models\Order;`으로 모델을 주입 당하는 것.
 
-### 뷰에 데이터 전달
+## 뷰에 데이터 전달
 - 기본적으로 블레이드 파일에 데이터를 전달하기 위해서는 컨트롤러나 라우터 쪽에서 보내는 값을 담아 줘야 한다.
 ```
 return view('greetings', ['name' => 'Victoria']);
@@ -202,21 +202,73 @@ return view('greetings', ['name' => 'Victoria']);
 ```
 return view('greeting')->with('name', 'Victoria');
 ```
+### public 접근 제한자로 전달하기
 - 컨트롤러나 라우터에서 뷰를 호출할 때 데이터를 담는 방식과는 달리 메일 기능을 사용할 때는 Mailable 클래스에서 public 속성을 이용한다.
 - Mailable 클래스에서 접근 제한자가 public으로 되어 있는 멤버 변수의 값을 블레이드에서 접근할 수 있다.
 ```
+    public $order;
+    
     public function __construct(Order $order)
     {
         $this->order = $order;
     }
 ```
-- 현재 `$this->order `는 public으로 접근할 수 있는 상태이기 때문에 view 메서드로 연결되는 블레이드 파일은 이 멤버를 접근할 수 있다.
+- 현재 `$this->order `는 public으로 접근할 수 있는 상태이기 때문에 외부에서 이 클래스나 객체에 접근하여 데이터를 가져올 수 있다.
+- \_\_construct를 통해서 Order 객체를 주입한 상태에서 데이터를 가져온다객체를 주입한 대상의 주입된 대상에 접근할 수 있다는 것은 Mailable 클래스가 아닌 Mailable 객체로 접근한다는 의미이다. 
+- view 메서드로 연결되는 블레이드 파일은 이 멤버를 접근할 수 있다. 블레이드 파일 안에서는 클래스를 접근하거나 객체를 선언해서 접근하는 표현은 없지만 기본적으로 외부에서 Mailable 객체의 멤버에 접근하는 방식으로 사용되고 있음을 알 수 있다.
 ```
 <div>
     Price: {{ $order->price }}
 </div>
 ```
+### with 메서드를 사용하여 전달하기
+```
+<?php
 
+namespace App\Mail;
+
+use App\Models\Order;
+use Illuminate\Bus\Queueable;
+use Illuminate\Mail\Mailable;
+use Illuminate\Queue\SerializesModels;
+
+class OrderShipped extends Mailable
+{
+    use Queueable, SerializesModels;
+
+    /**
+     * The order instance.
+     *
+     * @var Order
+     */
+    protected $order;
+
+    /**
+     * Create a new message instance.
+     *
+     * @param  \App\Models\Order $order
+     * @return void
+     */
+    public function __construct(Order $order)
+    {
+        $this->order = $order;
+    }
+
+    /**
+     * Build the message.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+        return $this->view('emails.orders.shipped')
+                    ->with([
+                        'orderName' => $this->order->name,
+                        'orderPrice' => $this->order->price,
+                    ]);
+    }
+}
+```
 
 
 ---
