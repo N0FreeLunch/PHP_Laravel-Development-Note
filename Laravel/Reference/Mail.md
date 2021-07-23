@@ -106,6 +106,7 @@ return $this->from('example@example.com')
 ### global reply_to
 #### reply_to란?
 - 메일을 보내는 사람이 답장을 나에게 할지 다른 사람에게 할지를 적어 두는 것. 메일을 받은 사람은 회신을 할 때 reply_to에 적힌 대상에게 회신을 한다. 물론 받은 메일 쪽을 통해서 회신을 할 수도 있지만, 메일 서비스에서 제공하는 답장 버튼을 클릭하면 reply to에 기록된 사람에게 답신이 간다.
+- config/mail.php 부분에서 지정
 ```
 'reply_to' => ['address' => 'example@example.com', 'name' => 'App Name'],
 ```
@@ -143,6 +144,7 @@ public function build()
 }
 ```
 - 확장자가 .html이나 .txt에서 동작하는지 확인을 해 봐야 함
+- https://stackoverflow.com/questions/42803404/sending-mail-to-multiple-recipients-using-laravel-5-4
 
 
 ## Mailable 클래스의 구조
@@ -222,7 +224,7 @@ return view('greeting')->with('name', 'Victoria');
 </div>
 ```
 
-### with 메서드를 사용하여 전달하기
+### with 메서드를 사용하여 데이터를 메일 뷰에 전달하기
 > 만약 여러분이 이메일 데이터의 유형이 템플릿에 전달되기 전에 수정을 가하고 싶다면, with 메소드를 사용하여 수동으로 데이터를 뷰에 전달할 수 있습니다.
 - 위와 같은 도큐먼트의 설명은 데이터의 반영 시점이 다르다는 의미를 가지고 있는데, 직접 사용해서 분석이 필요한 것 같다.
 
@@ -273,10 +275,13 @@ class OrderShipped extends Mailable
     }
 }
 ```
+#### 접근 제한자 설정
 - 외부에서 $order 멤버에 접근할 수 없도록 접근 제한자 protected를 설정하였다.
 ```
 protected $order;
 ```
+
+#### with 
 - 접근할 수 없는 멤버를 블레이드 파일에 보내기 위해서는 with 메서드를 사용한다.
 ```
     public function build()
@@ -298,6 +303,8 @@ protected $order;
 ```
 return view('greeting')->with('name', 'Victoria');
 ```
+
+#### 라우터 컨트롤러의 뷰와 비교
 - 라우터나 컨트롤러에서 블레이드로 데이터를 전달 할 때와 같은 동일한 표현성을 위해 with 메서드를 만들어 둔 것인지, public 접근 제한자와 다른 어떤 목적을 위해 만들어진 것인지 좀 더 분석이 필요함.
 - https://laravel.com/api/5.8/Illuminate/View/View.html
 ```
@@ -345,11 +352,15 @@ public function build()
                 ]);
 }
 ```
+- 메일로 첨부하는 파일의 데이터가 적절한 형식인지 확인을 하기 위한 작업
+- 확장자 위조를 막기 위한 최소한의 보안 체크를 위한 것
 
 
 ## 메일 발송하기
 - Mail 파사드를 사용해서 메일을 보낼 수 있다.
 - mailable 클래스는 메일을 작성하기 위해 사용하며 Mail 파사드의 send 메서드의 send(mailable)
+
+### 예제의 구성
 ```
 <?php
 
@@ -380,6 +391,11 @@ class OrderController extends Controller
     }
 }
 ```
+- 위 예제는 controller에서 mailable 클래스로 만들어진 OrderShipped을 사용한다.
+- 이 때 OrderShipped은 의존성 주입을 사용하지 않는다. 모듈을 교체할 필요가 없는 대상이라면 결합도를 줄일 필요가 없기 때문에 의존성 주입을 굳이 사용할 필요는 없다.
+- 메일에 관한 서비스 로직을 따로 분리하지 않고 컨트롤러에 메일을 담는 로직을 사용하였다. 서비스로직이 복잡해 질 경우 분리를 할 수도 있다.
+
+### 메일 파사드와 mailable 사용하기
 - `use Illuminate\Support\Facades\Mail;` 메일 파사드를 사용한다.
 - `use App\Mail\OrderShipped;` OrderShipped은 mailable 클래스로 만들어진 대상이다.
 ```
@@ -388,13 +404,31 @@ Mail::to($request->user())->send(new OrderShipped($order));
 - Mail 파사드의 send 메서드를 통해서 mailable에 지정한 설정을 담아 메일 전송을 시도한다.
 
 ### Mail 파사드의 역할
+- 메일 파사드의 멤버에 대한 설명이 있는 API 문서 : https://laravel.com/api/5.8/Illuminate/Mail/PendingMail.html
+
 #### to
-https://laravel.com/api/5.8/Illuminate/Mail/PendingMail.html
-> $this to(mixed $users)
+> Set the recipients of the message.
+```
+Mail::to($request->user())->send(new OrderShipped($order));
+```
+- 수취인을 설정한다.
+- API 문서를 보면 `mixed $user`라고 되어 있는데, 실제 사용 예를 보면`mixed $user`라는 것은 문자열의 메일 주소 하나 뿐만 아니라 메일 주소가 들어 있는 배열도 받을 수 있다.
+- `'user1@example.com'` 문자열 뿐만 아니라 `['user1@example.com', 'user2@example.com','user3@example.com']` 이런 배열도 받을 수 있다.
+- 여러 배열에 대한 태스트를 한 설명 : https://stackoverflow.com/questions/26584904/laravel-mailsend-sending-to-multiple-to-or-bcc-addresses
+
 
 #### send
-> mixed send(Mailable $mailable)
-Send a new mailable message instance.
+> Send a new mailable message instance.
+```
+mixed send(Mailable $mailable)
+```
+- $mailable 객체를 받는 방식으로 구성되어 있다.
+
+
+
+
+
+
 
 ---
 
