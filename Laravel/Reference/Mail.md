@@ -412,9 +412,9 @@ Mail::to($request->user())->send(new OrderShipped($order));
 Mail::to($request->user())->send(new OrderShipped($order));
 ```
 - 수취인을 설정한다.
-- API 문서를 보면 `mixed $user`라고 되어 있는데, 실제 사용 예를 보면`mixed $user`라는 것은 문자열의 메일 주소 하나 뿐만 아니라 메일 주소가 들어 있는 배열도 받을 수 있다.
-- `'user1@example.com'` 문자열 뿐만 아니라 `['user1@example.com', 'user2@example.com','user3@example.com']` 이런 배열도 받을 수 있다.
-- 여러 배열에 대한 태스트를 한 설명 : https://stackoverflow.com/questions/26584904/laravel-mailsend-sending-to-multiple-to-or-bcc-addresses
+- 이메일 주소(`'user1@example.com'`), 하나의 사용자 인스턴스(`$request->user()` 또는 `Auth::user()`), 사용자들의 컬렉션(`collect(['user1@example.com', 'user2@example.com','user3@example.com'])`)을 인자로 받는다.
+- 그런데 컬렉션 뿐만 아니라 배열도 받는다. `['user1@example.com', 'user2@example.com','user3@example.com']` 이런 배열도 받을 수 있다. (여러 배열에 대한 태스트를 한 설명 : https://stackoverflow.com/questions/26584904/laravel-mailsend-sending-to-multiple-to-or-bcc-addresses )
+- API 문서를 보면 `mixed $user`라고 되어 있는데, 여러가지 형태르 받을 수 있다는 것을 의미하는 것 같은데 여기에 대한 소스코드를 찾으면 넣는 게 좋을 듯
 
 
 #### send
@@ -425,6 +425,14 @@ mixed send(Mailable $mailable)
 - $mailable 객체를 받는 방식으로 구성되어 있다.
 
 
+### 라라벨 5.2버전 까지 메일 발송 방식
+https://laravel.com/docs/5.2/mail#sending-mail
+```
+Mail::send('emails.reminder', ['user' => $user], function ($m) use ($user) {
+            $m->from('hello@app.com', 'Your Application');
+            $m->to($user->email, $user->name)->subject('Your Reminder!');
+        });
+```
 
 
 
