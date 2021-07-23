@@ -357,8 +357,8 @@ public function build()
 
 
 ## 메일 발송하기
-- Mail 파사드를 사용해서 메일을 보낼 수 있다.
-- mailable 클래스는 메일을 작성하기 위해 사용하며 Mail 파사드의 send 메서드의 send(mailable)
+- Mail 파사드(`Illuminate\Support\Facades\Mail`)를 사용해서 메일을 보낼 수 있다.
+- mailable 클래스는 메일을 작성하기 위해 사용하며 Mail 파사드의 send 메서드를 사용해서 작성된 메일을 보낼 수 있다.
 
 ### 예제의 구성
 ```
@@ -415,6 +415,8 @@ Mail::to($request->user())->send(new OrderShipped($order));
 - 이메일 주소(`'user1@example.com'`), 하나의 사용자 인스턴스(`$request->user()` 또는 `Auth::user()`), 사용자들의 컬렉션(`collect(['user1@example.com', 'user2@example.com','user3@example.com'])`)을 인자로 받는다.
 - 그런데 컬렉션 뿐만 아니라 배열도 받는다. `['user1@example.com', 'user2@example.com','user3@example.com']` 이런 배열도 받을 수 있다. (여러 배열에 대한 태스트를 한 설명 : https://stackoverflow.com/questions/26584904/laravel-mailsend-sending-to-multiple-to-or-bcc-addresses )
 - API 문서를 보면 `mixed $user`라고 되어 있는데, 여러가지 형태르 받을 수 있다는 것을 의미하는 것 같은데 여기에 대한 소스코드를 찾으면 넣는 게 좋을 듯
+- to에 여러 메일을 넣게 되면, 메일을 받는 사람은 같이 메일을 받은 사람을 알 수 있게 되기 때문에 이 경우에는 반복문을 사용해야 한다.
+- cc, bcc 메서드들도 `mixed $user`로 되어 있기 때문에 to에 해당하는 여러가지 형식의 메일 주소를 받아 쓸 수 있다.
 
 
 #### send
@@ -424,6 +426,25 @@ mixed send(Mailable $mailable)
 ```
 - $mailable 객체를 받는 방식으로 구성되어 있다.
 
+### 체이닝
+- 메일 파사드의 to, cc, bcc 메서드는 $this를 반환하기 때문에 메서드 체이닝 방식으로 사용할 수 있다.
+```
+use Illuminate\Support\Facades\Mail;
+
+Mail::to($request->user())
+    ->cc($moreUsers)
+    ->bcc($evenMoreUsers)
+    ->send(new OrderShipped($order));
+```
+
+
+### 반복해서 메일 보내기
+- to를 사용할 경우, 메일 수신자는 누구에게 보낸 메일인지 수신자 리스트를 확인할 수 있게 된다. 이를 해결하기 위해서 여러 수신자들에게 메일을 따로 보내는 방식을 사용해야 한다. 반복문을 통해서 send를 한 번씩 보내는 방식을 사용한다.
+```
+foreach (['taylor@example.com', 'dries@example.com'] as $recipient) {
+    Mail::to($recipient)->send(new OrderShipped($order));
+}
+```
 
 ### 라라벨 5.2버전 까지 메일 발송 방식
 https://laravel.com/docs/5.2/mail#sending-mail
@@ -434,7 +455,12 @@ Mail::send('emails.reminder', ['user' => $user], function ($m) use ($user) {
         });
 ```
 
-
+## 메일러를 선택해서 보내기
+```
+Mail::mailer('postmark')
+        ->to($request->user())
+        ->send(new OrderShipped($order));
+```
 
 
 
