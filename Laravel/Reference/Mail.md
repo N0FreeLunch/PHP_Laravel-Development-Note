@@ -221,7 +221,11 @@ return view('greeting')->with('name', 'Victoria');
     Price: {{ $order->price }}
 </div>
 ```
+
 ### with 메서드를 사용하여 전달하기
+> 만약 여러분이 이메일 데이터의 유형이 템플릿에 전달되기 전에 수정을 가하고 싶다면, with 메소드를 사용하여 수동으로 데이터를 뷰에 전달할 수 있습니다.
+- 위와 같은 도큐먼트의 설명은 데이터의 반영 시점이 다르다는 의미를 가지고 있는데, 직접 사용해서 분석이 필요한 것 같다.
+
 ```
 <?php
 
@@ -269,7 +273,81 @@ class OrderShipped extends Mailable
     }
 }
 ```
+- 외부에서 $order 멤버에 접근할 수 없도록 접근 제한자 protected를 설정하였다.
+```
+protected $order;
+```
+- 접근할 수 없는 멤버를 블레이드 파일에 보내기 위해서는 with 메서드를 사용한다.
+```
+    public function build()
+    {
+        return $this->view('emails.orders.shipped')
+                    ->with([
+                        'orderName' => $this->order->name,
+                        'orderPrice' => $this->order->price,
+                    ]);
+    }
+```
+- 위와 같이 key value를 전달하면
+```
+<div>
+    Price: {{ $orderPrice }}
+</div>
+```
+- 메일 블레이드에서는 key 값을 사용해여 value 값을 표시할 수 있다.
+```
+return view('greeting')->with('name', 'Victoria');
+```
+- 라우터나 컨트롤러에서 블레이드로 데이터를 전달 할 때와 같은 동일한 표현성을 위해 with 메서드를 만들어 둔 것인지, public 접근 제한자와 다른 어떤 목적을 위해 만들어진 것인지 좀 더 분석이 필요함.
+- https://laravel.com/api/5.8/Illuminate/View/View.html
+```
+with(string|array $key, mixed $value = null)
+Add a piece of data to the view.
+```
+- Mailable에 존재하는 view 메서드가 아닌, 컨트롤러에서 사용하는 view 메서드의 경우에도 with의 인자를 array로 받을 수 있다는 것을 알 수 있다.
+- https://laravel.com/api/5.8/Illuminate/Mail/Mailable.html
+```
+$this
+with(string|array $key, mixed $value = null)
+Set the view data for the message.
+```
+- Mailable에 존재하는 view 메서드도 array 뿐만 아닌 key, value를 담을 수 있는 형식을 제공한다.
 
+## 첨부파일
+- 메일을 보낼 때 파일을 보낼 수도 있다.
+- 그런데 이 파일은 라라벨 폴더 안에 존재 해야 한다.
+```
+/**
+ * Build the message.
+ *
+ * @return $this
+ */
+public function build()
+{
+    return $this->view('emails.orders.shipped')
+                ->attach('/path/to/file');
+}
+```
+
+### mime 타입 지정
+```
+/**
+ * Build the message.
+ *
+ * @return $this
+ */
+public function build()
+{
+    return $this->view('emails.orders.shipped')
+                ->attach('/path/to/file', [
+                    'as' => 'name.pdf',
+                    'mime' => 'application/pdf',
+                ]);
+}
+```
+
+
+## 메일 발송하기
 
 ---
 
