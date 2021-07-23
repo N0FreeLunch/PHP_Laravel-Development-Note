@@ -293,18 +293,17 @@ protected $order;
                     ]);
     }
 ```
-- 위와 같이 key value를 전달하면
+- 위와 같이 key value를 전달하면 메일 블레이드에서는 key 값을 사용해여 value 값을 표시할 수 있다.
 ```
 <div>
     Price: {{ $orderPrice }}
 </div>
 ```
-- 메일 블레이드에서는 key 값을 사용해여 value 값을 표시할 수 있다.
+
+#### 라우터 컨트롤러의 뷰와 비교
 ```
 return view('greeting')->with('name', 'Victoria');
 ```
-
-#### 라우터 컨트롤러의 뷰와 비교
 - 라우터나 컨트롤러에서 블레이드로 데이터를 전달 할 때와 같은 동일한 표현성을 위해 with 메서드를 만들어 둔 것인지, public 접근 제한자와 다른 어떤 목적을 위해 만들어진 것인지 좀 더 분석이 필요함.
 - https://laravel.com/api/5.8/Illuminate/View/View.html
 ```
@@ -456,6 +455,7 @@ Mail::send('emails.reminder', ['user' => $user], function ($m) use ($user) {
 ```
 
 ## 메일러를 선택해서 보내기
+- config\mail.php 경로의 파일을 보면 `'default' => env('MAIL_MAILER', 'smtp'),` 디폴트 메일러를 지정하는 부분이 있다. 코드에 메일러를 지정하지 않을 경우 디폴트 메일러를 사용하지만, 디폴트메일러가 아닌 다른 메일러를 사용하고 싶을 경우에는 다음과 같이 메일러를 지정할 수 있다.
 ```
 Mail::mailer('postmark')
         ->to($request->user())
