@@ -44,10 +44,29 @@ class PostController extends Controller
     }
 }
 ```
-- 컨트롤러는 하나의 클래스이다. 보통 클래스는 단일 책임의 원칙을 가져야 하므로 CURD 중 하나의 기능만을 담당하는 것이 맞지만, 컨트롤러는 데이터를 전달하는 통로의 역할을 하기 때문에 CURD 각각의 로직에 대한 서비스 로직에 대한 처리는 서비스 레이어에 맡기고 서비스레이어가 단일책임의 원칙을 사용하도록 한다.
+- 컨트롤러는 하나의 클래스이다. 보통 클래스는 단일 책임의 원칙을 가져야 하므로 CURD 중 하나의 기능만을 담당하는 것이 맞지만, 컨트롤러는 데이터를 전달하는 통로의 역할을 하기 때문에 CURD 각각의 로직에 대한 서비스 로직에 대한 처리는 서비스 레이어에 맡기고 서비스레이어의 클래스가 단일책임의 원칙을 사용하도록 한다.
 
 
+## Illuminate\Http\Request의 validate 사용하기
+- 유효성 검사 로직은 몇 가지로 제공된다. 그 중에서 리퀘스트의 정보를 담고 있는 Request 객체가 가지고 있는 유효성 검사 로직에 대한 설명이다.
+- 리퀘스트 객체가 가진 유효성 검사는 request 데이터로 받은 파라미터에 한하여 유효성 검사를 실시한다.
+```
+/**
+ * Store a new blog post.
+ *
+ * @param  Request  $request
+ * @return Response
+ */
+public function store(Request $request)
+{
+    $validatedData = $request->validate([
+        'title' => 'required|unique:posts|max:255',
+        'body' => 'required',
+    ]);
 
+    // The blog post is valid...
+}
+```
 
 
 ---
