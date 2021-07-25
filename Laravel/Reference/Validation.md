@@ -50,6 +50,7 @@ class PostController extends Controller
 ## Illuminate\Http\Request의 validate 사용하기
 - 유효성 검사 로직은 몇 가지로 제공된다. 그 중에서 리퀘스트의 정보를 담고 있는 Request 객체가 가지고 있는 유효성 검사 로직에 대한 설명이다.
 - 리퀘스트 객체가 가진 유효성 검사는 request 데이터로 받은 파라미터에 한하여 유효성 검사를 실시한다.
+- 앞선 PostController의 메서드 부분의 store 메서드의 부분이다.
 ```
 /**
  * Store a new blog post.
@@ -67,7 +68,24 @@ public function store(Request $request)
     // The blog post is valid...
 }
 ```
+- 유효성 검사를 통과하지 못하면 exception이 발생하며, 어떤 벨리데이션 설정을 위반했는지 예외를 통해 전달 한다.
+- 기본적으로 벨리데이션 검사 규칙 ` 'required|unique:posts|max:255`에 따라서 무엇을 위반했는지에 대한 메시지를 예외에 전달하고 있으며, 각 메시지는 커스텀 값을 정할 수도 있다.
 
+### 자동 리스폰스 생성
+- 별도의 예외 처리를 하지 않아도 벨리데이션을 통과할 때, 유효성 검사에 문제가 발생하면, 자동으로 벨리데이션을 통과하지 못했다는 리스폰스를 생성하는데 HTTP 요청의 경우 웹 페이지의 리다이렉트가 만들어지고,  AJAX 요청에는 JSON 리스폰스가 생성이 된다.
+- 벨리데이션을 통과하지 못했을 경우 생성되는 스테이터스 코드는 422이다.
+
+### 배열 유효성 검사
+- 구분자 | 를 사용하지 않고 배열로 검사 규칙 쓰기
+```
+$validatedData = $request->validate([
+    'title' => ['required', 'unique:posts', 'max:255'],
+    'body' => ['required'],
+]);
+```
+
+## Form Request 유효성 검사
+- 리퀘스트의 벨리데이션이 리퀘스트로 전달된 post의 body 파라메터에 대한 유효성 검사를 하는 반면, Form Request를 통한 유효성 검사는 전달된 대상에 대한 유효성 검사를 시도한다. 
 
 ---
 
