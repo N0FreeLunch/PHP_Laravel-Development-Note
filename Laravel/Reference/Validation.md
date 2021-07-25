@@ -1,7 +1,10 @@
 # Validation
 - 애플리케이션으로 유입되는 데이터의 유효성 검사를 하기 위한 도구
-
-- ValidatesRequests 트레이트-trait
+- 라라벨에서 벨리데이션은 크게 3가지 방식으로 사용할 수 있다.
+- 첫 번째 : Request 객체의 validate 메서드를 사용하는 방법
+- 두 번째 : Form request를 활용한 유효성 검사에 대한 로직을 적는 파일을 만들어 주는 방법
+- 세 번째 : validate 파사드를 통한 방법이다.
+- ValidatesRequests 트레이트 - trait ?
 
 ## 유효성 검사를 위한 라우터와 컨트롤러 예시
 ### 라우터
@@ -85,7 +88,84 @@ $validatedData = $request->validate([
 ```
 
 ## Form Request 유효성 검사
-- 리퀘스트의 벨리데이션이 리퀘스트로 전달된 post의 body 파라메터에 대한 유효성 검사를 하는 반면, Form Request를 통한 유효성 검사는 전달된 대상에 대한 유효성 검사를 시도한다. 
+
+## Validator 파사드
+- 리퀘스트의 벨리데이션이 리퀘스트로 전달된 post의 body 파라메터에 대한 유효성 검사를 하는 반면, Validator를 통한 유효성 검사는 전달된 대상에 대한 유효성 검사를 시도한다. 
+
+
+```
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
+class PostController extends Controller
+{
+    /**
+     * Store a new blog post.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|unique:posts|max:255',
+            'body' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect('post/create')
+                        ->withErrors($validator)
+                        ->withInput();
+        }
+
+        // Store the blog post...
+    }
+}
+```
+
+### 수동으로 유효성 검사 성공 실패 여부 확인하기
+```
+if ($validator->fails()) {
+    return redirect('post/create')
+                ->withErrors($validator)
+                ->withInput();
+}
+```
+- 벨리데이션 파사드를 사용할 때, 유효성 검사를 실패하면, fails() 메서드를 사용해서 벨리데이션 통과 혹은 실패를 확인할 수 있다.
+
+### 자동 리다이렉트
+```
+Validator::make($request->all(), [
+    'title' => 'required|unique:posts|max:255',
+    'body' => 'required',
+])->validate();
+```
+- 유효성 검사가 실패하면 자동으로 리다이렉트를 한다.
+- 자동 리다이렉트는 스테이터스 422, 벨리데이션 값을 포함한 view 리다이렉트 또는 ajax 요청인 경우 json이 반환 됨
+
+### 오류 메시지를 별도로 저장하기
+```
+Validator::make($request->all(), [
+    'title' => 'required|unique:posts|max:255',
+    'body' => 'required',
+])->validateWithBag('post');
+```
+
+
+## 사용자 지정 에러메세지
+```
+$messages = [
+    'required' => 'The :attribute field is required.',
+];
+
+$validator = Validator::make($input, $rules, $messages);
+```
+
 
 ---
 
