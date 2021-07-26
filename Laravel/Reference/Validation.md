@@ -128,6 +128,10 @@ class PostController extends Controller
 }
 ```
 
+### make 메서드
+- 라라벨 파사드는 make라는 메서드를 가지고 있다.
+- 첫번째 인자는 유효성 검사를 할 대상으로 배열이다.
+
 ### 수동으로 유효성 검사 성공 실패 여부 확인하기
 ```
 if ($validator->fails()) {
@@ -171,3 +175,6 @@ $validator = Validator::make($input, $rules, $messages);
 
 ## Reference
 https://laravel.kr/docs/8.x/validation
+
+
+described by N0FreeLunch
