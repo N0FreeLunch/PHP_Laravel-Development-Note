@@ -33,7 +33,7 @@
 ## 파사드 사용하기
 - 모든 파사드는 Illuminate\Support\Facades에 존재한다.
 - 파사드에서 제공하는 기능은 https://laravel.com/api/5.5/Illuminate/Support/Facades.html 을 통해 확인할 수 있다.
-example
+#### example
 ```
 use Illuminate\Support\Facades\Cache;
 
@@ -55,7 +55,28 @@ Route::get('/cache', function () {
     return Cache::get('key');
 });
 ```
+- 이 부분에 대한 태스트 코드를 작성한다고 생각해 보자.
+- 독립적으로 이 부분을 태스트 한다고 할 때, 저장한 캐시의 key값에서 'key'에 해당하는 캐시 값이 저장되어 있지 않다라는 것이 중요하다. 
+```
+use Illuminate\Support\Facades\Cache;
 
+/**
+ * A basic functional test example.
+ *
+ * @return void
+ */
+public function testBasicExample()
+{
+    Cache::shouldReceive('get')
+         ->with('key')
+         ->andReturn('value');
+
+    $this->visit('/cache')
+         ->see('value');
+}
+```
+- ` $this->visit('/cache')` /cache라는 PATH로 접근을 한다.
+- `->see('value')`메서드를 통해서 
 
 ---
 
