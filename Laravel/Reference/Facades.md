@@ -57,7 +57,6 @@ Route::get('/cache', function () {
     return Cache::get('key');
 });
 ```
-- 독립적으로 이 부분을 태스트 한다고 할 때의 경우를 생각 해 보자. 저장한 캐시의 key값에서 'key'에 해당하는 캐시 값이 저장되어 있지 않은 상태이지만 태스트는 캐시가 저장되어 있는 상태에서 해야 한다고 하자.
 ```
 use Illuminate\Support\Facades\Cache;
 
@@ -91,7 +90,6 @@ Cache::shouldReceive('get')
 ### 파사드 VS 헬퍼함수
 ```
 return View::make('profile');
-
 return view('profile');
 ```
 - 파사드를 사용한 호출과 헬퍼함수를 사용한 호출 방식은 동일하다.
@@ -124,8 +122,61 @@ public function testBasicExample()
 
 
 ## 파사드의 동작 원리
-- 라라벨에는 서비스 컨테이너라는 기능이 있다. 
-- `Illuminate\Support\Facades\Facade` 클래스의 상속을 받는다.
+- 라라벨에는 서비스 컨테이너라는 기능이 있다. 서비스 컨테이너는 의존성을 라라벨 프레임워크가 자동적으로 의존성을 주입하기 위한 도구이다.
+- 자동으로 의존성 주입이 되는 대상을 수동으로 불러다 쓰기 위한 도구이다.
+- 라라벨 파사드는 서비스 컨테이너에 있는 대상을 연결해 주는 역할을 한다.
+- 서비스 컨테이너에 등록할 수 있다면, 유저가 작성한 것이든 라라벨에서 제공하는 것이든 파사드로 연결해서 사용할 수 있다.
+
+### Facade class
+- 파사드는 `Illuminate\Support\Facades\Facade` 클래스의 상속을 받는다.
+- php의 '\_\_callStatic()'이라는 기능을 사용한다.
+
+#### php \_\_callStatic magic method
+https://www.php.net/manual/en/language.oop5.overloading.php#object.callstatic
+> \_\_callStatic() is triggered when invoking inaccessible methods in a static context.
+- 정적 컨텍스트 상황에서 callStatic은 액세스 할 수 없는 메서드를 호출할 때 발동된다.
+- 그러니까 접근 제한자에 의해 엑세스 할 수 없거나, 존재하지 않는 메서드를 호출하기 때문에 엑세스 할 수 없는 문제가 있다.
+```
+class MethodTest
+{
+    public static function __callStatic($name, $arguments)
+    {
+        // Note: value of $name is case sensitive.
+        echo "Calling static method '$name' "
+             . implode(', ', $arguments). "\n";
+    }
+}
+
+MethodTest::runTest('in static context');
+```
+> Calling static method 'runTest' in static context
+- 존재하지 않는 메서드를 호출했는데, 클래스에 존재하지 않는 가상의 메서드를 호출한다.
+
+```
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
+
+class UserController extends Controller
+{
+    /**
+     * Show the profile for the given user.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function showProfile($id)
+    {
+        $user = Cache::get('user:'.$id);
+
+        return view('profile', ['user' => $user]);
+    }
+}
+```
+-  Cache 클래스의 get static 메소드를 호출하는 방식으로 보인다.
 
 ---
 
