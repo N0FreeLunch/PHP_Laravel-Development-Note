@@ -135,7 +135,7 @@ public function testBasicExample()
 https://www.php.net/manual/en/language.oop5.overloading.php#object.callstatic
 > \_\_callStatic() is triggered when invoking inaccessible methods in a static context.
 - 정적 컨텍스트 상황에서 callStatic은 액세스 할 수 없는 메서드를 호출할 때 발동된다.
-- 그러니까 접근 제한자에 의해 엑세스 할 수 없거나, 존재하지 않는 메서드를 호출하기 때문에 엑세스 할 수 없는 문제가 있다.
+- 그러니까 접근 제한자에 의해 엑세스 할 수 없거나 존재하지 않는 메서드를 호출할 때 대신 가상의 메서드를 만들어 호출하는 역할을 한다.
 ```
 class MethodTest
 {
