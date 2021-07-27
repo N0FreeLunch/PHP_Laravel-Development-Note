@@ -45,6 +45,8 @@ Route::get('/cache', function () {
 ## 파사드 vs 의존성 주입
 ### 의존성 주입
 - 어떤 객체를 만들 때 이 객체가 외부의 객체를 불러다가 사용하는 경우, 생성자나 메서드의 인자를 통해서 객체를 집어넣는 경우, 객체 내에 외부 객체를 선언하는 것과는 달리 비슷한 기능을 갖는 다른 객체를 넣어서 움직이게 할 수도 있다.
+>  서비스 컨테이너에 의해서 의존성이 해결되는 클래스 객체의 프록시 메소드로 다이나믹 메소드를 사용하기 때문에, 실제 주입된 클래스 인스턴스를 테스트하는 것과 마찬가지로 파사드를 테스트할 수 있습니다. 
+- 이 말은 파사드의 경우에도 의존성 주입과 마찬가지로 교체라는 것을 할 수 있다는 의미이다. 교체를 할 수 있기 때문에 태스트가 가능한 것. (의미를 좀 더 구체적으로 추후 분석을 할 필요가 있다.)
 
 ### 파사드
 - 파사드는 정적 클래스를 사용하는 것이며, 의존성 주입을 할 때 사용하는 유사 의존성을 제공하는 목킹(mocking) 객체나 스터브(stub : 일부 기능만을 태스트하기 위해 간략히 만든 대상)를 사용할 수 없다.
@@ -55,8 +57,7 @@ Route::get('/cache', function () {
     return Cache::get('key');
 });
 ```
-- 이 부분에 대한 태스트 코드를 작성한다고 생각해 보자.
-- 독립적으로 이 부분을 태스트 한다고 할 때, 저장한 캐시의 key값에서 'key'에 해당하는 캐시 값이 저장되어 있지 않다라는 것이 중요하다. 
+- 독립적으로 이 부분을 태스트 한다고 할 때의 경우를 생각 해 보자. 저장한 캐시의 key값에서 'key'에 해당하는 캐시 값이 저장되어 있지 않은 상태이지만 태스트는 캐시가 저장되어 있는 상태에서 해야 한다고 하자.
 ```
 use Illuminate\Support\Facades\Cache;
 
@@ -75,8 +76,56 @@ public function testBasicExample()
          ->see('value');
 }
 ```
-- ` $this->visit('/cache')` /cache라는 PATH로 접근을 한다.
-- `->see('value')`메서드를 통해서 
+- ` $this->visit('/cache')` /cache라는 PATH로 접근을 한다. 앞서 정의된 라우터에 태스트 코드로 접근하고 있다.
+- 파사드에 get이라는 대상이 존재하지 않는다고 가정하자. 그래서 태스트용 파사드를 하나 만들 것이다.
+```
+Cache::shouldReceive('get')
+     ->with('key')
+     ->andReturn('value');
+```
+- Cache 파사드에 가상의 메서드를 만든다. `Cache::get('key')`로 호출 할 수 있도록 get이라는 메서드는 'key'라는 인자를 받았을 때 'value'라는 값을 리턴한다고 가상의 파사드를 만드는 것이다.
+- `$this->visit('/cache')`메서드를 통해서 `/cache` 라우터로 접근을 했을 때, `->see('value')`라는 코드는 라우터의 리턴값이 'value' 인지를 체크한다는 의미이다. 현재 라우트를 ` return Cache::get('key');`으로 정의를 했기 때문에 라우트를 실행한 결과도 캐시의 결과값으로 나와야 한다.
+- 위에 꺼는 코드를 보고 해석한 추측이므로 좀 더 정확하게 분석할 필요가 있다.
+
+
+### 파사드 VS 헬퍼함수
+```
+return View::make('profile');
+
+return view('profile');
+```
+- 파사드를 사용한 호출과 헬퍼함수를 사용한 호출 방식은 동일하다.
+- 헬퍼함수를 사용할 때도 파사드와 동일하게 태스트를 할 수 있다.
+```
+Route::get('/cache', function () {
+    return cache('key');
+});
+```
+```
+use Illuminate\Support\Facades\Cache;
+
+/**
+ * A basic functional test example.
+ *
+ * @return void
+ */
+public function testBasicExample()
+{
+    Cache::shouldReceive('get')
+         ->with('key')
+         ->andReturn('value');
+
+    $this->visit('/cache')
+         ->see('value');
+}
+```
+- Cache 파사드에 가상의 메서드를 만든다.
+- 라우터에서는 파사드를 쓰지 않고, 헬퍼함수를 사용한다.
+
+
+## 파사드의 동작 원리
+- 라라벨에는 서비스 컨테이너라는 기능이 있다. 
+- `Illuminate\Support\Facades\Facade` 클래스의 상속을 받는다.
 
 ---
 
