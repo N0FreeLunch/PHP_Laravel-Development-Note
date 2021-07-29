@@ -56,7 +56,7 @@ Route::get('user/{id}', 'UserController@show');
 ## 단일 메서드만 가진 컨트롤러
 - 보통 컨트롤러에는 여러 메서드가 들어간다.
 - 그런데 단일 메서드를 가진 컨트롤러도 존재한다.
-- 이 경우, 컨트롤러의 역할은 컨트롤러의 클래스 이름으로만 정하고 메서드의 동작은 정하지 않는 방식으로 만들 수 있따. 
+- 이 경우, 컨트롤러의 역할은 컨트롤러의 클래스 이름으로만 정하고 메서드의 동작은 정하지 않는 방식으로 만들 수 있다. 
 - 컨트롤러의 클래스에 \_\_invoke 메서드를 사용하여 라우터에서 컨트롤러를 호출할 때 메서드 없이 컨트롤러만 사용해도 자동으로 \_\_invoke 메서드가 호출되게 만드는 것이다.
 
 ```
@@ -81,9 +81,13 @@ class ShowProfile extends Controller
     }
 }
 ```
+```
+use App\Http\Controllers\ShowProfile;
+
+Route::get('user/{id}', ShowProfile::class);
+```
 
 - 컨트롤러의 비대함을 막기 위해서 가능하면 index, create, store, show, edit, update, destroy 위주로 사용하며 컨트롤러가 비대해 지지 않기 위해서 메서드의 양을 줄여야 한다.
-- 
 
 ---
 
