@@ -86,8 +86,14 @@ use App\Http\Controllers\ShowProfile;
 
 Route::get('user/{id}', ShowProfile::class);
 ```
+#### \_\_invoke()
+> The \_\_invoke() method is called when a script tries to call an object as a function.
+- php 스크립트가 오브젝트를 함수로 실행하도록 시도한다는 의미
+- \_\_invoke 라는 매직 메서드가 클래스 안에 있는 경우, php가 오브젝트를 호출할 때 함수로 호출하게 한다. 그러니까 클래스 외부에서는 이 객체를 오브젝트가 아닌 함수로 여긴다.
 
+####
 - 컨트롤러의 비대함을 막기 위해서 가능하면 index, create, store, show, edit, update, destroy 위주로 사용하며 컨트롤러가 비대해 지지 않기 위해서 메서드의 양을 줄여야 한다.
+- 
 
 ---
 
