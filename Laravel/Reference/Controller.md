@@ -90,10 +90,19 @@ Route::get('user/{id}', ShowProfile::class);
 > The \_\_invoke() method is called when a script tries to call an object as a function.
 - php 스크립트가 오브젝트를 함수로 실행하도록 시도한다는 의미
 - \_\_invoke 라는 매직 메서드가 클래스 안에 있는 경우, php가 오브젝트를 호출할 때 함수로 호출하게 한다. 그러니까 클래스 외부에서는 이 객체를 오브젝트가 아닌 함수로 여긴다.
+- 일반적으로 라우터는 컨트롤러의 메서드를 호출 다음과 같이 호출하는 방법을 사용한다. `Route::get('user/{id}', [UserController::class, 'show']);`
+- 라우터에서 컨트롤러를 연결하지 않을 때 다음과 같이 두 번째 인자에 배열이 아닌 함수를 사용한다.
+```
+Route::get('user/{id}', function ($id) {
+    return view('user.profile', ['user' => User::findOrFail($id)]);
+});
+```
+- 위의 경우와 마찬가지로 \_\_invoke()를 사용했을 때는 객체를 함수로 보고 호출한 것으로 볼 수 있는 것이다. `Route::get('user/{id}', ShowProfile::class);`
+
 
 ####
 - 컨트롤러의 비대함을 막기 위해서 가능하면 index, create, store, show, edit, update, destroy 위주로 사용하며 컨트롤러가 비대해 지지 않기 위해서 메서드의 양을 줄여야 한다.
-- 
+
 
 ---
 
