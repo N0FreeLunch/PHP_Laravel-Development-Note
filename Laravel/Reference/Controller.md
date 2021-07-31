@@ -108,9 +108,70 @@ php artisan make:controller ShowProfile --invokable
 ## 컨트롤러 미들웨어
 - 미들웨어는 라우트 그룹에 지정을 할 수 있으며, 라우터 각각에 지정을 할 수도 있다. 그리고 컨트롤러에도 지정을 할 수 있다.
 - 컨트롤러에 미들웨어를 지정하기 위해서는 Controller 클래스의 상속을 받는 클래스이어야 한다. Controller 클래스가 가지고 있는 미들웨어 메서드를 상속 받아서 사용을 한다.
+- 컨트롤러에 미들웨어를 지정하는 방법은 컨트롤러의 생성자에 미들웨어를 지정하는 방법이다. 
+
+
+### 컨트롤러 미들웨어를 생성자에 쓰는 이유
+- 이론적으로는 생성자 이외의 메서드에서 직접 호출해서 사용할 수도 있다.
+- 클래스는 단일 책임의 원칙을 가진다. 하지만, 하지만 컨트롤러의 하나의 기능의 그룹역할로 가능하면 하나의 비즈니스적 단위에 대해서 'index, create, store, show, edit, update, destroy' 이런 메서드들로 구성하는 것을 요구하고 있다. 하나의 비즈니스적 단위에 대해서 비슷한 역할을 하는 것이라면 컨트롤러를 나누는 것을 의미하며, 하나의 비즈니스적 단위에 대해서 다른 역할을 가지고 있는 것이라면 메서드로 나눠서 만드는 것을 요구한다.
+- 미들웨어는 중간에 필터를 하는 역할이며 필터를 추가한다는 것은 비즈니스 그룹 단위를 가진 컨트롤러에 달아주는 쪽으로 만든다는 의미를 가지고 있다.
+- 즉 미들웨어는 비즈니스 그룹 단위의 필터를 하기 위한 역할을 가지고 있는 것이라고 볼 수 있다. 그래서 한 단위의 비즈니스 로직 전체에 미들웨어 필터를 달아주기 위해 모든 메서드에 적용될 수 있게 생성자로 사용을 한다. 
+
+### 미들웨어를 지정하는 방법
+#### 라우터 하나에 지정하는 방법
+```
+Route::get('profile', [UserController::class, 'show'])->middleware('auth');
+```
+
+#### 라우터 그룹에 지정하는 방법
+```
+Route::middleware(['first', 'second'])->group(function () {
+    Route::get('/', function () {
+        // Uses first & second middleware...
+    });
+
+    Route::get('user/profile', function () {
+        // Uses first & second middleware...
+    });
+});
+```
+
+#### 컨트롤러에 미들웨어를 지정하는 방법
+```
+class UserController extends Controller
+{
+    /**
+     * Instantiate a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        $this->middleware('log')->only('index');
+
+        $this->middleware('subscribed')->except('store');
+    }
+}
+```
+
+#### `app\Http\Kernel.php`에 등록된 미들웨어를 사용하지 않고 미들웨어를 추가하는 동시에 미들웨어에 사용할 함수를 등록하기
+- `$next($request)`클로저를 포함한 익명 함수를 사용하는 방법을 쓴다.
+> 컨트롤러를 사용하면 Closure를 사용하여 미들웨어를 등록 할 수 있습니다.
+- Closure를 사용한다고 설명되어 있는데 익명함수가 더 적절하다. 하지만, 익명 함수의 리턴값으로 `$next($request)` 이 값을 반환 해야 하는데 이 부분이 있어야 미들웨어로 동작하기 때문에 Closure를 사용한다라고 설명을 한 것 같다.
+```
+$this->middleware(function ($request, $next) {
+    // ...
+    return $next($request);
+});
+```
+
 
 #### 메서드 종류
 - 컨트롤러의 비대함을 막기 위해서 가능하면 index, create, store, show, edit, update, destroy 위주로 사용하며 컨트롤러가 비대해 지지 않기 위해서 메서드의 양을 줄여야 한다.
+
+
 
 
 ---
