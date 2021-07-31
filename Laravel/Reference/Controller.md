@@ -54,8 +54,7 @@ Route::get('user/{id}', 'UserController@show');
 - 컨트롤러 클래스의 상속을 받지 않아도 컨트롤러가 동작할 수 있다.(? 이거 태스트가 필요한 듯)
 
 ## 단일 메서드만 가진 컨트롤러
-- 보통 컨트롤러에는 여러 메서드가 들어간다.
-- 그런데 단일 메서드를 가진 컨트롤러도 존재한다.
+- 보통 컨트롤러에는 여러 메서드가 들어간다. 그런데 단일 메서드를 가진 컨트롤러도 존재한다.
 - 이 경우, 컨트롤러의 역할은 컨트롤러의 클래스 이름으로만 정하고 메서드의 동작은 정하지 않는 방식으로 만들 수 있다. 
 - 컨트롤러의 클래스에 \_\_invoke 메서드를 사용하여 라우터에서 컨트롤러를 호출할 때 메서드 없이 컨트롤러만 사용해도 자동으로 \_\_invoke 메서드가 호출되게 만드는 것이다.
 
@@ -168,9 +167,29 @@ $this->middleware(function ($request, $next) {
 ```
 
 
-#### 메서드 종류
-- 컨트롤러의 비대함을 막기 위해서 가능하면 index, create, store, show, edit, update, destroy 위주로 사용하며 컨트롤러가 비대해 지지 않기 위해서 메서드의 양을 줄여야 한다.
+## 리소스 컨트롤러
+### CRUD
+- CURD란? 
+> 컴퓨터 소프트웨어가 가지는 기본적인 데이터 처리 기능인 Create(생성), Read(읽기), Update(갱신), Delete(삭제)를 묶어서 일컫는 말이다. - wikipedia -
 
+### 라라벨 CURD의 메서드 종류
+- CRUD 메서드는 여러가지 만들 수 있지만, 가장 기본적인 CURD 메서드를 묶어서 제공하는 기능도 존재한다. 컨트롤러의 가장 기본적인 CURD 메서드는 index, create, store, show, edit, update, destroy이다.
+
+#### 기본적인 CURD 메서드
+- Create : create, store
+- Update : edit, update
+- Read : index, show
+- Delete : destroy
+
+### 라라벨에서 기본적인 CURD를 제공하는 방식
+- 'index, create, store, show, edit, update, destroy'가 포함된 컨트롤러 생성
+```
+php artisan make:controller PhotoController --resource
+```
+
+
+### 기본적인 CURD가 존재하는 이유
+- 컨트롤러의 비대함을 막기 위해서 가능하면 index, create, store, show, edit, update, destroy 위주로 사용하며 컨트롤러가 비대해 지지 않기 위해서 메서드의 양을 줄여야 한다.
 
 
 
