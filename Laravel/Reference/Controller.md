@@ -158,7 +158,7 @@ class UserController extends Controller
 #### `app\Http\Kernel.php`에 등록된 미들웨어를 사용하지 않고 미들웨어를 추가하는 동시에 미들웨어에 사용할 함수를 등록하기
 - `$next($request)`클로저를 포함한 익명 함수를 사용하는 방법을 쓴다.
 > 컨트롤러를 사용하면 Closure를 사용하여 미들웨어를 등록 할 수 있습니다.
-- Closure를 사용한다고 설명되어 있는데 익명함수가 더 적절하다. 하지만, 익명 함수의 리턴값으로 `$next($request)` 이 값을 반환 해야 하는데 이 부분이 있어야 미들웨어로 동작하기 때문에 Closure를 사용한다라고 설명을 한 것 같다.
+- Closure를 사용한다고 설명되어 있는데 익명함수가 더 적절하다. 하지만, 익명 함수의 리턴값으로 `$next($request)` 이 값을 반환 해야 하는데 이 부분이 있어야 미들웨어로 동작하기 때문에 Closure를 사용한다라고 설명을 한 것 같다. 물론 php의 클로저 클래스를 반환하는 것이 아니라 일반 개념의 Closure를 반환한 것으로 볼 수 있는데, 
 ```
 $this->middleware(function ($request, $next) {
     // ...
@@ -170,7 +170,8 @@ $this->middleware(function ($request, $next) {
 ## 리소스 컨트롤러
 ### CRUD
 - CURD란? 
-> 컴퓨터 소프트웨어가 가지는 기본적인 데이터 처리 기능인 Create(생성), Read(읽기), Update(갱신), Delete(삭제)를 묶어서 일컫는 말이다. - wikipedia -
+> 컴퓨터 소프트웨어가 가지는 기본적인 데이터 처리 기능인 Create(생성), Read(읽기), Update(갱신), Delete(삭제)를 묶어서 일컫는 말이다. 
+> - wikipedia -
 
 ### 라라벨 CURD의 메서드 종류
 - CRUD 메서드는 여러가지 만들 수 있지만, 가장 기본적인 CURD 메서드를 묶어서 제공하는 기능도 존재한다. 컨트롤러의 가장 기본적인 CURD 메서드는 index, create, store, show, edit, update, destroy이다.
@@ -186,7 +187,21 @@ $this->middleware(function ($request, $next) {
 ```
 php artisan make:controller PhotoController --resource
 ```
-
+- `app/Http/Controllers/PhotoController.php` 경로에 컨트롤러 파일을 생성한다.
+- 이렇게 생성된 컨트롤러를 리소스 컨트롤러라고 한다.
+```
+Route::resource('photos', PhotoController::class);
+```
+- 첫 번째 인자는 메서드명을 문자열로 넣었다.
+- 리소스 컨트롤러는 라우터에 등록할 때 resource 정적 메서드를 사용해서 등록한다.
+-  resource 정적 메서드를 사용할 때, 컨트롤러의 메서드를 지정할 필요 없이 컨트롤러 클래스의 이름만 지정해 주면 된다. `PhotoController::class`
+- 기본적인 CURD 메서드 이외에 추가적인 메서드를 `Route::resource`에 추가 할 때 첫 번째 인자를 배열로 지정한다.
+```
+Route::resources([
+    'photos' => PhotoController::class,
+    'posts' => PostController::class,
+]);
+```
 
 ### 기본적인 CURD가 존재하는 이유
 - 컨트롤러의 비대함을 막기 위해서 가능하면 index, create, store, show, edit, update, destroy 위주로 사용하며 컨트롤러가 비대해 지지 않기 위해서 메서드의 양을 줄여야 한다.
