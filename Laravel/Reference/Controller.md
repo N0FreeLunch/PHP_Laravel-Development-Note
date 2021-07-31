@@ -33,7 +33,6 @@ class UserController extends Controller
 ```
 - 컨트롤러는 컨트롤러 클래스 `use App\Http\Controllers\Controller;`를 사용하여 `extends Controller`상속을 받는다. 
 - Controller 클래스의 상속을 받기 때문에 Controller 클래스가 가지고 있는 메소드를 사용할 수 있다.
-- 
 
 ## 라우트에 컨트롤러 연결하기
 `routes\web.php` 또는 `routes\api.php` 위치에서
@@ -156,9 +155,8 @@ class UserController extends Controller
 ```
 
 #### `app\Http\Kernel.php`에 등록된 미들웨어를 사용하지 않고 미들웨어를 추가하는 동시에 미들웨어에 사용할 함수를 등록하기
-- `$next($request)`클로저를 포함한 익명 함수를 사용하는 방법을 쓴다.
 > 컨트롤러를 사용하면 Closure를 사용하여 미들웨어를 등록 할 수 있습니다.
-- Closure를 사용한다고 설명되어 있는데 익명함수가 더 적절하다. 하지만, 익명 함수의 리턴값으로 `$next($request)` 이 값을 반환 해야 하는데 이 부분이 있어야 미들웨어로 동작하기 때문에 Closure를 사용한다라고 설명을 한 것 같다. 물론 php의 클로저 클래스를 반환하는 것이 아니라 일반 개념의 Closure를 반환한 것으로 볼 수 있는데, 
+- https://laravel.com/api/8.x/Illuminate/Routing/Controller.html#method_middleware 부분을 보면 미들웨어로 받는 $request는 php의 클로저 클래스를 타입으로 하는 closure 객체이다. 이는 $request를 클로저로 받아서 뭔가 처리를 한다는 의미를 가지고 있다.
 ```
 $this->middleware(function ($request, $next) {
     // ...
@@ -204,7 +202,9 @@ Route::resources([
 ```
 
 ### 기본적인 CURD가 존재하는 이유
-- 컨트롤러의 비대함을 막기 위해서 가능하면 index, create, store, show, edit, update, destroy 위주로 사용하며 컨트롤러가 비대해 지지 않기 위해서 메서드의 양을 줄여야 한다.
+- CURD는 어플리케이션을 동작 시키기 위한 기본적인 것이다. 하지만 어플리케이션의 구현에 따라서 항상 'index, create, store, show, edit, update, destroy'이런 메서드와 일치하는 명칭의 메소드를 만들지 못 할 수도 있다. 물론 그럴 때는 커스텀의 메서드 명칭을 추가해 주는 것이 맞다. 위의 메서드 명칭에 맞게 만들 수 있다면 좋겠지만, 컨트롤러를 하나의 비즈니스 로직 그룹으로 하고 하나의 컨트롤러에 너무 많은 기능을 넣지 말고 분산하라는 의미를 가진 것이다.
+- 예를 들어 A, B 테이블이 존재하고 A 테이블의 리스트를 뽑는 로직과 B 테이블의 리스트를 뽑는 로직을 하나의 컨트롤러에 담지 말라는 의미이다. 곧 하나의 컨트롤러 클래스에 index를 두 가지 만들지 말라는 의미이다. 역할을 나누는 것, 곧 책임의 분산이 필요하다.
+- 컨트롤러의 비대함을 막기 위해서 가능하면 'index, create, store, show, edit, update, destroy' 위주로 사용하며 컨트롤러가 비대해 지지 않기 위해서 메서드의 양을 줄여야 한다. 물론 기본적인 CURD 이외의 역할로 추가되는 메서드가 필요한 경우가 있다. 그런 경우에는 추가를 해 줘야 한다.
 
 
 
