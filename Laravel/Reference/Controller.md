@@ -161,7 +161,7 @@ class UserController extends Controller
 
 #### `app\Http\Kernel.php`에 등록된 미들웨어를 사용하지 않고 미들웨어를 추가하는 동시에 미들웨어에 사용할 함수를 등록하기
 > 컨트롤러를 사용하면 Closure를 사용하여 미들웨어를 등록 할 수 있습니다.
-- https://laravel.com/api/8.x/Illuminate/Routing/Controller.html#method_middleware 부분을 보면 미들웨어로 받는 $request는 php의 클로저 클래스를 타입으로 하는 closure 객체이다. 이는 $request를 클로저로 받아서 뭔가 처리를 한다는 의미를 가지고 있다.
+
 ```
 $this->middleware(function ($request, $next) {
     // ...
