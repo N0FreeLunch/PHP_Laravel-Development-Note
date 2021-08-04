@@ -184,10 +184,14 @@ $this->middleware(function ($request, $next) {
 - CRUD 메서드는 여러가지 만들 수 있지만, 가장 기본적인 CURD 메서드를 묶어서 제공하는 기능도 존재한다. 컨트롤러의 가장 기본적인 CURD 메서드는 index, create, store, show, edit, update, destroy이다.
 
 #### 기본적인 CURD 메서드
-- Create : create, store
-- Update : edit, update
-- Read : index, show
+- Create : store
+- Update : update
+- Read : index, show, create, edit
 - Delete : destroy
+
+####  create, edit가 Read에 속하는 이유
+- create는 데이터를 생성하는 엑션이 아닌, 데이터를 생성하기 위한 페이지를 제공한다는 의미를 가지고 있다.
+- edit는 데이터를 업데이트 하는 엑션이 아닌, 데이터를 변경하기 위한 페이지를 제공한다는 의미를 가지고 있다.
 
 ### 라라벨에서 기본적인 CURD를 제공하는 방식
 - 'index, create, store, show, edit, update, destroy'가 포함된 컨트롤러 생성
@@ -196,12 +200,17 @@ php artisan make:controller PhotoController --resource
 ```
 - `app/Http/Controllers/PhotoController.php` 경로에 컨트롤러 파일을 생성한다.
 - 이렇게 생성된 컨트롤러를 리소스 컨트롤러라고 한다.
+
+### 리소스 라우터 사용하기
+- `routes/web.php` 또는 `routes/api.php` 경로에서 다음을 정의 한다.
 ```
 Route::resource('photos', PhotoController::class);
 ```
 - 첫 번째 인자는 메서드명을 문자열로 넣었다.
 - 리소스 컨트롤러는 라우터에 등록할 때 resource 정적 메서드를 사용해서 등록한다.
 -  resource 정적 메서드를 사용할 때, 컨트롤러의 메서드를 지정할 필요 없이 컨트롤러 클래스의 이름만 지정해 주면 된다. `PhotoController::class`
+
+### 커스텀 엑션 추가
 - 기본적인 CURD 메서드 이외에 추가적인 메서드를 `Route::resource`에 추가 할 때 첫 번째 인자를 배열로 지정한다.
 ```
 Route::resources([
@@ -216,7 +225,7 @@ Route::resources([
 - 에를 들어 post 통신이며 URL 파라메터가 없는 경우는 저장하는 로직으로 주로 이용되기 때문에 store를 컨트롤러의 메소드로 사용한다. 하지만 저장하는 로직이 아니라면 굳이 store라는 컨트롤러 메소드 명을 쓸 필요 없으며, 로직에 맞는 메소드 명을 써야 한다. 
 - 위와 같이 컨트롤러에 메소드 명을 정해 놓은 것은, 컨트롤러를 하나의 비즈니스 로직 그룹으로 하고 하나의 컨트롤러에 너무 많은 기능을 넣지 말고 분산하라는 의미를 가진 의도를 가진 것이다. 컨트롤러의 비대함을 막는 의도를 가진 것이다.
 - 예를 들어 A, B 테이블이 존재하고 A 테이블의 리스트를 뽑는 로직과 B 테이블의 리스트를 뽑는 로직을 하나의 컨트롤러에 담지 말라는 의미이다. 곧 하나의 컨트롤러 클래스에 index를 두 가지 만들지 말라는 의미이다. 역할을 나누는 것, 곧 책임의 분산이 필요하다.
-- 컨트롤러는 책임의 분산에 따라 여러 컨트롤러를 만들며 메서드는 각 컨트롤러의 동작에 관한 부분이며, 하나의 개념적 단위에 대한 여러 동작으로 구성되어 있다.  그런데 여러 컨트롤러 메서드의 개념에 관해서는 공통으로 사용되는 개념이 많이 있다. 이 때 개념이란 index는 리스트를 보여달라는 것이며, create는 생성하라는 의미이며, store 저장한다는 개념을 의미한다. 이런 동작은 많은 컨트롤러가 가질 수 밖에 없는 것이고 이 메서드명을 일치시키는 것이 어플리케이션을 통제하기 유리하다.
+- 컨트롤러는 책임의 분산에 따라 여러 컨트롤러를 만들며 메서드는 각 컨트롤러의 동작에 관한 부분이며, 하나의 개념적 단위에 대한 여러 동작으로 구성되어 있다.  그런데 여러 컨트롤러 메서드의 개념에 관해서는 공통으로 사용되는 개념이 많이 있다. 이 때 개념이란 index는 리스트를 보여달라는 것이며, update는  의미이며, store 저장한다는 개념을 의미한다. 이런 동작은 많은 컨트롤러가 가질 수 밖에 없는 것이고 이 메서드명을 일치시키는 것이 어플리케이션을 통제하기 유리하다.
 - 라라벨에서 컨트롤러의 기본 CURD 구현 메서드 'index, create, store, show, edit, update, destroy'가 존재하는 것은 메서드명을 일치시키는 것이 좋다는 의도를 담고 있다. 꼭 'index, create, store, show, edit, update, destroy' 명의 메서드가 아닌 메서드라도 여러 컨트롤러에 공통적으로 사용하는 개념의 메서드라면 메서드 명칭을 일치 시켜주자는 의도를 담은 부분이다.
 
 ### 리소스풀 컨트롤러에 의해서 구성된 액션
@@ -235,6 +244,50 @@ Route::resources([
 - 메소드 : 클래스의 동작(action)을 정의 하는 것이다. 클래스는 하나의 대상이며, 멤버라는 속성을 가지고 있다. 그리고 속성은 메서드라는 엑션에 의해서 변화되는 대상이다. 하지만 컨트롤러의 클래스는 단일 책임을 가진 대상이 아니기 때문에 메서드 엑션에 의해 속성이 변하는 방식으로 보통 만들지 않는다.
 - 메서드는 객체의 속성을 변경하기 위한 방식으로 말을 하기 때문에 형태적으로는 메서드이지만 컨트롤러의 메서드를 메서드 보다는 엑션으로 부르는 것 같다.  
 - Verb와 URI 구성 방식에 따라 엑션이 결정되고 있는 것을 알 수 있다. 이런 패턴으로 엑션을 구성 해 주면 된다.
+
+
+### Resource 라우트의 일부만 지정하기
+- resource 라우트를 선언할 때, 사용할 엑션을 지정할 수도 있으며 사용하지 않을 엑션을 배제할 수도 있다.
+- 컨트롤러의 커스텀 메서드는 resource 라우트로 only, except 메소드를 사용할 수 없다.
+- 지정/배제가 가능한 것은 'index, create, store, show, edit, update, destroy'뿐이다.
+
+#### 사용할 엑션만 지정
+```
+Route::resource('photos', PhotoController::class)->only([
+    'index', 'show'
+]);
+```
+
+#### 사용하지 않을 엑션을 배제
+```
+Route::resource('photos', PhotoController::class)->except([
+    'create', 'store', 'update', 'destroy'
+]);
+```
+
+## API 리소스 라우트
+- 앞서의 일반 리소스 라우트의 경우 'index, create, store, show, edit, update, destroy'로 엑션이 구성되어 있었다. 하지만 API 리소스 라우트의 경우에는 create, edit 같은 엑션이 필요가 없다.
+- create는 store를 하기 위한 페이지를 제공하는 엑션이며, edit는 update를 하기 위한 화면을 제공하는 역할을 한다. API 통신을 사용할 때는 페이지를 제공하지 않고 데이터만 제공을 한다. 데이터를 제공할 때 API 통신은 Index와 show로 데이터를 제공 받을 수 있다. create, edit은 이를 작성할 페이지를 프론트에 전달하고 API 통신은 페이지를 제공하지 않기 때문에 create, edit 엑션을 기본적으로 제공하지 않는다.
+- API 리소스 라우터는 'index, store, show, update, destroy'만을 제공한다.
+
+### API 리소스 라우터 사용하기
+`routes/web.php` 또는 `routes/api.php` 경로에서 다음을 정의 한다.
+```
+Route::apiResource('photos', PhotoController::class);
+```
+
+### API 리소스 라우터에 커스텀 엑션 지정하기
+```
+Route::apiResources([
+    'photos' => PhotoController::class,
+    'posts' => PostController::class,
+]);
+```
+
+### 컨트롤러에 API 리소스 엑션을 포함하여 생성하기
+```
+php artisan make:controller API/PhotoController --api
+```
 
 
 ---
