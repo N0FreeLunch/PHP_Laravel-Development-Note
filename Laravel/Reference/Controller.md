@@ -290,7 +290,7 @@ php artisan make:controller API/PhotoController --api
 ```
 
 ## 라우트 PATH
-
+- 중첩된 라우터 등등에 관해서는 나중에 
 
 ## 의존성 주입 & 컨트롤러
 - 컨트롤러에서는 생성자 주입을 하는 코드를 직접 사용하지 않는다.
