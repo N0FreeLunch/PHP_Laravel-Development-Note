@@ -296,7 +296,95 @@ php artisan make:controller API/PhotoController --api
 - 컨트롤러에서는 생성자 주입을 하는 코드를 직접 사용하지 않는다.
 - 라라벨의 IOC에 의해 자동으로 라우터에 의해 컨트롤러가 실행이 될 때, 자동으로 의존성을 주입하여 라우터의 엑션을 실행한다.
 - 이 때 라라벨의 IOC에 의한 자동 의존성 주입을 위해서 생성자나 메서드에 타입힌트를 사용하여 주입할 클래스를 지정 해 줘야 한다. 
-- 컨트롤러의 생성자의 주입은 라라벨의 서비스컨테이너에 기본적으로 정의되어 있는 
+- 라라벨에서 사용되는 객체에 의존성 주입을 할 때 IOC 방식의 동작으로 자동으로 의존성 주입을 하는 코드를 만들 수 있다. 직접 `new SampleClass(InjectedObject)`를 사용하지도 않고 서도 의존성 주입이 되게 하기 위해 라라벨에서는 서비스 컨테이너를 통해 의존성을 자동 주입할 수 있다. 
+- 일반적으로 의존성을 주입하기 위해서는 `app\Providers` 폴더의 서비스 프로바이더에 자동 주입을 하기 위한 설정을 해 줘야 한다. 컨트롤러에 대한 IOC에 의한 의존성 주입은 이 부분에 저의되어 있지는 않은 것으로 보이며, 라라벨 프로젝트에서 제공하는 것으로 보인다. (이 부분에 대해서는 더 정확하게 조사 후 추가)
+- 라라벨 프레임워크는 컨트롤러에 자동으로 의존성 주입을 한다. 컨트롤러가 `new SampleConatoller(InjectedObject)` 이런 코드 없이 의존성이 되는 이유이다. 이 코드에서 컨트롤러에 InjectedObject을 주입해야 하는데, 직접적으로 주입하는 코드를 사용하지 않을 경우 InjectedObject 오브젝트를 넣어주지 않는데 이를 자동으로 넣기 위해서 컨트롤러의 생성자나 메소드에 주입할 오브젝트의 클래스를 타입힌트로 하는 매개 변수를 적는다.
+
+```
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Repositories\UserRepository;
+
+class UserController extends Controller
+{
+    /**
+     * The user repository instance.
+     */
+    protected $users;
+
+    /**
+     * Create a new controller instance.
+     *
+     * @param  UserRepository  $users
+     * @return void
+     */
+    public function __construct(UserRepository $users)
+    {
+        $this->users = $users;
+    }
+}
+```
+- 생성자의 매개변수로 UserRepository 클래스를 타입힌트로 하는 변수 $users를 만들어 줬다.
+- 런타임에 IOC에 의해 $users에는 UserRepository클래스로 만들어진 오브젝트가 들어가게 된다.
+> 라라벨 contract의 형태도 타입 힌트로 지정할 수 있습니다. 컨테이너가 의존성 해결을 할 수 있다면 타입 힌트에 지정할 수는 있습니다.
+- 위 내용에 대해서 내용을 좀 더 추가하자.
+
+### 컨트롤러 메서드에 의존성 주입
+```
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class UserController extends Controller
+{
+    /**
+     * Store a new user.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(Request $request)
+    {
+        $name = $request->name;
+
+        //
+    }
+}
+```
+- 컨트롤러에서 리퀘스트에 대한 정보를 `Illuminate\Http\Request` 객체를 통해서 사용한다. 생성자 주입과 마찬가지로 메서드의 생성자 주입도 클래스를 타입힌트로 한 방식으로 사용할 수 있다. 
+- 인스턴스(객체)를 주입하는 방식 뿐만 아니라, 클래스가 아닌 다른 매개변수를 사용하면 라우트 메서드를 통해서 인자를 라우터 파라메터 값을 받을 수 있다.
+
+```
+Route::put('user/{id}', [UserController::class, 'update']);
+```
+```
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class UserController extends Controller
+{
+    /**
+     * Update the given user.
+     *
+     * @param  Request  $request
+     * @param  string  $id
+     * @return Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+}
+```
+- 라우터 파라메터인 {id}의 id와 같은 명치의 파라메터를 컨트롤러의 메서드에 넣어 줘야 한다.
+
 
 ## 라우트 캐시
 - 라라벨의 라우트를 캐싱할 수 있다.
@@ -305,7 +393,7 @@ php artisan make:controller API/PhotoController --api
 - 그래서 캐싱을 할 때, 리퀘스트에 따라 결과 값이 달라지는 경우에는 캐싱을 사용하면 안 된다.
 > 애플리케이션이 컨트롤러 기반의 라우트만을 사용하고 있다면 라라벨의 라우트를 캐시하는 장점을 사용해야 합니다.
 - 이렇게 나와 있는데, 라우터가 컨트롤러와 연결하는 역할만 하고 있다면 라우터의 상태는 연결하는 동일한 로직을 가지고 있기 때문에 캐싱을 해도 문제가 없다. 그래서 캐싱을 해서 속도를 올리라는 의미이다.
-- 이론적으로 볼 때는 라우터가 컨트롤러와 연결하는 역할 뿐만 아니라 리퀘스트에 따른 결과 변화 샅애변화가 없는 로직이라면 라우터에 로직을 넣어서 캐싱을 할 수도 있는 것이다.
+- 이론적으로 볼 때는 라우터가 컨트롤러와 연결하는 역할 뿐만 아니라 리퀘스트에 따른 결과 변화 상태변화가 없는 로직이라면 라우터에 로직을 넣어서 캐싱을 할 수도 있는 것이다.
 
 #### 라우터 캐시를 생성하는 명령어
 ```
