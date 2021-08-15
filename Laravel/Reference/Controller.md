@@ -386,6 +386,29 @@ class UserController extends Controller
 ```
 - 라우터 파라메터인 {id}의 id와 같은 명치의 파라메터를 컨트롤러의 메서드에 넣어 줘야 한다.
 
+## 컨트롤러의 인풋과 아웃풋
+- 컨트롤러의 엑션에 달린 주석을 모아보면 다음과 같다.
+```
+* @param  int  $id
+* @return View
+```
+```
+* @param  Request  $request
+* @return Response
+```
+```
+ * @param  Request  $request
+ * @param  string  $id
+ * @return Response
+```
+### 인풋
+- 라우터의 URL param을 받는 방식을 사용한다.
+- 리퀘스트에 관한 모든 정보는 Request 객체로 확인할 수 있다.
+
+### 아웃풋
+- `resources/views` 폴더의 php, blade, html 등의 뷰 파일을 사용하는 경우는 view 헬퍼 함수를 사용해서 반환을 하는 방식을 사용한다.
+- Ajax 통신을 사용하는 경우는 response 헬퍼 함수를 사용해서 반환하는 방식으로 사용한다.
+
 
 ## 라우트 캐시
 - 라라벨의 라우트를 캐싱할 수 있다.
