@@ -140,6 +140,8 @@ class Flight extends Model
 ```
 
 ### timestamp
+
+#### 타임스템프의 컬럼의 존재유무
 - Eloquent는 테이블에 created_at과 updated_at이 존재한다고 가정한다. 이 컬럼은 자동 매핑을 하는데 자동 매핑하지 않게 하기 위해서는 `$timestamps` 속성을 false로 지정한다.
 ```
 <?php
@@ -166,6 +168,7 @@ class Flight extends Model
 
 - 위 의미를 좀 더 구체적으로 파악할 필요가 있음
 
+#### 타임스템프의 표시 형식
 ```
 <?php
 
@@ -205,6 +208,52 @@ class Flight extends Model
     const UPDATED_AT = 'last_update';
 }
 ```
+
+
+
+### 데이터베이스 커넥션
+- 라라벨에는 하나의 데이터베이스 뿐만 아니라 여러 데이터베이스를 연결할 수 있다.
+- 엘로퀀트 모델은 라라벨에 지정되어 있는 기본 데이터베이스를 연결하며, 추가적인 데이터베이스를 연결할 경우에는 라라벨에 설정되어 있는 다른 데이터베이스 지정명을 적어서 엘로퀀트 모델과 연결할 수 있다.
+```
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Flight extends Model
+{
+    /**
+     * The connection name for the model.
+     *
+     * @var string
+     */
+    protected $connection = 'connection-name';
+}
+```
+
+### 기본 속성 정의
+- 좀 더 구체적인 정보를 서술할 필요가 있음
+```
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Flight extends Model
+{
+    /**
+     * The model's default values for attributes.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'delayed' => false,
+    ];
+}
+```
+
 
 ---
 
