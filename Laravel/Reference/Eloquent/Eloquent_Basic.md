@@ -362,7 +362,9 @@ foreach ($users as $user) {
 #### chunk의 메모리 사용
 - 쿼리로 일정량의 row를 호출한 후 일정량의 row에 대해서만 작업한다. cursor가 php 프로세스의 디비 버퍼에 모든 row를 다 받은 데이터를 담아 두는 것과는 달리 일정량의 row만 받기 때문에 버퍼 메모리를 적게 차지한다. 일정량의 데이터를 처리하고 다음 데이터를 받기 위해서 버퍼를 비워야 하기 때문에 php 변수에 row를 저장해야 한다. 버퍼에서 php 변수로 데이터를 옮기면 버퍼는 비워지고 php 변수의 메모리를 차지한다.
 
+#### 비교
 - 100,000 records의 경우 스텍오버 플로우에 나온 데이터
+
 |              | Time(sec)  | Memory(MB) |
 |--------------|------------|------------|
 | get()        |        0.8 |     132    |
@@ -376,6 +378,18 @@ foreach ($users as $user) {
 
 
 ## 엘로퀀트로 서브쿼리 사용하기
+```
+use App\Models\Destination;
+use App\Models\Flight;
+
+return Destination::addSelect(['last_flight' => Flight::select('name')
+    ->whereColumn('destination_id', 'destinations.id')
+    ->orderBy('arrived_at', 'desc')
+    ->limit(1)
+])->get();
+```
+- 위 예시를 서비쿼리 시나리오를 통해서 이해해 보자.
+- 
 
 
 
