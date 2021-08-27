@@ -388,9 +388,11 @@ return Destination::addSelect(['last_flight' => Flight::select('name')
     ->limit(1)
 ])->get();
 ```
-- 위 예시를 서비쿼리 시나리오를 통해서 이해해 보자.
-- 
-
+- 위 예시를 서브쿼리 시나리오를 통해서 이해해 보자.
+- 'last_flight : 마지막 항공편, destination_id : 목적지 아이디, arrived_at : 도착시간' 이라고 하자.
+- Destination 모델은 목적지에 대한 테이블이다. 이 테이블에는 목적지 id와 목적지 이름이 존재할 것이다. 그리고 위의 쿼리에서 보듯 목적지에 도착한 항공편에 관한 기록을 남기고 있다.
+- Flight는 항공편에 관한 것으로 항공편 id, 항공편 이름(name), 항공편의 출발시간, 항공편의 도착시간(arrived_at), 항공편의 출발지, 항공편의 도착지(destination_id)에 대한 값이 존재할 것이다.
+- 위의 쿼리를 해석하면 항공편(Flight) 테이블에는 수많은 항공편에 대한 기록이 존재할 것이다. 그 중에서 특정 목적지에 가는 항공편만 뽑아서 (목적지의 id 곧 destination_id가 마지막으로 목적지에 도착한 항공편을 선택하고 그 항공편의 이름을 가져와서 Destination의 last_flight 필드와 비교를 한다.) Destination 컬럼에는 목적지의 id, name과 함께 많은 항공편 종류가 같이 기록되어 있을 것이다.
 
 
 ---
