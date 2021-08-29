@@ -37,7 +37,7 @@ $users = App\Models\User::all();
 $names = $users->reject(function ($user) {
     return $user->active === false;
 })
-->map(function ($user) {
+-> map(function ($user) {
     return $user->name;
 });
 ```
@@ -45,9 +45,8 @@ $names = $users->reject(function ($user) {
 ## 엘로퀀트 컬렉션 메소드
 - 엘로퀀트 컬렉션은 기본 컬렉션을 상속 받아서 기본 컬렉션의 모든 메소드를 활용할 수 있게 구성되어 있다.
 - 기본 컬렉션의 메소드를 사용할 경우 기본 컬렉션 타입의 객체가 반환되며, 엘로퀀트 컬렉션의 메소드를 사용할 경우 엘로퀀트 컬렉션 타입의 객체가 반환된다.
-- 엘로퀀트 컬렉션의 타입만 사용하면 될 텐데 왜 기본 타입으로 반환하느냐는 컬렉션을 사용하는 다른 부분들과 호환되기 위해서가 아닐까 생각한다. (이 부분에 대해서는 검토가 필요)
-- 다음 설명은 기본 컬렉션이 아닌 엘로퀀트 컬렉션에서만 사용하는 메소드이다.
-
+- 엘로퀀트 컬렉션의 타입만 사용하면 될 텐데 왜 기본 타입으로 반환하느냐는 컬렉션을 사용하는 다른 부분들과 호환되기 위해서가 아닐까 생각한다. (?)
+- 다음 설명은 기본 컬렉션이 아닌 엘로퀀트 컬렉션에서만 사용하거나 엘로퀀트 컬렉션에 의해서 기본 컬렉션과 다른 방식으로 사용할 수 있는 방식이다.
 
 ### contains 메소드
 - syntax : `contains($key, $operator = null, $value = null)`
@@ -55,8 +54,8 @@ $names = $users->reject(function ($user) {
 ```
 $users->contains(1);
 ```
-- 기본 contains 메소드는 연관 배열의 value 값이 존재하는지 확인한다. 연관 배열의 value 값에 1이란 값이 존재하는지 확인한다.
-- 엘로퀀트 컬렉션의 경우 컬렉션 내부의 리스트의 하나의 엘리먼트가 연관 배열의 key, value 형식이 아니라, 하나의 레코드 정보를 담고 있는 stdClass 타입의 객체이다. 이런 경우 엘로퀀트 컬렉션의 메소드를 이용해서 stdClass 타입 객체의 primary-key의 값을 매칭한다. primary-key는 엘로퀀트 모델에 설정되어 있는 값이다.
+- 기본 contains 메소드는 연관 배열의 key, value 엘리먼트에서 value 값이 존재하는지 확인한다. 연관 배열의 value 값에 1이란 값이 존재하는지 확인한다.
+- 엘로퀀트 컬렉션의 경우 컬렉션 내부의 리스트의 하나의 엘리먼트가 연관 배열의 key, value 형식이 아니라, 하나의 레코드 정보를 담고 있는 stdClass 타입의 객체이다. 이런 경우 엘로퀀트 컬렉션의 메소드를 이용해서 stdClass 타입 객체의 primary-key에 해당하는 멤버 값을 매칭한다. primary-key는 엘로퀀트 모델에 설정되어 있는 값이다.
 
 ```
 $users->contains(User::find(1));
@@ -64,6 +63,27 @@ $users->contains(User::find(1));
 - id가 1인 레코드에 해당하는 모델 인스턴스 : `User::find(1)`
 - id가 1인 레코드에 해당하는 모델 인스턴스가 $users라는 `App\Models\User::all()`등의 all()이나 get()으로 반환된 컬렉현 안에 포함되어 있는지 확인하는 메소드이다.
 - 여러 레코드에서 특정 레코드가 포함되어 있는지 확인하기 위한 것이다. 
+
+
+### diff($items)
+```
+use App\User;
+
+$users = $users->diff(User::whereIn('id', [1, 2, 3])->get());
+```
+
+
+### toQuery()
+- 엘로퀀트는 기본적으로 기본키를 선택하는 방식으로 레코드를 뽑아낸다.
+- 엘로퀀트에 조건이 걸려 있다면 기본적으로 기본키를 whereIn으로 뽑는 쿼리빌더를 반환한다.
+- 기본 쿼리 빌더 인스턴스(Illuminate\Database\Query\Builder)가 아닌 엘로퀀트 쿼리빌더 인스턴스(Illuminate\Database\Eloquent\Builder)를 반환한다.
+```
+$users = App\Models\User::where('status', 'VIP')->get();
+
+$users->toQuery()->update([
+    'status' => 'Administrator',
+]);
+```
 
 ---
 
