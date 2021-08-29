@@ -89,7 +89,7 @@ class Flight extends Model
 - 수동으로 프라이머리 키를 매핑할 때는 `$primaryKey = 'flight_id'`을 세팅한다.
 
 ```
-?php
+<?php
 
 namespace App;
 
