@@ -62,7 +62,49 @@ $phone = User::find(1)->phone;
 - 기본키가 아닌 다른 키를 지정하고 싶다면 `return $this->hasOne('App\Models\Phone', 'foreign_key', 'local_key');` hasOne 메소드의 세번째 인자에 지정할 컬럼 여기서는 'local_key'를 넣는다.
 
 ## 1:1 역관계 정의하기
+- User 모델에서 Phone 모델로 접근할 때는 기본적으로 user 테이블의 기본키에 phone의 user_id 컬럼을 대응하였다. 
+- 역관계에서는 phone 테이블의 user_id 컬럼이 지정한 역관계 모델의 테이블인 user 테이블의 기본키에 대응하는 관계를 설정한다.
+```
+<?php
 
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Phone extends Model
+{
+    /**
+     * Get the user that owns the phone.
+     */
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User');
+    }
+}
+```
+- Phone 모델에 user 모델을 접근하기 위한 user 메소드를 만들어 주고 belongsTo 메소드를 리턴한다. belongsTo 메소드의 인자로는 User 모델을 지정한다.
+
+```
+/**
+ * Get the user that owns the phone.
+ */
+public function user()
+{
+    return $this->belongsTo('App\Models\User', 'foreign_key');
+}
+```
+- Phone 모델에서 User 모델을 belongsTo로 지정했을 때, Phone 모델의 컬럼인 외래키 명칭이 user_id가 아닌 경우, 두번째 인자로 외래키를 지정할 수 있다.
+
+```
+/**
+ * Get the user that owns the phone.
+ */
+public function user()
+{
+    return $this->belongsTo('App\Models\User', 'foreign_key', 'other_key');
+}
+```
+- Phone 모델에서 User 모델을 belongsTo로 지정했을 때, User의 기본키가 id가 아닌 경우 세번째 인자로 기본키를 지정할 수 있다. 'id' 대신 'other_key'를 사용한다.
 
 ## 1:N 관계 정의하기
 - 참조 되는 테이블(reference)의 기본키와 참조하는 테이블의 외래키가 서로 매칭되는 관계
