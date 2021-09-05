@@ -167,6 +167,7 @@ $comment = App\Models\Post::find(1)->comments()->where('title', 'foo')->first();
 
 
 ## 1:N 역관계 정의하기
+- Post 모델과 Comment 모델은 1:N 관계이다. Post 모델에서 Comment 모델의 관계는 1:N 관계라고 말하지만, Comment 모델에서 Post 모델으로의 관계는 N:1이라고 부르기 보다는 1:N 관계의 역관계라고 부른다.
 - 한 테이블의 N개의 레코드에 대해 다른 테이블의 하나의 레코드만 매칭되는 관계를 사용할 때 사용한다. 역관계의 경우 참조하는 모델에서 참조되는 모델로 매칭을 할 때 참조되는 모델의 레코드는 하나만 매칭되기 때문에 1:1의 역관계이든 1:N의 역관계이든 동일 메소드`belongsTo`를 사용하도록 만들어져 있다.
 ```
 <?php
@@ -188,6 +189,44 @@ class Comment extends Model
 ```
 - 댓글(comment) 데이터에 대한 모델 Comment가 키가 참조되는 모델 post에 '속해있다'라는 의미로 belongsTo('App\Models\Post')를 사용한다.
 
+```
+$comment = App\Models\Comment::find(1);
+
+echo $comment->post->title;
+```
+- `App\Models\Comment`라는 엘로퀀트 모델에서 기본키가 1인 대상을 뽑는다.
+- 기본키가 1인 대상이 가진 외래키에 매칭되는 기본키를 가진 대상을 post 모델을 통해서 찾는다. N:1 관계이기 때문에 결과는 하나이므로 바로 컬럼을 찾아 데이터를 가져온다.
+ 
+ 
+### 역관계의 커스텀 참조키
+
+```
+/**
+ * Get the post that owns the comment.
+ */
+public function post()
+{
+    return $this->belongsTo('App\Models\Post', 'foreign_key');
+}
+```
+- 기본적으로 역관계의 참조키는 Comment 모델의 컬럼이며 이 컬럼의 명칭은 Post 모델의 카멜케이스_id 으로 되어 있다. 이 참조키는 Post 모델의 기본키 매칭된다고 가정한다.
+- 'Post 모델의 카멜케이스_id'가 아닌 'foreign_key'를 참조키로 하고자 할 경우 belongsTo 메소드의 두번째 인자로 커스텀 참조키를 지정할 수 있다.
+
+### 역관계의 커스텀 기본키
+```
+/**
+ * Get the post that owns the comment.
+ */
+public function post()
+{
+    return $this->belongsTo('App\Models\Post', 'foreign_key', 'other_key');
+}
+```
+- Post 모델의 기본키의 컬럼명이 id가 아닌 경우 belongsTo의 세번째 인자로 다른 컬럼명을 지정할 수 있다.
+
+
+## 다대다 관계 정의하기
+- 
 
 ---
 
