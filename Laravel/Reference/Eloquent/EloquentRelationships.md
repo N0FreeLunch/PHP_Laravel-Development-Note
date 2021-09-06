@@ -226,6 +226,43 @@ public function post()
 
 
 ## 다대다 관계 정의하기
+- 테이블 구조
+```
+users
+    id - integer
+    name - string
+
+roles
+    id - integer
+    name - string
+
+role_user
+    user_id - integer
+    role_id - integer
+```
+- users 테이블과 role_user 테이블이 일대다 관계이고 roles 테이블과 role_user 테이블이 일대다 관계일 때 다대다 관계라고 한다. 
+- 두 테이블의 다대다 관계에서 중간에 끼여 있는 테이블을 브리지라고 하자 (이건 여기서 설명하기 위해 도입한 개념 일반적으로 통용되는 개념은 아니다.)
+
+```
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class User extends Model
+{
+    /**
+     * The roles that belong to the user.
+     */
+    public function roles()
+    {
+        return $this->belongsToMany('App\Models\Role');
+    }
+}
+```
+- 브리지 테이블을 제외하고 생각해 보자. 그럼 user 테이블과 role 테이블의 관계는 다대다 관계이다.
+- User 모델과 Role 모델은 서로에 대해 속해(belongsTo)있거나 서로에 대해 가지고(hasOne) 있다.
 - 
 
 ---
