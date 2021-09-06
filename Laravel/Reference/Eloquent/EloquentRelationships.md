@@ -242,6 +242,9 @@ role_user
 ```
 - users 테이블과 role_user 테이블이 일대다 관계이고 roles 테이블과 role_user 테이블이 일대다 관계일 때 다대다 관계라고 한다. 
 - 두 테이블의 다대다 관계에서 중간에 끼여 있는 테이블을 브리지라고 하자 (이건 여기서 설명하기 위해 도입한 개념 일반적으로 통용되는 개념은 아니다.)
+- 브리지 테이블을 제외하고 생각해 보자. 그럼 user 테이블과 role 테이블의 관계는 다대다 관계이다.
+- User 모델과 Role 모델은 서로에 대해 속해(belongsTo)있거나 서로에 대해 가지고(hasOne) 있다.
+
 
 ```
 <?php
@@ -261,9 +264,26 @@ class User extends Model
     }
 }
 ```
-- 브리지 테이블을 제외하고 생각해 보자. 그럼 user 테이블과 role 테이블의 관계는 다대다 관계이다.
-- User 모델과 Role 모델은 서로에 대해 속해(belongsTo)있거나 서로에 대해 가지고(hasOne) 있다.
+- 위의 접근은 user 테이블에서 roles 테이블로의 접근이다.
+- 엘로퀀트 모델에서 다대다관계를 생각할 때는 브리지 테이블을 따로 적지 않고 있다. 엘로퀀트가 브리지 테이블을 'A테이블_B테이블'로 형태로 정하고 있다. A테이블과 B테이블을 알파벳 순으로 나열하고 언더바로 연결한 이름을 브리지테이블로 정하고 있는 것이다. 만일 브리지 테이블의 이름이 엘로퀀트에서 가정하고 있는 이름과 다르다면 커스텀으로 지정해 줘야 한다. 네이밍 룰이 다른 테이블은 커스텀 유저 테이블 belongsToMany의 두번째 인자로 지정을 한다.
+
+```
+return $this->belongsToMany('App\Models\Role', 'role_user');
+```
+
+```
+$user = App\Models\User::find(1);
+
+foreach ($user->roles as $role) {
+    //
+}
+```
 - 
+
+```
+$roles = App\Models\User::find(1)->roles()->orderBy('name')->get();
+```
+- `App\Models\User::find(1)` User 모델에서 하나의 기본키가 1인 레코드를 선택하고 이 레코드와 연결되는 다대다 관계의 모델 Role에 연결하기 위한 메소드인 roles를 사용한다. `App\Models\User::find(1)->roles()` 그러면 user 테이블의 기본키가 1인 레코드에 다대다관계로 대응하는 role 테이블의 레코드를 모두 얻는 엘로퀀트 쿼리빌더를 얻는다. 이 엘로퀀트 쿼리 빌더에 orderBy 메소드를 연결하고 쿼리를 실행해서 결과 레코드를 컬렉션 형식으로 반환 받는다.
 
 ---
 
