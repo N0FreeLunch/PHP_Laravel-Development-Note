@@ -29,6 +29,9 @@ protected $middleware = [
 - ConvertEmptyStringsToNull : 빈 문자 필드는 null으로 바꿔준다.
 
 ### 미들웨어 그룹
+- routes\web.php의 모든 라우터에 지정할 미들웨어를 설정 `'web' => []`
+- routes\api.php의 모든 라우터에 지정할 미들웨어를 설정 `'api' => []`
+
 ```
     protected $middlewareGroups = [
         'web' => [
@@ -51,12 +54,13 @@ protected $middleware = [
 - AddQueuedCookiesToResponse : 쿠키 큐에 쿠키를 저장해 놓으면 리스폰스를 생성할 때 큐에 저장된 순서대로 쿠키를 추가하는 기능. Cookie 파사드를 이용해서 추가한 쿠키를 리퀘스트에 추가할지를 설정하는 기능. 리퀘스트의 필터 뿐만 아니라 리스폰스에 설정할 것도 미들웨어를 통해서 추가할 수 있다. 
 - StartSession : 세션 기능을 사용할지 하지 않을지
 - AuthenticateSession : 로그인 한 유저인지를 판별하기 위한 세션을 집어 넣는다. (https://laravel.com/api/5.5/Illuminate/Session/Middleware/AuthenticateSession.html)
-- ShareErrorsFromSession : 라라벨은 애플리케이션의 여러 에러들을 MessageBag 객체에 집어 넣는데 MessageBag의 에러들을 
-- VerifyCsrfToken : 
-- SubstituteBindings : 
+- ShareErrorsFromSession : 라라벨은 애플리케이션의 여러 에러들을 MessageBag 객체에 집어 넣는데 MessageBag의 에러들을 세션에 저장하고 있다. 세션의 에러를 가져와서 라라벨의 view에서 사용할 수 있도록 하는 기능이다.
+- VerifyCsrfToken : 리퀘스트 헤더에 csrf 토큰이 포함되어 있는지 체크하고 포함되어 있다면 발급된 csrf 토큰과 일치하는지 확인한다.
+- SubstituteBindings : ??
 
 
 ### 라우터 미들웨어
+- 라우터 미들웨어는 라우터에 뭔가를 추가할 때 쓰는 것이다. 
 ```
 protected $routeMiddleware = [
         'auth' => \App\Http\Middleware\Authenticate::class,
@@ -70,8 +74,24 @@ protected $routeMiddleware = [
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
     ];
 ```
+- Authenticate : 인증된 사용자에게만 주어진 라우터를 사용할 수 있게 한다.
+- AuthenticateWithBasicAuth : 라라벨 유저를 로그인 페이지 없이 브라우저가 제공하는 ID/PASS 인증인 basicauth를 통한 인증 방식을 사용한다.
+- SetCacheHeaders : 미들웨어를 통해서 리스폰스 헤더의 캐시값을 설정할 수 있다.
+```
+Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function () {
+    Route::get('privacy', function () {
+        // ...
+    });
 
+    Route::get('terms', function () {
+        // ...
+    });
+});
+```
+- Authorize : 
+- RedirectIfAuthenticated : 
+- RequirePassword : 
+- ValidateSignature : 
+- ThrottleRequests : 
+- EnsureEmailIsVerified : 
 
-
-## 주된 쓰임새
-- 라라벨의 기본 미들웨어는 사용자의 
