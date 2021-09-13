@@ -79,13 +79,6 @@ protected $routeMiddleware = [
 - SetCacheHeaders : 미들웨어를 통해서 리스폰스 헤더의 캐시값을 설정할 수 있다.
 ```
 Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function () {
-    Route::get('privacy', function () {
-        // ...
-    });
-
-    Route::get('terms', function () {
-        // ...
-    });
 });
 ```
 - Authorize : 
