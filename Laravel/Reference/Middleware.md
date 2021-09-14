@@ -81,10 +81,15 @@ protected $routeMiddleware = [
 Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function () {
 });
 ```
-- Authorize : 
-- RedirectIfAuthenticated : 
+- Authorize : 컨트롤러의 엑션을 실행할 권한이 있는지 없는지를 필터하는 기능이다. 이 기능은 라라벨의 policy를 이용하는 기능이다. 
+- RedirectIfAuthenticated : 어카운트 인증이 된 유저에게는 게스트 유저와는 다른 화면을 보여주기 위해 게스트 상태에서만 보여주는 페이지에 접근 했을 때, 로그인 된 유저가 보는 화면으로 리다이렉트 시키는 기능이다.
 - RequirePassword : 
 - ValidateSignature : 
 - ThrottleRequests : 
 - EnsureEmailIsVerified : 
 
+
+---
+
+## Reference
+- https://laravel.kr/docs/8.x/middleware
