@@ -83,10 +83,10 @@ Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function (
 ```
 - Authorize : 컨트롤러의 엑션을 실행할 권한이 있는지 없는지를 필터하는 기능이다. 이 기능은 라라벨의 policy를 이용하는 기능이다. 
 - RedirectIfAuthenticated : 어카운트 인증이 된 유저에게는 게스트 유저와는 다른 화면을 보여주기 위해 게스트 상태에서만 보여주는 페이지에 접근 했을 때, 로그인 된 유저가 보는 화면으로 리다이렉트 시키는 기능이다.
-- RequirePassword : 
-- ValidateSignature : 
-- ThrottleRequests : 
-- EnsureEmailIsVerified : 
+- RequirePassword : 어떤 페이지로 넘어갈 때 암호를 입력하고 페이지 이동이 되는 부분일 경우, 이전 리퀘스트 상태를 저장을 하고 패스워드 입력 화면에서 패스워드를 입력하고 인증을 받고 나서 다음 화면에 저장한 리퀘스트를 그대로 전달해 주는 역할을 하는 미들웨어이다.
+- ValidateSignature : 리퀘스트에 유효한 서명이 존재하는지 확인한다. (서명이란 뭔가 발급을 해서 그 발급된 것이 있는지 확인하는 절차를 의미한다. 라라벨에서 발급한 서명이 유효한 서명인지 아닌지 판단하는 것)
+- ThrottleRequests : 얼마의 시간 단위에 얼마의 리퀘스트 횟수를 허용할지 제한하는 미들웨어로 제한 횟수를 초과하면 라우터 접근이 차단된다.
+- EnsureEmailIsVerified : 메일 인증이 된 사용자만 접근을 허용한다. 
 
 
 ---
