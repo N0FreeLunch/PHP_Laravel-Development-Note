@@ -208,6 +208,74 @@ protected $routeMiddleware = [
     'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 ];
 ```
+- 라우터 미들웨어에 등록된 미들웨어는 연관배열의 key 값을 가진다.
+
+#### 라우터에 미들웨어 달기
+```
+Route::get('admin/profile', function () {
+    //
+})->middleware('auth');
+```
+- 라우터에 미들웨어를 달아 줄 때 라우터 미들웨어에 등록된 key를 이용해서 `->middleware(키)` 방식으로 미들웨어를 달아준다.
+
+#### 라우터에 미들웨어 여러개 달기
+```
+Route::get('/', function () {
+    //
+})->middleware('first', 'second');
+```
+
+#### 미들웨어 클래스로 달기
+```
+use App\Http\Middleware\CheckAge;
+
+Route::get('admin/profile', function () {
+    //
+})->middleware(CheckAge::class);
+```
+
+#### 라우터 그룹에 미들웨어 달기
+- 라우터 그룹 내에 속하는 모든 라우터에 적용되는 미들웨어이다.
+```
+use App\Http\Middleware\CheckAge;
+
+Route::middleware([CheckAge::class])->group(function () {
+    Route::get('/', function () {
+        //
+    });
+
+    Route::get('admin/profile', function () {
+        //
+    })->withoutMiddleware([CheckAge::class]);
+});
+```
+- `->withoutMiddleware([CheckAge::class])`를 사용하면 그룹에 지정된 미들웨어를 지정한 라우터에서는 적용되지 않도록 할 수 있다.
+
+## 미들웨어 그룹
+```
+/**
+ * The application's route middleware groups.
+ *
+ * @var array
+ */
+protected $middlewareGroups = [
+    'web' => [
+        \App\Http\Middleware\EncryptCookies::class,
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \App\Http\Middleware\VerifyCsrfToken::class,
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    ],
+
+    'api' => [
+        'throttle:60,1',
+        'auth:api',
+    ],
+];
+```
+
+
 
 ---
 
