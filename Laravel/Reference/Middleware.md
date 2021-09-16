@@ -1,9 +1,11 @@
 # 미들웨어
-- HTTP 리퀘스트를 필터링 하는 것이다. 
+- HTTP 요청이 애플리케이션 내부의 로직에 도달하기 전에 통과해야 하는 레이어를 미들웨어라고 할 수 있다.
+- 미들웨어는 필터 기능, 차단기능, HTTP 요청의 변경 기능 등을 수행한다.
 
 ## 미들웨어의 역할
 - 컨트롤러에 어떤 조건에 따라서 리퀘스트 객체 내부의 값을 다른 값으로 바꾸는 역할
 - 유저별로 리퀘스트를 허용할지 허용하지 않을지를 선별하기 위한 것.
+- 리퀘스트뿐만 아니라 리스폰스 데이터도 필터 및 변경을 할 수 있다.
 
 ## 라라벨 기본 미들웨어
 - app\Http\Kernel.php 파일은 정의한 미들웨어를 리퀘스트를 필터링하기 위해 적용한 부분이다.
@@ -88,6 +90,95 @@ Route::middleware('cache.headers:public;max_age=2628000;etag')->group(function (
 - ThrottleRequests : 얼마의 시간 단위에 얼마의 리퀘스트 횟수를 허용할지 제한하는 미들웨어로 제한 횟수를 초과하면 라우터 접근이 차단된다.
 - EnsureEmailIsVerified : 메일 인증이 된 사용자만 접근을 허용한다. 
 
+## 미들웨어 생성
+### artisan 커멘드로 생성하기
+```
+php artisan make:middleware CheckAge
+```
+
+```
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+
+class CheckAge
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return mixed
+     */
+    public function handle($request, Closure $next)
+    {
+        if ($request->age <= 200) {
+            return redirect('home');
+        }
+
+        return $next($request);
+    }
+}
+```
+- 미들웨어 클래스는 상속을 받지 않는다.
+- app\Http\Kernel.php 파일에 보면 미들웨어 클래스를 그냥 넣어서 정의한다. 배열에 클래스를 넣으면 배열에 정의된 클래스의 handle 메소드를 꺼내어 리퀘스트 및 리스폰스를 필터할 때 사용한다.
+- handle 메소드는 $next라는 클로저에 $request를 집어 넣어 반환한다. 만약 리퀘스트의 값을 변경했다면 미들웨어를 거친 리퀘스트는 변경된 값을 라우터나 컨트롤러에 전달할 것이다.
+- 리퀘스트 값을 필터링 하고 조건에 맞을 경우 리퀘스트를 다음 단계로 전달하고 조건에 맞지 않으면 리퀘스를 전달하지 않는 처리를 한다. 
+- 위 예제에서는 $request의 age라는 값이 200이하일 경우 리퀘스트를 다음 단계로 전달하지 않고 home 네임의 라우터로 리다이렉트 시키고 있다.
+- `$next($request)`의 다음 단계로 리퀘스트를 전달하는 것은 다음 미들웨어로 전달할 수도 있으며 라우터나 컨트롤러 등의 애플리케이션의 내부 쪽으로 전달하는 것이다.
+
+### 미들웨어와 서비스 컨테이너
+- 모든 미들웨어는 서비스 컨테이너를 통해서 처리된다.
+- 서비스 컨테이너를 통해서 처리 되기 때문에 라라벨 프레임워크의 의존성 주입을 사용할 수 있다.
+- (좀 더 정확하게 알아 볼 필요가 있는 부분)
+
+### 리스폰스 레이어 역할의 미들웨어
+```
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+
+class AfterMiddleware
+{
+    public function handle($request, Closure $next)
+    {
+        $response = $next($request);
+
+        // Perform action
+
+        return $response;
+    }
+}
+```
+- 리퀘스트가 애플리케이션에서 실행이 된 이후 처리되는 미들웨어
+- 애플리케이션에서 리퀘스트가 처리 되면 리퀘스트는 애플리케이션 내에서 더 이상 사용되지 않기 때문에 리퀘스트를 필터링하거나 변경할 필요가 없다.
+- 리스폰스가 통과해야 할 레이어의 기능으로 동작하는 미들웨어이다.
+
+#### 리퀘스트 레이어 역할의 미들웨어와의 비교
+```
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+
+class BeforeMiddleware
+{
+    public function handle($request, Closure $next)
+    {
+        // Perform action
+
+        return $next($request);
+    }
+}
+```
+- 리퀘스트 레이어의 미들웨어와 리스폰스 레이어의 미들웨어는 무엇을 return 하느냐에 따라 갈린다.
+- 리퀘스트 레이어의 미들웨어의 경우 `return $next($request)`를 사용하며 리스폰스 레이어의 미들웨어의 경우 `return $response;`를 반환한다.
+- 그런데 리스폰스 레이어인 미들웨어를 보면 `$response = $next($request)`라서 리퀘스트 레이어와 리스폰스 레이어가 같은 `return $next($request)`를 반환하는 것으로 보인다.
 
 ---
 
