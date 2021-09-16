@@ -182,6 +182,33 @@ class BeforeMiddleware
 - 리퀘스트 레이어의 미들웨어는 $request의 값을 이용한 로직을 구현하고 $next($request)의 값을 이용한 로직을 구현하지 않는다.
 - 리스폰스 레이어의 미들웨어는 $next($request)의 값을 이용한 로직을 구현하고 $request의 값을 이용한 로직을 구현하지 않는다.
 
+## 미들웨어 등록
+- 미들웨어는 특별한 기능이 없는 클래스이다.
+- 미들웨어의 handle 메소드는 사용하는 컨텍스트에서 값을 받아서 처리만 하고 처리한 결과를 컨텍스트에 반환하는 역할만 가진다.
+- 따라서 미들웨어를 사용하는 컨텍스트가 존재해야 하는데 미들웨어를 등록할 수 있는 곳이 미들웨어의 컨텍스트에 해당한다.
+
+### 글로벌 미들웨어
+- app/Http/Kernel.php 클래스의 $middleware 속성에 미들웨어를 등록하면 모든 리퀘스트에 대해 등록된 미들웨어가 적용 된다.
+
+### 라우트 미들웨어
+-  app/Http/Kernel.php 파일의 $routeMiddleware 미들웨어의 속성을 사용한다.
+
+```
+// Within App\Http\Kernel Class...
+
+protected $routeMiddleware = [
+    'auth' => \App\Http\Middleware\Authenticate::class,
+    'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+    'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
+    'can' => \Illuminate\Auth\Middleware\Authorize::class,
+    'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+    'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
+    'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+    'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+];
+```
+
 ---
 
 ## Reference
