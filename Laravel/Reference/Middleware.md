@@ -179,6 +179,8 @@ class BeforeMiddleware
 - 리퀘스트 레이어의 미들웨어와 리스폰스 레이어의 미들웨어는 무엇을 return 하느냐에 따라 갈린다.
 - 리퀘스트 레이어의 미들웨어의 경우 `return $next($request)`를 사용하며 리스폰스 레이어의 미들웨어의 경우 `return $response;`를 반환한다.
 - 그런데 리스폰스 레이어인 미들웨어를 보면 `$response = $next($request)`라서 리퀘스트 레이어와 리스폰스 레이어가 같은 `return $next($request)`를 반환하는 것으로 보인다.
+- 리퀘스트 레이어의 미들웨어는 $request의 값을 이용한 로직을 구현하고 $next($request)의 값을 이용한 로직을 구현하지 않는다.
+- 리스폰스 레이어의 미들웨어는 $next($request)의 값을 이용한 로직을 구현하고 $request의 값을 이용한 로직을 구현하지 않는다.
 
 ---
 
