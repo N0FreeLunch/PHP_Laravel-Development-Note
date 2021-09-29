@@ -73,5 +73,5 @@ public function handle (Request $request)
 Reference : https://laravel.kr/docs/8.x/lifecycle
 
 
-descripted by N0FreeLunch
+written by N0FreeLunch
 
