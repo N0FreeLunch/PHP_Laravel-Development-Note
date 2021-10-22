@@ -1,16 +1,32 @@
+## laravel admin에서의 controller
+- 라라벨 admin의 컨트롤러는 CURD를 다루는 방식의 컨트롤러로 구성된다.
+- 그래서 컨트롤러를 다루는 명령은 모델을 기반으로 생성한다.
+
 ## 컨트롤러 생성 명령어
+
 ### Syntex
 ```
 php artisan admin:컨트롤러명 --model=모델네임스페이스
 ```
+
 #### MAC/Linux
 ```
 php artisan admin:make UserController --model=App\\User
 ```
+
+#### laravel 8의 경우
+```
+php artisan admin:make UserController --model=App\\Models\\User
+```
+
 #### windows
 ```
 php artisan admin:make UserController --model=App\User
 ```
+
+## 라우터 만들기
+- 컨트롤러를 자동 생성했다고 해서 라우터가 따로 만들어지지는 않는다.
+- laravel admin의 라우터는 `app/Admin/routes.php` 부분에 경로를 생성한다.
 
 ### 단축 명령어
 - 1.8 버전 이상에서 사용 가능
