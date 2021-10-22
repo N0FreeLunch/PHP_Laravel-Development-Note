@@ -27,9 +27,12 @@ Route::prefix(config('admin.route.prefix'))
       ->namespace(config('admin.route.namespace'))
       ->name(config('admin.route.prefix') . '.')
       ->group(function () {
+      
         Route::get('/', 'HomeController@index')->name('home');
+        
       });
 ```
+- https://laravel.com/api/8.x/Illuminate/Routing/Route.html 이 부분에서 라라벨 공식 문서에 나오지 않는 숨겨진 라우트 객체의 메소드를 확인할 수 있다.
 
 ## 라우터 설정
 - config\admin.php
