@@ -33,6 +33,7 @@ Route::prefix(config('admin.route.prefix'))
       });
 ```
 - https://laravel.com/api/8.x/Illuminate/Routing/Route.html 이 부분에서 라라벨 공식 문서에 나오지 않는 숨겨진 라우트 객체의 메소드를 확인할 수 있다.
+- as는 name과 동일한 기능을 한다. 라라벨 5.2버전 문서에서 확인 가능 (https://laravel.kr/docs/5.2/routing#%EC%9D%B4%EB%A6%84%EC%9D%B4%20%EC%A7%80%EC%A0%95%EB%90%9C%20%EB%9D%BC%EC%9A%B0%ED%8A%B8)
 
 ## 라우터 설정
 - config\admin.php
