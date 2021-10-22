@@ -1,5 +1,6 @@
 # 라우터
 ---
+## default route
 ```
 use Illuminate\Routing\Router;
 
@@ -17,7 +18,7 @@ Route::group([
 });
 
 ```
-- default 라우터
+
 
 ## 라우팅 설정
 ## laravel-admin의 기본 라우팅
