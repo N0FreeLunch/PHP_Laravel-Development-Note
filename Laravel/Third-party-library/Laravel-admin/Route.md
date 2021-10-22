@@ -1,5 +1,23 @@
 # 라우터
 ---
+```
+use Illuminate\Routing\Router;
+
+Admin::routes();
+
+Route::group([
+    'prefix'        => config('admin.route.prefix'),
+    'namespace'     => config('admin.route.namespace'),
+    'middleware'    => config('admin.route.middleware'),
+    'as'            => config('admin.route.prefix') . '.',
+], function (Router $router) {
+
+    $router->get('/', 'HomeController@index')->name('home');
+
+});
+
+```
+- default 라우터
 
 ## 라우팅 설정
 ## laravel-admin의 기본 라우팅
