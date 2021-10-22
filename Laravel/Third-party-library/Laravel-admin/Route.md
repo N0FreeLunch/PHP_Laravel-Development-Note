@@ -19,6 +19,17 @@ Route::group([
 });
 ```
 
+## 디폴트 라우트 다시 쓰기
+- 디폴트 라우트 구성을 라라벨 표준 코딩 스타일에 맞게 변경 할 수 있다.
+```
+Route::prefix(config('admin.route.prefix'))
+      ->middleware(config('admin.route.middleware'))
+      ->namespace(config('admin.route.namespace'))
+      ->group(function () {
+        Route::get('/', 'HomeController@index')->name('home');
+      });
+```
+
 ## 라우터 설정
 - config\admin.php
 ```
