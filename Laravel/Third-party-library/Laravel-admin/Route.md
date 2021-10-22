@@ -25,6 +25,7 @@ Route::group([
 Route::prefix(config('admin.route.prefix'))
       ->middleware(config('admin.route.middleware'))
       ->namespace(config('admin.route.namespace'))
+      ->name(config('admin.route.prefix') . '.')
       ->group(function () {
         Route::get('/', 'HomeController@index')->name('home');
       });
