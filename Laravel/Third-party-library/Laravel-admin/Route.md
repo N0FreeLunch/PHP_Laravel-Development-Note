@@ -18,7 +18,21 @@ Route::group([
 });
 
 ```
-- 
+
+## 
+- config\admin.php
+```
+    'route' => [
+
+        'prefix' => env('ADMIN_ROUTE_PREFIX', 'admin'),
+
+        'namespace' => 'App\\Admin\\Controllers',
+
+        'middleware' => ['web', 'admin'],
+    ],
+```
+- 미들웨어를 보면 라라벨의 기본 web 미들웨어를 집어 넣고, 추가적으로 admin에 필요한 미들웨어를 추가 해 주었다.
+
 
 
 ## 라우팅 설정
