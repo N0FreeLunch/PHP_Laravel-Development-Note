@@ -1,6 +1,7 @@
 # 라우터
 ---
 ## default route
+- app\Admin\routes.php
 ```
 use Illuminate\Routing\Router;
 
@@ -16,10 +17,9 @@ Route::group([
     $router->get('/', 'HomeController@index')->name('home');
 
 });
-
 ```
 
-## 
+## 라우터 설정
 - config\admin.php
 ```
     'route' => [
@@ -32,6 +32,8 @@ Route::group([
     ],
 ```
 - 미들웨어를 보면 라라벨의 기본 web 미들웨어를 집어 넣고, 추가적으로 admin에 필요한 미들웨어를 추가 해 주었다.
+- 그런데 admin 미들웨어가 `app\Http\Kernel.php` 부분에 정의되어 있지 않다. (어디서 가져 온 거죠? 어떻게 가져 온 거죠?)
+- ` env('ADMIN_ROUTE_PREFIX', 'admin')` 부분을 보면 라우터의 prefix를 env 파일 안에 설정할 수 있으며, 기본적으로 env 파일 안에 ADMIN_ROUTE_PREFIX 키가 세팅되어 있지 않기 때문에 `hostname.com/amdin`과 같은 방식으로 어드민 페이지 path가 설정된다.
 
 
 
