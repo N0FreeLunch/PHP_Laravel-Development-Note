@@ -2,7 +2,7 @@
 - 라라벨에서 CURD 메소드는 index, show, create, store, update, destroy 등으로 구성된다.
 - laravel-admin에서는 grid, detail, form으로 구성된다.
 
-### 액션의 구성
+### 라라벨 기본 액션의 구성
 - 컨트롤러의 엑션에 따라 페이지의 PATH 구성이 달라지는데 룰이 있다.
 
 #### index
@@ -10,40 +10,41 @@
 - /controller/access/path
 
 #### show
-- show
 - `GET`
 - /controller/access/path/{id}
 
 #### create
-- create
 - `POST`
 - /controller/access/path
 
 #### store
-- store
 - `POST`
 - /controller/access/path/{id}
 
 #### edit
-- edit
 - `GET`
 - /controller/access/path/{id}/edit
 
 #### update
-- update
 - `PUT/PATCH` 
 - /controller/access/path/{id}
 
 #### destroy
-- destroy
 - `DELETE`
 - /controller/access/path/{id}
 
+### laravel-admin에서의 액션의 구성
+#### grid
+- `GET`
+- /controller/access/path
 
-#### laravel-admin에서의 액션의 구성
-- grid : `GET` /controller/access/path
-- detail : `GET` /controller/access/path/{id}
-- form : `POST` /controller/access/path
+#### detail
+- `GET`
+- /controller/access/path/{id}
+
+#### form
+- `GET`
+- /controller/access/path
 
 
 ### grid
@@ -114,6 +115,5 @@ class UserController extends AdminController
 - `protected $title` : CURD 모듈의 이름을 지정한다.
 - `protected function grid()` : 페이지에 표시할 목록들을 설정한다.
 - `protected function detail($id)` : details 페이지에 표시할 목록들을 설정한다.
-- `protected function form()` : 
 
 
