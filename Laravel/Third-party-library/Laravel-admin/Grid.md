@@ -29,7 +29,7 @@ class CreateMoviesTable extends Migration
             $table->string('describe');
             $table->tinyInteger('rate');
             $table->enum('released', [0,1]);
-            $table->timestamp('release_at');
+            $table->dateTime('release_at');
             $table->timestamps();
         });
     }
@@ -51,4 +51,22 @@ class CreateMoviesTable extends Migration
 php artisan migrate
 ```
 
+## Model 만들기
+```
+php artisan make:model Movies
+```
+
+## Controller 만들기
+```
+php artisan admin:make MovieController --model=App\\Models\\Movie
+```
+
+## Controller 내부 grid 세팅
+```
+```
+
+## 접속
+```
+http://127.0.0.1:8000/admin/demo/movies
+```
 
