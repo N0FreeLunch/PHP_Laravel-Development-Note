@@ -1,0 +1,54 @@
+# Grid
+
+## sample table 만들어 보기
+```
+php artisan make:migration CreateMoviesTable
+```
+
+### schema 세팅하기
+```
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateMoviesTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('movies', function (Blueprint $table) {
+            $table->id();
+            $table->string('titles');
+            $table->integer('director');
+            $table->string('describe');
+            $table->tinyInteger('rate');
+            $table->enum('released', [0,1]);
+            $table->timestamp('release_at');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('movies');
+    }
+}
+```
+
+### migarate하기
+```
+php artisan migrate
+```
+
+
