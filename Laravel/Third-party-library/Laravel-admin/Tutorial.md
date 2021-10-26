@@ -1,4 +1,4 @@
-# Grid
+
 
 ## sample table 만들어 보기
 ```
@@ -61,8 +61,49 @@ php artisan make:model Movies
 php artisan admin:make MovieController --model=App\\Models\\Movie
 ```
 
-## Controller 내부 grid 세팅
+## Controller 내부 form 세팅
 ```
+    /**
+     * Make a form builder.
+     *
+     * @return Form
+     */
+    protected function form()
+    {
+      $form = new Form(new Movie);
+
+      // Displays the record id
+      $form->display('id', 'ID');
+
+      // Add an input box of type text
+      $form->text('title', 'Movie title');
+
+      $directors = [
+          'John'  => 1,
+          'Smith' => 2,
+          'Kate'  => 3,
+      ];
+
+      $form->select('director', 'Director')->options($directors);
+
+      // Add textarea for the describe field
+      $form->textarea('describe', 'Describe');
+
+      // Number input
+      $form->number('rate', 'Rate');
+
+      // Add a switch field
+      $form->switch('released', 'Released');
+
+      // Add a date and time selection box
+      $form->datetime('release_at', 'release time');
+
+      // Display two time column
+      $form->display('created_at', 'Created time');
+      $form->display('updated_at', 'Updated time');
+
+      return $form;
+    }
 ```
 
 ## 접속
