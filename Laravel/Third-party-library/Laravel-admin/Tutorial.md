@@ -106,6 +106,16 @@ php artisan admin:make MovieController --model=App\\Models\\Movie
     }
 ```
 
+## 유저 생성하기
+```
+http://127.0.0.1:8000/admin/demo/users
+```
+- 유저를 생성한다.
+- id 1인 유저의 이름은 John
+- id 2인 유저의 이름은 Smith
+- id 3인 유저의 이름은 Kate
+
+
 ## 접속
 ```
 http://127.0.0.1:8000/admin/demo/movies
