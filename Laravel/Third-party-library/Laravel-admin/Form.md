@@ -5,42 +5,42 @@ use Encore\Admin\Form;
 ```
 
 ```
-    protected function form()
-    {
-      $form = new Form(new Movie);
+protected function form()
+{
+    $form = new Form(new Movie);
 
-      // Displays the record id
-      $form->display('id', 'ID');
+    // Displays the record id
+    $form->display('id', 'ID');
 
-      // Add an input box of type text
-      $form->text('title', 'Movie title');
+    // Add an input box of type text
+    $form->text('title', 'Movie title');
 
-      $directors = [
-          1 => 'John',
-          2 => 'Smith',
-          3 => 'Kate',
-      ];
+    $directors = [
+        1 => 'John',
+        2 => 'Smith',
+        3 => 'Kate',
+    ];
 
-      $form->select('director', 'Director')->options($directors);
+    $form->select('director', 'Director')->options($directors);
 
-      // Add textarea for the describe field
-      $form->textarea('describe', 'Describe');
+    // Add textarea for the describe field
+    $form->textarea('describe', 'Describe');
 
-      // Number input
-      $form->number('rate', 'Rate');
+    // Number input
+    $form->number('rate', 'Rate');
 
-      // Add a switch field
-      $form->switch('released', 'Released');
+    // Add a switch field
+    $form->switch('released', 'Released');
 
-      // Add a date and time selection box
-      $form->datetime('release_at', 'release time');
+    // Add a date and time selection box
+    $form->datetime('release_at', 'release time');
 
-      // Display two time column
-      $form->display('created_at', 'Created time');
-      $form->display('updated_at', 'Updated time');
+    // Display two time column
+    $form->display('created_at', 'Created time');
+    $form->display('updated_at', 'Updated time');
 
-      return $form;
-    }
+    return $form;
+}
 ```
 
 #### display
