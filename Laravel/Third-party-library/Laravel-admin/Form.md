@@ -113,7 +113,7 @@ $form->dateTime('release_at', 'release time');
 - form 메소드는 접근제한자가 protected이다. edit 메소드로 접근을 하면 form 메소드로 설정한 화면이 나오도록 설정되어 있는 것은 라라벨 어드민의 컨트롤러(AdminController) 상속을 통해 이뤄진다.
 
 ## Form의 기본 버튼
-- 기본적으로 수정화면인 form 화면에서 제공하는 버튼은 list, delete, view를 제공한다.
+- 기본적으로 생성화면 또는 수정화면인 form 화면의 form 컨텐츠 영역 오른쪽 상단에 list, delete, view를 제공한다.
 - list는 index 화면으로 이동하는 역할을 하며, delete는 수정 화면에 나온 대상을 삭제하는 역할을 하며 view는 상세 화면을 보여준다.
 - 각 화면은 아래의 표현으로 표시되지 않게 할 수 있다.
 ```
@@ -140,3 +140,28 @@ protected function form()
     return $form;
 }
 ```
+
+#### disableList
+```
+$tools->disableList();
+```
+- 화면에 디폴트로 있는 list 버튼을 제거한다.
+
+#### disableDelete
+````
+$tools->disableDelete();
+````
+- 화면에 디폴트로 있는 disableDelete 버튼을 제거한다.
+
+#### disableView
+````
+$tools->disableView();
+````
+- 화면에 디폴트로 있는 disableView 버튼을 제거한다.
+
+#### add
+````
+$tools->add('<a class="btn btn-sm btn-danger"><i class="fa fa-trash"></i>&nbsp;&nbsp;delete</a>');
+````
+- form 화면의 form 컨텐츠 영역 오른쪽 상단에 list, delete, view 버튼 이외의 버튼을 기본 버튼 왼쪽에 추가한다.
+- 이 버튼 자체로는 아무 기능이 없기 때문에 기능을 추가 해 줘야 한다.
