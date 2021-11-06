@@ -1,4 +1,111 @@
 # Form
+- 라라벨 어드민의 Form 클래스를 사용한다.
+```
+use Encore\Admin\Form;
+```
+
+```
+    protected function form()
+    {
+      $form = new Form(new Movie);
+
+      // Displays the record id
+      $form->display('id', 'ID');
+
+      // Add an input box of type text
+      $form->text('title', 'Movie title');
+
+      $directors = [
+          1 => 'John',
+          2 => 'Smith',
+          3 => 'Kate',
+      ];
+
+      $form->select('director', 'Director')->options($directors);
+
+      // Add textarea for the describe field
+      $form->textarea('describe', 'Describe');
+
+      // Number input
+      $form->number('rate', 'Rate');
+
+      // Add a switch field
+      $form->switch('released', 'Released');
+
+      // Add a date and time selection box
+      $form->datetime('release_at', 'release time');
+
+      // Display two time column
+      $form->display('created_at', 'Created time');
+      $form->display('updated_at', 'Updated time');
+
+      return $form;
+    }
+```
+
+#### display
+```
+$form->display('id', 'ID');
+```
+- 첫 번째 인자 : 모델의 컬럼
+- 두 번째 인자 : 표시되는 항목의 타이틀
+- 생성화면에서는 나타나지 않고 수정화면에서는 표시되도록 되어 있다.
+
+#### text
+```
+$form->text('title', 'Movie title');
+```
+- 첫 번째 인자 : 모델의 컬럼
+- 두 번째 인자 : 표시되는 항목의 타이틀
+- 생성화면에서는 텍스트를 입력할 수 있는 빈 폼, 수정화면에서는 텍스트를 입력할 수 있는 레코드 데이터가 들어 있는 폼이 생성되어 표시된다.
+
+#### select
+```
+$directors = [
+    1 => 'John',
+    2 => 'Smith',
+    3 => 'Kate',
+];
+
+$form->select('director', 'Director')->options($directors);
+```
+- select의 첫 번째 인자 : 모델의 컬럼
+- select의 두 번째 인자 : 표시 되는 항목의 타이틀
+- options의 첫 번째 인자 : select 테그의 리스트로 표시 될 항목이 연관 배열의 value이고, form의 엑션으로 전송될 데이터가 연관 배열의 key이다.
+
+#### textarea
+```
+$form->textarea('describe', 'Describe');
+```
+- 첫 번째 인자 : 모델의 컬럼
+- 두 번째 인자 : 표시되는 항목의 타이틀
+- textarea 태그처럼 폼의 크기를 자유롭게 늘릴 수 있다.
+- 폼의 세로 길이 보다 내용의 세로 길이가 길어지면 스크롤이 생기는 방식이다.
+
+#### number
+```
+$form->number('rate', 'Rate');
+```
+- 첫 번째 인자 : 모델의 컬럼
+- 두 번째 인자 : 표시되는 항목의 타이틀
+- 숫자를 1씩 더하고 뺄 수 있는 +, - 버튼이 있다.
+
+#### switch
+```
+$form->switch('released', 'Released');
+```
+- 첫 번째 인자 : 모델의 컬럼
+- 두 번째 인자 : 표시되는 항목의 타이틀
+- on/off 전환 스위치 기능
+
+#### dateTime
+```
+$form->dateTime('release_at', 'release time');
+```
+- 첫 번째 인자 : 모델의 컬럼
+- 두 번째 인자 : 표시되는 항목의 타이틀
+- 달력으로 날짜를 선택할 수 있으며, 텍스트의 날짜 포멧으로 입력할 수도 있다.
+- 기존 날짜가 없는 경우 달력 버튼을 누르면 디폴트로 오늘 날짜가 선택되어 있다.
 
 ## Form 메소드의 기능
 - 일반적으로 라라벨의 메소드 edit에 해당하는 부분이다.
@@ -34,3 +141,41 @@ protected function form()
 }
 ```
 
+```
+use App\Models\Movie;
+use Encore\Admin\Form;
+use Encore\Admin\Facades\Admin;
+
+$form = new Form(new Movie);
+
+// Displays the record id
+$form->display('id', 'ID');
+
+// Add an input box of type text
+$form->text('title', 'Movie title');
+
+$directors = [
+    1 => 'John',
+    2 => 'Smith',
+    3 => 'Kate',
+];
+
+$form->select('director', 'Director')->options($directors);
+
+// Add textarea for the describe field
+$form->textarea('describe', 'Describe');
+
+// Number input
+$form->number('rate', 'Rate');
+
+// Add a switch field
+$form->switch('released', 'Released?');
+
+// Add a date and time selection box
+$form->dateTime('release_at', 'release time');
+
+// Display two time column 
+$form->display('created_at', 'Created time');
+$form->display('updated_at', 'Updated time');
+Custom tools
+```
