@@ -96,6 +96,12 @@ $content->breadcrumb(
 $content->body('hello world');
 $content->body('foo bar');
 ```
-- 페이지의 body를 구성하는 내용을 넣는 메소드, 랜더링 될 수 있는 오브젝트를 넣으면 된다.
-- 문자열, 숫자, \_\_toString을 사용한 메소드, implements Renderable, Htmlable interface, Laravel View objects 등을 사용할 수 있다.
+- 페이지의 body를 구성하는 내용을 넣는 메소드, 랜더링 될 수 있는 대상을 넣으면 된다.
+- 랜더링 될 수 있는 대상은 문자열, 숫자, \_\_toString을 사용한 메소드, implements Renderable, Htmlable interface, Laravel View objects 등이 있다.
+
+### 줄 추가
+- 컨텐츠 영역의 상단바 아래의 공간에 컨텐츠를 표시할 때 그리드 형식의 테이블을 만든다.
+```
+$content->row('hello world');
+```
 
