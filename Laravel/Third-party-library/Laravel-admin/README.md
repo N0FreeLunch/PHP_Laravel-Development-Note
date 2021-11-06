@@ -1,2 +1,6 @@
 01. [installation](./Installation.md)
 02. [version update](./VersionUpdate.md)
+03. [config](./Config.md)
+04. [tutorial](./Tutorial.md)
+05. [controller](./Controller.md)
+06. [layout](./Layout.md)
