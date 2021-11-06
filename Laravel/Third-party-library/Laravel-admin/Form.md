@@ -1,6 +1,6 @@
 # Form
 - 라라벨 어드민의 Form 클래스를 사용한다.
-```
+```php
 use Encore\Admin\Form;
 ```
 
@@ -9,7 +9,7 @@ use Encore\Admin\Form;
 - 라라벨의 라우터에서 접근을 할 때 resource 메소드를 사용한다. 이는 컨트롤러의 엑션에 접근할 때 edit 메소드에 해당하는 것이다.
 - form 메소드는 접근제한자가 protected이다. edit 메소드로 접근을 하면 form 메소드로 설정한 화면이 나오도록 설정되어 있는 것은 라라벨 어드민의 컨트롤러(AdminController) 상속을 통해 이뤄진다.
 
-```
+```php
 protected function form()
 {
     $form = new Form(new Movie);
@@ -49,7 +49,7 @@ protected function form()
 ```
 
 #### display
-```
+```php
 $form->display('id', 'ID');
 ```
 - 첫 번째 인자 : 모델의 컬럼
@@ -57,7 +57,7 @@ $form->display('id', 'ID');
 - 생성화면에서는 나타나지 않고 수정화면에서는 표시되도록 되어 있다.
 
 #### text
-```
+```php
 $form->text('title', 'Movie title');
 ```
 - 첫 번째 인자 : 모델의 컬럼
@@ -65,7 +65,7 @@ $form->text('title', 'Movie title');
 - 생성화면에서는 텍스트를 입력할 수 있는 빈 폼, 수정화면에서는 텍스트를 입력할 수 있는 레코드 데이터가 들어 있는 폼이 생성되어 표시된다.
 
 #### select
-```
+```php
 $directors = [
     1 => 'John',
     2 => 'Smith',
@@ -79,7 +79,7 @@ $form->select('director', 'Director')->options($directors);
 - options의 첫 번째 인자 : select 테그의 리스트로 표시 될 항목이 연관 배열의 value이고, form의 엑션으로 전송될 데이터가 연관 배열의 key이다.
 
 #### textarea
-```
+```php
 $form->textarea('describe', 'Describe');
 ```
 - 첫 번째 인자 : 모델의 컬럼
@@ -88,7 +88,7 @@ $form->textarea('describe', 'Describe');
 - 폼의 세로 길이 보다 내용의 세로 길이가 길어지면 스크롤이 생기는 방식이다.
 
 #### number
-```
+```php
 $form->number('rate', 'Rate');
 ```
 - 첫 번째 인자 : 모델의 컬럼
@@ -96,7 +96,7 @@ $form->number('rate', 'Rate');
 - 숫자를 1씩 더하고 뺄 수 있는 +, - 버튼이 있다.
 
 #### switch
-```
+```php
 $form->switch('released', 'Released');
 ```
 - 첫 번째 인자 : 모델의 컬럼
@@ -104,7 +104,7 @@ $form->switch('released', 'Released');
 - on/off 전환 스위치 기능
 
 #### dateTime
-```
+```php
 $form->dateTime('release_at', 'release time');
 ```
 - 첫 번째 인자 : 모델의 컬럼
@@ -116,7 +116,7 @@ $form->dateTime('release_at', 'release time');
 - 기본적으로 생성화면 또는 수정화면인 form 화면의 form 컨텐츠 영역 오른쪽 상단에 list, delete, view를 제공한다.
 - list는 index 화면으로 이동하는 역할을 하며, delete는 수정 화면에 나온 대상을 삭제하는 역할을 하며 view는 상세 화면을 보여준다.
 - 각 화면은 아래의 표현으로 표시되지 않게 할 수 있다.
-```
+```php
 protected function form()
 {
     // code ...
@@ -142,25 +142,25 @@ protected function form()
 ```
 
 #### disableList
-```
+```php
 $tools->disableList();
 ```
 - 화면에 디폴트로 있는 list 버튼을 제거한다.
 
 #### disableDelete
-````
+````php
 $tools->disableDelete();
 ````
 - 화면에 디폴트로 있는 disableDelete 버튼을 제거한다.
 
 #### disableView
-````
+````php
 $tools->disableView();
 ````
 - 화면에 디폴트로 있는 disableView 버튼을 제거한다.
 
 #### add
-````
+````php
 $tools->add('<a class="btn btn-sm btn-danger"><i class="fa fa-trash"></i>&nbsp;&nbsp;delete</a>');
 ````
 - form 화면의 form 컨텐츠 영역 오른쪽 상단에 list, delete, view 버튼 이외의 버튼을 기본 버튼 왼쪽에 추가한다.
