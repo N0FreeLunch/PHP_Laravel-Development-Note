@@ -138,3 +138,21 @@ $content->row(function (Row $row) {
     });
 });
 ```
+
+
+#### 컬럼 안 행에 열 넣기
+```php
+$content->row(function (Row $row) {
+
+    $row->column(4, 'xxx');
+
+    $row->column(8, function (Column $column) {
+        $column->row('111');
+        $column->row('222');
+        $column->row(function(Row $row) {
+            $row->column(6, '444');
+            $row->column(6, '555');
+        });
+    });
+});
+```
