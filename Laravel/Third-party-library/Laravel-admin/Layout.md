@@ -105,3 +105,15 @@ $content->body('foo bar');
 $content->row('hello world');
 ```
 
+### 테이블에 컬럼 추가
+- Row 타입힌팅을 사용하기 위해서 `use Encore\Admin\Layout\Row;`를 추가한다.
+- 컨트롤러의 엑션 메소드에 return 값을 Content 타입 클래스로 주지 않는 경우 안의 테이블 컨텐츠가 호출되지 않는다.
+
+```
+$content->row(function(Row $row) {
+    $row->column(4, 'foo');
+    $row->column(4, 'bar');
+    $row->column(4, 'baz');
+});
+```
+
