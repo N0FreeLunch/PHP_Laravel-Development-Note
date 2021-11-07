@@ -64,6 +64,62 @@ $tools->add('<a class="btn btn-sm btn-danger"><i class="fa fa-trash"></i>&nbsp;&
 - form 화면의 form 컨텐츠 영역 오른쪽 상단에 list, delete, view 버튼 이외의 버튼을 기본 버튼 왼쪽에 추가한다.
 - 이 버튼 자체로는 아무 기능이 없기 때문에 기능을 추가 해 줘야 한다.
 
+### footer
+- 기본적으로 라라벨 어드민의 대상 생성 및 수정 화면의 컨텐츠 영역의 하단에는 Reset, View, Continue creating, Continue editing 버튼이 있다. 
+- View, Continue creating, Continue editing 체크 박스는 3개 중 하나만 선택할 수 있다.
+```
+$form->footer(function ($footer) {
+
+    // disable reset btn
+    $footer->disableReset();
+
+    // disable submit btn
+    $footer->disableSubmit();
+
+    // disable `View` checkbox
+    $footer->disableViewCheck();
+
+    // disable `Continue editing` checkbox
+    $footer->disableEditingCheck();
+
+    // disable `Continue Creating` checkbox
+    $footer->disableCreatingCheck();
+
+});
+```
+
+#### disableReset
+```
+$footer->disableReset();
+```
+- 폼에 입력된 데이터를 처음 데이터의 상태로 변경
+
+#### disableSubmit
+```
+$footer->disableSubmit();
+```
+- 제출 버튼 감추기
+
+#### disableViewCheck
+```
+$footer->disableViewCheck();
+```
+- 현재 페이지를 공개할지 공개하지 않을지 설정
+
+#### disableEditingCheck
+```
+$footer->disableEditingCheck();
+```
+- 수정 중인 내용을 임시 저장모드로 할지 안 할지
+
+#### disableCreatingCheck
+```
+$footer->disableCreatingCheck();
+```
+- 생성 중인 내용을 임시 저장모드로 할지 안 할지
+
+
+
 ## Form 셈플 코드
 ```php
 protected function form()
