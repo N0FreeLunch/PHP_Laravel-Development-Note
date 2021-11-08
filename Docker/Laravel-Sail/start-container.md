@@ -28,7 +28,17 @@ fi
 ```
 chmod -R ugo+rw /.composer
 ```
--
+- 파일 권한을 보여주는 `-rwxr-x----`에서 숫자를 자릿수라고 할 때
+- 1 : 디렉토리 타입
+- 2-4 : 소유주(user)
+- 5-7 : 유저 그룹 (group)
+- 8-10 : 타 유저 권한 (other)
+- ugo라는 것은 user, group, other를 대상으로
+- +라는 것은 권한을 추가한다.
+- rw는 read와 write
+- user, group, other를 대상으로 읽기, 쓰기 권한을 부여하겠다는 의미
+
+---
 
 ```
 if [ $# -gt 0 ];then
@@ -38,3 +48,9 @@ else
 fi
 ```
 - 
+
+
+---
+
+## Reference
+- https://github.com/laravel/sail/blob/1.x/runtimes/7.4/start-container
