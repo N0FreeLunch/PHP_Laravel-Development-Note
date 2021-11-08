@@ -89,6 +89,9 @@ RUN setcap "cap_net_bind_service=+ep" /usr/bin/php7.4
 ```
 RUN groupadd --force -g $WWWGROUP sail
 ```
+- 동일한 그룹 아이디가 있더라도 반드시 그룹을 생성하기 위해 --force 옵션이 추가되어 그룹 아이디가 있다면 다른 그룹 아이디로 그룹을 생성한다.
+- \-g는 그룹 아이디를 지정하는 것이며 $WWWGROUP는 그룹 아이디를 받는다. 
+- 마지막의 sail은 그룹 네임을 의미한다.
 
 ```
 RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
@@ -97,19 +100,23 @@ RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 ```
 COPY start-container /usr/local/bin/start-container
 ```
+- start-container라는 파일을 도커 안에 세팅한다. 유저 권한을 가졌다면 start-container 명령으로 start-container 파일을 실행할 수 있다.
 
 ```
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 ```
+- nginx 설정 파일을 도커 안에 세팅한다.
 
 ```
 COPY php.ini /etc/php/7.4/cli/conf.d/99-sail.ini
 ```
-- php 설정 파일
+- php 설정 파일을 도커 안에 세팅한다.
 
 ```
 RUN chmod +x /usr/local/bin/start-container
 ```
+- start-container 파일에 실행권한을 추가한다.
+- 실행권한은 sh와 같은 명령어 없어도 파일명으로 실행할 수 있도록 하는 것이다.
 
 ```
 EXPOSE 8000
@@ -120,6 +127,8 @@ EXPOSE 8000
 ```
 ENTRYPOINT ["start-container"]
 ```
+- WORKDIR에서 설정한 경로의 start-container 명령을 실행한다. 
+- `/usr/local/bin/start-container`에 파일이 위치하여 있기 때문에 유저 권한이라면 어느 경로에서든 start-container 명령을 실행 할 수 있다.
 
 ---
 
