@@ -3,15 +3,18 @@ FROM ubuntu:21.04
 ```
 - 우분투 이미지로 만든다.
 
+
 ```
 LABEL maintainer="Taylor Otwell"
 ```
 - dockerfile의 LABEL 키워드는 도커 이미지에 벤더명, 저자명, 버젼 정보등의 메타데이타를 설정하는 부분
 
+
 ```
 ARG WWWGROUP
 ```
 - dockerfile이 실행될 때 WWWGROUP 이라는 메타데이터를 세팅한다.
+
 
 ```
 WORKDIR /var/www/html
@@ -30,10 +33,12 @@ ENV DEBIAN_FRONTEND noninteractive
 - 대화형 쉘 스크립트를 실행할 때 커멘드라인 대화창이 나오지 않게 설정한다.
 - `ENV DEBIAN_FRONTEND=noninteractive` 이렇게 쓸 수도 있다.
 
+
 ```
 ENV TZ=UTC
 ```
 - TZ을 UTC로 설정한다.
+
 
 ```
 ENV NODE_VERSION=16
@@ -82,9 +87,12 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 ```
 
+
 ```
 RUN setcap "cap_net_bind_service=+ep" /usr/bin/php7.4
 ```
+-
+
 
 ```
 RUN groupadd --force -g $WWWGROUP sail
@@ -93,24 +101,30 @@ RUN groupadd --force -g $WWWGROUP sail
 - \-g는 그룹 아이디를 지정하는 것이며 $WWWGROUP는 그룹 아이디를 받는다. 
 - 마지막의 sail은 그룹 네임을 의미한다.
 
+
 ```
 RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 ```
+-
+
 
 ```
 COPY start-container /usr/local/bin/start-container
 ```
 - start-container라는 파일을 도커 안에 세팅한다. 유저 권한을 가졌다면 start-container 명령으로 start-container 파일을 실행할 수 있다.
 
+
 ```
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 ```
 - nginx 설정 파일을 도커 안에 세팅한다.
 
+
 ```
 COPY php.ini /etc/php/7.4/cli/conf.d/99-sail.ini
 ```
 - php 설정 파일을 도커 안에 세팅한다.
+
 
 ```
 RUN chmod +x /usr/local/bin/start-container
@@ -118,11 +132,13 @@ RUN chmod +x /usr/local/bin/start-container
 - start-container 파일에 실행권한을 추가한다.
 - 실행권한은 sh와 같은 명령어 없어도 파일명으로 실행할 수 있도록 하는 것이다.
 
+
 ```
 EXPOSE 8000
 ```
 - 어떤 포트 번호로 컨테이너를 공개할 것인지를 지정
 - 외부에서 이 컨테이너에 접속할 때 EXPOSE로 지정된 포트로 접속하게 된다.
+
 
 ```
 ENTRYPOINT ["start-container"]
@@ -130,7 +146,9 @@ ENTRYPOINT ["start-container"]
 - WORKDIR에서 설정한 경로의 start-container 명령을 실행한다. 
 - `/usr/local/bin/start-container`에 파일이 위치하여 있기 때문에 유저 권한이라면 어느 경로에서든 start-container 명령을 실행 할 수 있다.
 
+
 ---
+
 
 ## Reference : https://github.com/laravel/sail/blob/1.x/runtimes/7.4/Dockerfile
 
