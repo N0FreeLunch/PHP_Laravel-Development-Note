@@ -1,31 +1,39 @@
+
+---
+
 ```
 FROM ubuntu:21.04
 ```
 - 우분투 이미지로 만든다.
 
+---
 
 ```
 LABEL maintainer="Taylor Otwell"
 ```
 - dockerfile의 LABEL 키워드는 도커 이미지에 벤더명, 저자명, 버젼 정보등의 메타데이타를 설정하는 부분
 
+---
 
 ```
 ARG WWWGROUP
 ```
 - dockerfile이 실행될 때 WWWGROUP 이라는 메타데이터를 세팅한다.
 
+---
 
 ```
 WORKDIR /var/www/html
 ```
 - 작업할 폴더 설정
 
+---
 
 ### ENV
 - ENV 키워드는 환경 변수를 지정하겠다는 의미
 - dockerfile에서 공통적인 변수로 쓰기 위한 불변값을 저장하는 용도로 쓰인다.
 
+---
 
 ```
 ENV DEBIAN_FRONTEND noninteractive
@@ -33,18 +41,21 @@ ENV DEBIAN_FRONTEND noninteractive
 - 대화형 쉘 스크립트를 실행할 때 커멘드라인 대화창이 나오지 않게 설정한다.
 - `ENV DEBIAN_FRONTEND=noninteractive` 이렇게 쓸 수도 있다.
 
+---
 
 ```
 ENV TZ=UTC
 ```
 - TZ을 UTC로 설정한다.
 
+---
 
 ```
 ENV NODE_VERSION=16
 ```
 - NODEJS 버전을 16 버전으로 지정한다.
 
+---
 
 ```
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -52,9 +63,12 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 - 환경 변수에 지정한 타임존을 $TZ를 사용하여 스크립트 안에 넣어 주었다.
 - 리눅스 타임존을 $TZ에 해당하는 값으로 지정하였다.
 
+---
 
 ### 우분투 패키지 
 - 라라벨을 설치하는데 필요한 php 및 php 확장 그리고 우분투 환경을 사용하는데 필요한 패키지들을 설치한다.
+
+---
 ```
 RUN apt-get update \
     && apt-get install -y gnupg gosu curl ca-certificates zip unzip git supervisor sqlite3 libcap2-bin libpng-dev python2 \
@@ -87,12 +101,14 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 ```
 
+---
 
 ```
 RUN setcap "cap_net_bind_service=+ep" /usr/bin/php7.4
 ```
 -
 
+---
 
 ```
 RUN groupadd --force -g $WWWGROUP sail
@@ -101,30 +117,35 @@ RUN groupadd --force -g $WWWGROUP sail
 - \-g는 그룹 아이디를 지정하는 것이며 $WWWGROUP는 그룹 아이디를 받는다. 
 - 마지막의 sail은 그룹 네임을 의미한다.
 
+---
 
 ```
 RUN useradd -ms /bin/bash --no-user-group -g $WWWGROUP -u 1337 sail
 ```
 -
 
+---
 
 ```
 COPY start-container /usr/local/bin/start-container
 ```
 - start-container라는 파일을 도커 안에 세팅한다. 유저 권한을 가졌다면 start-container 명령으로 start-container 파일을 실행할 수 있다.
 
+---
 
 ```
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 ```
 - nginx 설정 파일을 도커 안에 세팅한다.
 
+---
 
 ```
 COPY php.ini /etc/php/7.4/cli/conf.d/99-sail.ini
 ```
 - php 설정 파일을 도커 안에 세팅한다.
 
+---
 
 ```
 RUN chmod +x /usr/local/bin/start-container
@@ -132,6 +153,7 @@ RUN chmod +x /usr/local/bin/start-container
 - start-container 파일에 실행권한을 추가한다.
 - 실행권한은 sh와 같은 명령어 없어도 파일명으로 실행할 수 있도록 하는 것이다.
 
+---
 
 ```
 EXPOSE 8000
@@ -139,6 +161,7 @@ EXPOSE 8000
 - 어떤 포트 번호로 컨테이너를 공개할 것인지를 지정
 - 외부에서 이 컨테이너에 접속할 때 EXPOSE로 지정된 포트로 접속하게 된다.
 
+---
 
 ```
 ENTRYPOINT ["start-container"]
