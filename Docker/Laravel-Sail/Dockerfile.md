@@ -173,5 +173,6 @@ ENTRYPOINT ["start-container"]
 ---
 
 
-## Reference : https://github.com/laravel/sail/blob/1.x/runtimes/7.4/Dockerfile
+## Reference
+- https://github.com/laravel/sail/blob/1.x/runtimes/7.4/Dockerfile
 
