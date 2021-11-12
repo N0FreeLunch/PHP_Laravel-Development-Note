@@ -4,13 +4,16 @@
 ## 라라벨 벨리데이션에 대한 간단한 이해
 - 벨리데이션은 기본적으로 HTTP 프로토콜로 전달된 파라메터에 대한 벨리데이션을 건다. 그래서 Illuminate\Http\Request 객체나 커스텀으로 `php artisan make:request StoreBlogPost`등의 명령어로 만든 리퀘스트 객체의 벨리데이션을 사용할 때는 HTTP 프로토콜로 전달된 파라메터에 대한 벨리데이션만 걸 수 있다.
 - Illuminate\Support\Facades\Validator 벨리데이션을 사용하면 HTTP 프로토콜로 전달된 파라메터 뿐만 아니라 임의로 만든 연관배열을 사용해서 벨리데이션을 걸 수 있다.
+- 유효성 검사를 통과하지 못한 경우, 벨리에이션 메시지를 리스폰스에 보내주는데 라라벨은 기본적으로 벨리데이터 리스폰스는 파라메터 단위로 보내 준다. 리퀘스트 파라메터 각각에 대한 유효성 검사를 하고 각각에 대한 유효성 검사 실패 메시지를 리스폰스에 달아 보낸다.
+
+
 
 ## 간단한 유효성 검사
 ```php
 $form->text('title')->rules('required|min:3');
 ```
 
-- 클로저를 사용하여 벨리데이션 룰을 설정
+- 익명함수를 사용하여 벨리데이션 룰을 설정
 ```php
 $form->text('title')->rules(function ($form) {
 
@@ -85,7 +88,7 @@ $form->text('title')->creationRules('required|min:3');
 $form->text('title')->updateRules('required|min:3');
 ```
 
-## 
+## 테이블의 유니크 속성을 확인하여 벨리데이션 걸기
 ```php
 $form->text('username')
      ->creationRules(['required', "unique:user_table"])
