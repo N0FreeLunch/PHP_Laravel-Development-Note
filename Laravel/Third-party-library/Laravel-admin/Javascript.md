@@ -45,7 +45,7 @@ Admin::html('<template>...</template>');
 Admin::html("<script src='/your/javascript/path/js.js'>...</script>");
 ```
 - 1.5버전에서는 Admin에 html 메소드가 존재하지 않는다.
-- https://github.com/z-song/laravel-admin/blob/bc3ca99a236a6424bb67a22612ff9aa8075d8b3e/src/Admin.php#L19 부분을 보면 html 메소드가 없다.
+- https://github.com/z-song/laravel-admin/blob/v1.8.16/src/Admin.php 부분을 보면 html 메소드가 없다.
 
 ### Admin::script로 자바스크립트 로드하기
 ```php
