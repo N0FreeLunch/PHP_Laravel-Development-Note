@@ -42,6 +42,17 @@ function arraysSum(array ...$arrays): array
 print_r(arraysSum([1,2,3], [4,5,6], [7,8,9]));
 ```
 
+## null 합체 연산자 (Null coalescing operator)
+- isset() 을 사용하는 삼항연산자를 사용한 표현을 간단한게 하기 위한 문법적인 슈가로 추가 되었다.
+#### 삼항 연산자를 사용한 표현의 예
+```
+$username = isset($_GET['user']) ? $_GET['user'] : 'nobody';
+```
+#### null 합체 연산자를 사용한 예
+```
+$username = $_GET['user'] ?? 'nobody';
+```
+
 
 ---
 
