@@ -25,6 +25,23 @@ declare(ticks=1);
 - 엄격 모드는 매개변수의 타입, 함수의 반환 값 타입, PHP 표준 함수, PHP의 확장 모듈 함수의 타입 등 모든 타입 영역에 영향을 준다.
 
 
+## 반환값의 타입 선언
+- 함수, 메소드 등의 반환값을 특정 타입으로만 반환 되도록 만든다.
+- 인수(argument)의 타임선언과 동일하므로 강제 모드일 때는 형변환을 해서 반환하며, 엄격모드일 경우에는 반환된 타입이 다르면 에러가 발생한다.
+
+```
+<?php
+
+function arraysSum(array ...$arrays): array
+{
+    return array_map(function(array $array): int {
+        return array_sum($array);
+    }, $arrays);
+}
+
+print_r(arraysSum([1,2,3], [4,5,6], [7,8,9]));
+```
+
 
 ---
 
