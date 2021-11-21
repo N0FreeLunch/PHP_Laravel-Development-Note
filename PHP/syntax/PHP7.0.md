@@ -150,8 +150,20 @@ $getX = function() {return $this->x;};
 echo $getX->call(new A);
 ```
 - 함수에 객체를 바인딩하면서 호출할 수 있다.
-- 바인딩을 하면서 함수를 호출
 
+## 필터링된 unserialize()
+```
+<?php
+
+// converts all objects into __PHP_Incomplete_Class object
+$data = unserialize($foo, ["allowed_classes" => false]);
+
+// converts all objects into __PHP_Incomplete_Class object except those of MyClass and MyClass2
+$data = unserialize($foo, ["allowed_classes" => ["MyClass", "MyClass2"]]);
+
+// default behaviour (same as omitting the second argument) that accepts all classes
+$data = unserialize($foo, ["allowed_classes" => true]);
+```
 
 ---
 
