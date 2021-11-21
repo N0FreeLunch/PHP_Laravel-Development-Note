@@ -152,15 +152,18 @@ echo $getX->call(new A);
 - 함수에 객체를 바인딩하면서 호출할 수 있다.
 
 ## 필터링된 unserialize()
+#### 모든 클래스를 불완전하게 언시리얼라이징 함
 ```
-<?php
-
 // converts all objects into __PHP_Incomplete_Class object
 $data = unserialize($foo, ["allowed_classes" => false]);
-
+```
+#### 지정한 클래스만 완전하게 언시리얼라이징 함
+```
 // converts all objects into __PHP_Incomplete_Class object except those of MyClass and MyClass2
 $data = unserialize($foo, ["allowed_classes" => ["MyClass", "MyClass2"]]);
-
+```
+#### 모든 클래스를 완전하게 언시리얼라이징 함
+```
 // default behaviour (same as omitting the second argument) that accepts all classes
 $data = unserialize($foo, ["allowed_classes" => true]);
 ```
