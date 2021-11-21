@@ -53,6 +53,105 @@ $username = isset($_GET['user']) ? $_GET['user'] : 'nobody';
 $username = $_GET['user'] ?? 'nobody';
 ```
 
+## 우주선 연산자
+```
+echo 1 <=> 1; // 0
+```
+- 왼쪽에서 오른쪽을 뺐을 때 같으면 0
+```
+echo 1 <=> 2; // -1
+```
+- 왼쪽에서 오른쪽을 뺐을 때 음수이면 -1
+```
+echo 2 <=> 1; // 1
+```
+- 왼쪽에서 오른쪽을 뺐을 때 양수이면 1
+
+```
+echo 1.5 <=> 1.5; // 0
+echo 1.5 <=> 2.5; // -1
+echo 2.5 <=> 1.5; // 1
+```
+- float 뿐만 아니라
+```
+echo "a" <=> "a"; // 0
+echo "a" <=> "b"; // -1
+echo "b" <=> "a"; // 1
+```
+- string도 가능
+
+## 배열 상수
+```
+<?php
+define('ANIMALS', [
+    'dog',
+    'cat',
+    'bird'
+]);
+
+echo ANIMALS[1]; // outputs "cat"
+?>
+```
+- 배열 상수 내부의 원소들을 추가, 변경, 제거 할 수 없다. (컴파일 에러 발생)
+
+## 익명 클래스
+```
+<?php
+interface Logger {
+    public function log(string $msg);
+}
+
+class Application {
+    private $logger;
+
+    public function getLogger(): Logger {
+         return $this->logger;
+    }
+
+    public function setLogger(Logger $logger) {
+         $this->logger = $logger;
+    }
+}
+
+$app = new Application;
+$app->setLogger(new class implements Logger {
+    public function log(string $msg) {
+        echo $msg;
+    }
+});
+
+var_dump($app->getLogger());
+?>
+```
+- 이름 없는 클래스를 사용하고 있다.
+- 객체를 사용해야 할 곳에 클래스를 선언함과 동시에 객체로 만들어 사용하고 있다.
+- 인터페이스를 상속 받아 구현할 수 있다.
+- 단, 인터페이스는 익명으로 만들 수 없다.
+
+## Closure::call()
+```
+<?php
+class A {private $x = 1;}
+
+// Pre PHP 7 code
+$getX = function() {return $this->x;};
+$getXCB = $getX->bindTo(new A, 'A'); // intermediate closure
+echo $getXCB();
+```
+- 함수에 객체를 바인딩하여 함수 내부에서 $this로 바인딩 된 대상을 호출할 수 있다.
+- 바인딩 따로 함수 호출 따로
+
+```
+<?php
+class A {private $x = 1;}
+
+// PHP 7+ code
+$getX = function() {return $this->x;};
+echo $getX->call(new A);
+```
+- 함수에 객체를 바인딩하면서 호출할 수 있다.
+- 바인딩을 하면서 함수를 호출
+
 
 ---
 
