@@ -128,6 +128,19 @@ var_dump($app->getLogger());
 - 인터페이스를 상속 받아 구현할 수 있다.
 - 단, 인터페이스는 익명으로 만들 수 없다.
 
+## 유니코드 이스케이프 구문
+#### syntax
+```
+echo "\u{유니코드}";
+```
+- 문자열 내에 
+#### example
+```
+echo "\u{aa}";
+echo "\u{0000aa}";
+echo "\u{9999}";
+```
+
 ## Closure::call()
 ```
 <?php
@@ -166,6 +179,26 @@ $data = unserialize($foo, ["allowed_classes" => ["MyClass", "MyClass2"]]);
 ```
 // default behaviour (same as omitting the second argument) that accepts all classes
 $data = unserialize($foo, ["allowed_classes" => true]);
+```
+
+
+```
+<?php
+
+printf('%x', IntlChar::CODEPOINT_MAX);
+echo IntlChar::charName('@');
+var_dump(IntlChar::ispunct('!'));
+```
+
+
+```
+<?php
+ini_set('assert.exception', 1);
+
+class CustomError extends AssertionError {}
+
+assert(false, new CustomError('Some error message'));
+?>
 ```
 
 ---
