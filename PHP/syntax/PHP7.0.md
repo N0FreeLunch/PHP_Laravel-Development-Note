@@ -254,7 +254,32 @@ foreach ($gen as $val) {
 echo $gen->getReturn(), PHP_EOL;
 ```
 - 제너레이터는 함수를 실행할 때 yield 지점에서 함수의 실행을 일시 정지하는 기능, 나중에 이 함수의 실행을 재개 할 수 있다.
-- PHP에서 제너레이터를 실행할 때는 foreach 구문으로 사용한다. 위 예제에서 foreach 내부에 $val가 등장할 때 함수가 일시 정지된다.
+- 제너레이터 함수를 yield 지점까지 실행하는 방법은 `$gen->next()`를 사용하고, 중단된 yield 실행점에서의 값을 얻을 때는 `$gen->current()`를 사용하고, 최종 실행된 함수의 리턴 값을 얻을 때는 `$gen->getReturn()`을 사용한다.
+- PHP에서 제너레이터를 실행할 때 foreach 구문을 사용할 수 있다. 사용한다. 위 예제에서 foreach 내부에 $val가 등장할 때 함수가 일시 정지되고 해당 실행점에서의 값을 얻을 수 있다.
+- PHP7.0에서 getReturn 메소드가 추가 되었으며, 최종값 생성 여부 확인 + 최종값 반환 두 가지 복합적인 역할을 한다. 이전 버전에서는 두 방법을 나눠서 해야 했다.
+
+## 제너레이터 위임(delegation)
+```
+<?php
+function gen()
+{
+    yield 1;
+    yield 2;
+    yield from gen2();
+}
+
+function gen2()
+{
+    yield 3;
+    yield 4;
+}
+
+foreach (gen() as $val)
+{
+    echo $val, PHP_EOL;
+}
+?>
+```
 
 ## intdiv()
 - 정수 나눗셈의 몫을 반환한다.
@@ -263,6 +288,21 @@ var_dump(intdiv(10, 3));
 ```
 - 결과 값은 3
 
+## Session options
+```
+<?php
+session_start([
+    'cache_limiter' => 'private',
+    'read_and_close' => true,
+]);
+?>
+```
+
+## preg_replace_callback_array()
+
+## CSPRNG
+
+## list
 
 
 
