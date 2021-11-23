@@ -181,7 +181,7 @@ $data = unserialize($foo, ["allowed_classes" => ["MyClass", "MyClass2"]]);
 $data = unserialize($foo, ["allowed_classes" => true]);
 ```
 
-
+## IntlChar
 ```
 <?php
 
@@ -189,8 +189,13 @@ printf('%x', IntlChar::CODEPOINT_MAX);
 echo IntlChar::charName('@');
 var_dump(IntlChar::ispunct('!'));
 ```
+- PHP 유니코드 설정에 대한 수정 및 특수한 특징을 가진 유니코드를 획득할 수 있는 IntlChar 클래스가 PHP7.0에 추가 됨
+- https://www.php.net/manual/en/class.intlchar.php 부분 참고
+- CODEPOINT_MAX는 유니코드 번호의 최대 값 (intlchar 도큐먼트를 보면 확인 할 수 있다.) `10ffff`
+- charName 메소드는 유니코드 문자의 이름을 검색 @의 시스템상 저장되어 있는 이름이 무엇인지 확인 가능하다. `COMMERCIAL AT`
+- ispunct 메소드는 해당 문자가 구두점 문자인지 확인한다. 그래서 `bool(true)` 참인 값이 나온다.
 
-
+## Expectations
 ```
 <?php
 ini_set('assert.exception', 1);
@@ -200,6 +205,66 @@ class CustomError extends AssertionError {}
 assert(false, new CustomError('Some error message'));
 ?>
 ```
+
+## use 그룹 선언
+- 동일한 것에서 가져오는 클래스, 함수 및 상수 namespace 를 이제 단일 use명령문 으로 함께 그룹화할 수 있습니다.
+#### 그룹으로 사용하지 않을 경우
+```
+<?php
+// Pre PHP 7 code
+use some\namespace\ClassA;
+use some\namespace\ClassB;
+use some\namespace\ClassC as C;
+
+use function some\namespace\fn_a;
+use function some\namespace\fn_b;
+use function some\namespace\fn_c;
+
+use const some\namespace\ConstA;
+use const some\namespace\ConstB;
+use const some\namespace\ConstC;
+```
+
+#### 그룹 문법을 사용 할 경우
+```
+<?php
+// PHP 7+ code
+use some\namespace\{ClassA, ClassB, ClassC as C};
+use function some\namespace\{fn_a, fn_b, fn_c};
+use const some\namespace\{ConstA, ConstB, ConstC};
+?>
+```
+- 같은 경로를 가진 여러 네임스페이스에 하나의 닉네임을 사용할 수 있다.
+
+## 제너레이터
+```
+<?php
+
+$gen = (function() {
+    yield 1;
+    yield 2;
+
+    return 3;
+})();
+
+foreach ($gen as $val) {
+    echo $val, PHP_EOL;
+}
+
+echo $gen->getReturn(), PHP_EOL;
+```
+- 제너레이터는 함수를 실행할 때 yield 지점에서 함수의 실행을 일시 정지하는 기능, 나중에 이 함수의 실행을 재개 할 수 있다.
+- PHP에서 제너레이터를 실행할 때는 foreach 구문으로 사용한다. 위 예제에서 foreach 내부에 $val가 등장할 때 함수가 일시 정지된다.
+
+## intdiv()
+- 정수 나눗셈의 몫을 반환한다.
+```
+var_dump(intdiv(10, 3));
+```
+- 결과 값은 3
+
+
+
 
 ---
 
