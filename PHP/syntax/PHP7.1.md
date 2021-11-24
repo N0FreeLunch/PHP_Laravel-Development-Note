@@ -74,6 +74,70 @@ foreach ($data as [$id, $name]) {
     // logic here with $id and $name
 }
 ```
+- 배열에 세팅된 원소 순서대로 값을 변수에 할당한다.
+- `[$a, $b] = [1, 2]`라는 코드이면 $a는 1, $b는 2이다.
+
+## Class constant 가시성
+```
+<?php
+class ConstDemo
+{
+    const PUBLIC_CONST_A = 1;
+    public const PUBLIC_CONST_B = 2;
+    protected const PROTECTED_CONST = 3;
+    private const PRIVATE_CONST = 4;
+}
+```
+- 클래스 내 const 불변값의 접근제한자 설정을 설정할 수 있다.
+
+## iterable pseudo-type
+```
+<?php
+function iterator(iterable $iter)
+{
+    foreach ($iter as $val) {
+        //
+    }
+}
+```
+
+## Multi catch exception handling
+```
+<?php
+try {
+    // some code
+} catch (FirstException | SecondException $e) {
+    // handle first and second exceptions
+}
+```
+- 파이프 `|` 기호를 사용해서 여러 예외 클래스를 하나의 catch 내에 세팅할 수 있다.
+
+
+## list
+```
+<?php
+$data = [
+    ["id" => 1, "name" => 'Tom'],
+    ["id" => 2, "name" => 'Fred'],
+];
+
+// list() style
+list("id" => $id1, "name" => $name1) = $data[0];
+
+// [] style
+["id" => $id1, "name" => $name1] = $data[0];
+
+// list() style
+foreach ($data as list("id" => $id, "name" => $name)) {
+    // logic here with $id and $name
+}
+
+// [] style
+foreach ($data as ["id" => $id, "name" => $name]) {
+    // logic here with $id and $name
+}
+```
+
 
 ---
 
