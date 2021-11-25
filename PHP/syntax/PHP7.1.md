@@ -137,7 +137,8 @@ foreach ($data as ["id" => $id, "name" => $name]) {
     // logic here with $id and $name
 }
 ```
-
+- list는 인덱스가 수인 배열, 순서가 있는 배열이 아닌 비순차 배열을 만들 때 사용한다.
+- list로 만든 배열은 일반적인 array(), [] 으로 만든 배열과 동일하게 사용 가능하다.
 
 ---
 
