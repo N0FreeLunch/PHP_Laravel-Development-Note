@@ -148,6 +148,32 @@ var_dump(strpos("aabbcc", "b", -3));
 - 문자열 오프셋을 적용하는 기준점의 디폴트는 첫번째 문자열이다. 첫번째 문자열을 기준으로 음수 오프셋을 적용하면 첫번째 문자열을 오프셋 0으로 하고, 문자열의 맨 뒤로 이동하게 되며 문자열의 맨 뒤는 오프셋 -1이 된다. 그래서`"abcdef"[-2]`의 경우는 a는 0, f는 -1, e는 -2가 된다.
 - 첫번째 b의 인덱스는 2, 두번째 b의 인덱스는 3이다. 3번째 인자는 기준점의 시작점이다. 문자열 뒤에서 3번째인 오른쪽의 b에서 부터 b가 나오는 지점은 인덱스 3
 
+## Convert callables to Closures with Closure::fromCallable() ¶
+```
+<?php
+class Test
+{
+    public function exposeFunction()
+    {
+        return Closure::fromCallable([$this, 'privateFunction']);
+    }
+
+    private function privateFunction($param)
+    {
+        var_dump($param);
+    }
+}
+
+$privFunc = (new Test)->exposeFunction();
+$privFunc('some value');
+```
+- ??
+
+
+## ext/openssl에서 AEAD 지원
+## Asynchronous signal handling
+## HTTP/2 server push support in ext/curl
+## Stream Context Options
 
 ---
 
