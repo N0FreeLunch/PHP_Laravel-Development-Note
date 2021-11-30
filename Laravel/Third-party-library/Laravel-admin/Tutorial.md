@@ -60,6 +60,10 @@ php artisan make:model Movies
 ```
 php artisan admin:make MovieController --model=App\\Models\\Movie
 ```
+또는
+```
+php artisan admin:make MovieController --model='App\\Models\\Movie'
+```
 
 ## Controller 내부 form 세팅
 ```
