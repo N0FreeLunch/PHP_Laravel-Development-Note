@@ -24,4 +24,7 @@
 - ??
 
 ### permission
-- 페이지에 접속할 수 있는 권한을 설정한다.
+- `/admin/auth/permissions`에서 권한 설정을 할 수 있다.
+- 권한 이름을 설정할 수 있으며, 권한 이름에 따라 접근을 허가할 PATH와 HTTP 메소드 세트를 지정할 수 있다.
+- 권한이란 PATH에 따른 CURD의 제한을 만드는 것이다.
+- menu에 permission을 설정하는 것은 ??
