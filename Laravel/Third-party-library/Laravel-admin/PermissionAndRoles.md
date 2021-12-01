@@ -31,3 +31,18 @@
 - slug : 
 - name : 역할 이름
 - permissions : 여러 권한을 설정할 수 있다. 
+
+
+## 테이블 구조
+### admin_permission
+- 접근 대상이 되는 가능한 HTTP 메소드와 URL 세트
+### admin_roles
+- 유저에게 부여할 역할을 설정하는 부분
+### admin_role_permissions
+- 역할 테이블과 권한 테이블의 다대다 관계를 형성하기 위한 브리치 테이블
+### admin_users
+- 역할과 권한을 부여할 대상이 되는 유저를 등록하기 위한 테이블
+### admin_munu
+- 사이드 메뉴에 메뉴를 등록하기 위한 테이블
+### admin_role_menu
+- 사이드 메뉴의 테이블을 특정 역할의 유저에게 보여줄지 말지를 설정하기 위한 테이블
