@@ -68,6 +68,65 @@ $grid->column('profile->mobile', 'phone number');
 // Add multiple columns
 $grid->columns('email', 'username' ...);
 ```
+- columns 메소드는 column 메소드명의 복수형 여러 명칭의 컬럼명을 추가할 때 사용한다.
+
+## 모델에 제약걸기
+```php
+$grid->model()->where('id', '>', 100);
+
+$grid->model()->whereIn('id', [1, 2, 3]);
+
+$grid->model()->whereBetween('votes', [1, 100]);
+
+$grid->model()->whereColumn('updated_at', '>', 'created_at');
+
+$grid->model()->orderBy('id', 'desc');
+
+$grid->model()->take(100);
+```
+- model() 메소드를 통해서 모델에 제약을 걸고 난 다음 부터는 $grid를 통해서 얻는 결과물은 모두 제약이 걸린 상태의 데이터로 나온다.
+
+
+## 페이지네이션
+```php
+// The default is 20 per page
+$grid->paginate(15);
+```
+- 페이지당 표시되는 줄 수를 표시
+
+## display
+```php
+$grid->text()->display(function($text) {
+    return str_limit($text, 30, '...');
+});
+
+$grid->name()->display(function ($name) {
+    return "<span class='label'>$name</span>";
+});
+
+$grid->email()->display(function ($email) {
+    return "mailto:$email";
+});
+
+// column not in table
+$grid->column('column_not_in_table')->display(function () {
+    return 'blablabla....';
+});
+```
+
+## display 메소드에서 모델 사용하기
+```php
+$grid->column('first_name');
+$grid->column('last_name');
+
+// column not in table
+$grid->column('full_name')->display(function () {
+    return $this->first_name.' '.$this->last_name;
+});
+```
+- display 내부의 익명함수에 바인딩된 $this는 $grid에 바인딩된 모델을 의미한다.
+- 여기서는 Movie 모델의 인스턴스가 익명 함수 내에서 $this에 바인딩 되었다.
+- 문제는 이 바인딩 때문에 현재 객체에 접근하는 용도로 $this를 사용할 수 없는 점
 
 
 ## Reference
