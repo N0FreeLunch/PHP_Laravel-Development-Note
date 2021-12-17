@@ -11,4 +11,14 @@
 $grid->disableRowSelector();
 ```
 
+### export 버튼
+- export 버튼은 기본적으로 활성화 되어 있다.
+- 비활성화 하려면 다음 메소드를 호출한다.
+```
+$grid->disableRowSelector();
+```
+
 ## CSV 컬럼 커스터 마이징 하기
+```
+$grid->exporter(new 다운로드_대상_클래스());
+```
