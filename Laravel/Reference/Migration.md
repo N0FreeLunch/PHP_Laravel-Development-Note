@@ -13,8 +13,6 @@
 php artisan migrate
 ```
 
-
-
 ## 마이그레이션 파일 생성하기
 ```
 php artisan make:migration create_users_table
@@ -31,7 +29,6 @@ php artisan make:migration add_votes_to_users_table --table=users
 - `--create=users` 옵션은 마이그레이션 파일 안에 테이블 생성을 위한 보일러플레이트 코드를 만들어 준다.
 - `--table=users` 옵션은 마이그레이션 파일 안에 테이블 생성을 위한 보일러플레이트 코드를 만들어 준다.
 
-
 #### 생성 경로 지정하기
 - 경로 옵션을 지정하지 않으면 기본적으로는 `database/migrations` 폴더에 마이그레이션 파일이 생성된다.
 - `--path='경로'`
@@ -43,8 +40,21 @@ php artisan make:migration add_votes_to_users_table --table=users
 
 ```
 php artisan schema:dump
+```
+- 스쿼싱을 실행하는 명령어
 
+```
 // Dump the current database schema and prune all existing migrations...
 php artisan schema:dump --prune
 ```
+- 라라벨은 스키마 파일의 SQL을 먼저 실행
+
+### 스쿼싱 마이그레이션
+```
+
+```
+- 라라벨의 마이그레이션이 실행되고 있지 않은 경우, 스키마의 마이그레이션이 실행된다.
+
+
+
 
