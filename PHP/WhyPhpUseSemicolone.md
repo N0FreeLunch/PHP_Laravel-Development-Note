@@ -13,3 +13,7 @@
 ## 새미콜론을 생략할 수 있는 특별한 경우
 - 하나의 php 파일의 마지막 코드에서는 새미콜론을 생략할 수 있다. 마지막 코드는 어차피 명령을 끝내는 것이라서 새미콜론 없이도 명령 수행이 가능한 것으로 보인다.
 - https://stackoverflow.com/questions/29284075/why-is-the-semicolon-optional-in-the-last-statement-in-php/29284131
+
+## 새미콜론의 역할
+- 새미콜론의 역할은 명령어 분리이다.
+- https://www.php.net/manual/en/language.basic-syntax.instruction-separation.php
