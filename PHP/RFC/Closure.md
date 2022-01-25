@@ -1,19 +1,26 @@
 ## PHP의 특징
 - PHP의 함수는 다른 언어의 스코프와 다르다. PHP에서의 함수는 스코프 밖의 대상을 감지할 수 없다.
 - 외부 스코프의 대상을 호출할 수 없는 이유는 PHP의 기존 구조적인 문제 때문이다.
+- 이런 PHP 함수의 특징 때문에 PHP에서는 함수 외부 스코프의 값을 보존할 수 있는 클로저 클래스라는 개념을 만들었다.
+
+## 익명함수와 클로저
+- 익명함수는 말 그대로 이름이 붙여지지 않은 함수이다.
+- 일반적인 프로그래밍 언어에서 클로저는 함수가 선언된 범위 외부의 값 및 참조의 대상을 캡쳐하여 함수 내에 보존하는 것이다. 그러나 PHP에서는 함수 외부의 값 및 참조의 대상을 캡쳐할 수 있는 함수를 클로저라고 한다. 차이는 함수 내에서 보존된 대상을 클로저로 부를 것이냐, 함수 내에 외부 대상을 보존할 수 있다면 클로저라고 부를 것이냐의 차이이다.
+- PHP에서 클로저는 클래스를 기반으로 만들었기 때문에 php의 모든 함수는 클로저 클래스의 구현이다.
 
 ## 람다 함수 도입을 찬성한 이유
 - '재사용할 일 없는 한 번만 쓰고 버리는 함수'(throw-away functions)를 정의할 때 굉장히 유용하여 프로그래밍을 더 편리하게 하기 때문
 
+### 람다 함수가 없을 때의 불편한 코딩의 예
 ```
 function replace_spaces ($text) {
-     if (!function_exists ('replace_spaces_helper')) {
-       function replace_spaces_helper ($matches) {
-         return str_replace ($matches[1], ' ', '&nbsp;').' ';
-       }
-     }
-     return preg_replace_callback ('/( +) /', 'replace_spaces_helper', $text);
-   }
+    if (!function_exists ('replace_spaces_helper')) {
+        function replace_spaces_helper ($matches) {
+            return str_replace ($matches[1], ' ', '&nbsp;').' ';
+        }
+    }
+    return preg_replace_callback ('/( +) /', 'replace_spaces_helper', $text);
+}
 ```
 - preg_replace_callback의 외부에서 replace_spaces_helper라는 함수를 정의 한 후 사용한다.
 - 만약 replace_spaces_helper라는 함수가 위 코드 외부에 어디선가 정의되어 있다면 함수명이 중복되므로 에러가 발생하므로 없는지 정의한 명칭의 함수명이 있는지 없는지 체크를 해야 한다.
@@ -49,5 +56,51 @@ function replace_spaces ($text) {
 - 때로는 foreach 보다 array_map과 같은 함수를 사용하는 것이 더 직관적이고 세련된 방식으로 만족감을 줄 수 있다.
 
 
+## 렉시컬 변수
+```
+function getAdder($x) {
+    return function ($y) use ($x) {
+        // or: lexical $x;
+        return $x + $y;
+    };
+}
+```
+- getAdder 함수에 의해 리턴된 익명함수는 변수 $x를 클로저로 가지고 있다. (일반적인 프로그래밍 언어에서의 클로저)
+- getAdder 함수의 호출이 끝나도 리턴된 익명함수를 사용하는 대상은 변수 $x를 보존하고 있다. 
+- getAdder 함수의 라이프사이클은 끝나더라도 리턴된 익명함수가 변수 $x를 보존하고 있기 때문에 PHP에서의 클로저(함수, 클래스)는 getAdder 보다 더 긴 라이프 사이클을 가진다.
+- 클로저에 의해 보존된 $x를 '렉시컬(lexical) $x' 라고 부른다.
+
+
+## 참조와 복사
+- 기본적으로 클로저로 가져온 모든 대상은 복사를 통해 가져와서 보존한다. 이는 클로저가 외부 범위의 변수를 수정하는 것을 불가능하게 만든다.
+- 하지만, use 선언에서 변수 이름 앞에 &를 추가하면 복사 대신 참조로 대상을 가져온다. 이 경우 클로저에서 보존한 대상을 바꾸면 외부 범위에 영향을 끼친다.
+
+### 참조/복사의 예시
+```
+$x = 1;
+$lambda1 = function () use ($x) {
+    $x *= 2;
+};
+$lambda2 = function () use (&$x) {
+    $x *= 3;
+};
+$lambda1 ();
+var_dump ($x); // gives: 1
+$lambda2 ();
+var_dump ($x); // gives: 3
+```
+
+### 클로저에서 복사를 기본적으로 사용해야 하는 이유
+- 클로저를 주로 사용하는 것은 고차함수에서 사용하는데, map, filter, reduce 등과 같은 이터레이터 형태의 고차함수에서 참조를 사용하면 로직이 복잡해 질 수 있기 때문에 가능한 복사를 사용하는 편이 좋은방법이다. 
+
+### 클로저에서 참조가 필요한 이유
+- 자바스크립트와 같이 부모 범위의 대상을 바꿀 수 있는 기능까지 지원하기 위해서
+
+## OOP와의 상호작용
+
+
+
+
 ## Reference
 - https://wiki.php.net/rfc/closures
+- https://stackoverflow.com/questions/4912116/closure-vs-anonymous-function-difference
