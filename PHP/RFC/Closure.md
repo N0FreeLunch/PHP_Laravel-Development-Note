@@ -8,6 +8,8 @@
 - 일반적인 프로그래밍 언어에서 클로저는 함수가 선언된 범위 외부의 값 및 참조의 대상을 캡쳐하여 함수 내에 보존하는 것이다. 그러나 PHP에서는 함수 외부의 값 및 참조의 대상을 캡쳐할 수 있는 함수를 클로저라고 한다. 차이는 함수 내에서 보존된 대상을 클로저로 부를 것이냐, 함수 내에 외부 대상을 보존할 수 있다면 클로저라고 부를 것이냐의 차이이다.
 - PHP에서 클로저는 클래스를 기반으로 만들었기 때문에 php의 모든 함수는 클로저 클래스의 구현이다.
 
+## 람다함수와 클로저
+
 ## 람다 함수 도입을 찬성한 이유
 - '재사용할 일 없는 한 번만 쓰고 버리는 함수'(throw-away functions)를 정의할 때 굉장히 유용하여 프로그래밍을 더 편리하게 하기 때문
 
@@ -97,9 +99,50 @@ var_dump ($x); // gives: 3
 - 자바스크립트와 같이 부모 범위의 대상을 바꿀 수 있는 기능까지 지원하기 위해서
 
 ## OOP와의 상호작용
+```
+     class Example {
+       private $search;
+ 
+       public function __construct ($search) {
+         $this->search = $search;
+       }
+ 
+       public function setSearch ($search) {
+         $this->search = $search;
+       }
+ 
+       public function getReplacer ($replacement) {
+         return function ($text) use ($replacement) {
+           return str_replace ($this->search, $replacement, $text);
+         };
+       }
+     }
+ 
+     $example = new Example ('hello');
+     $replacer = $example->getReplacer ('goodbye');
+     echo $replacer ('hello world'); // goodbye world
+     $example->setSearch ('world');
+     echo $replacer ('hello world'); // hello goodbye
+```
+- 객체에서 사용된 클로저에서 클로저 내부의 $this는 객체를 가리킨다. 이때 클로저 함수 내부에서 $this는 use 키워드 없이 $this를 사용할 수 있으며, 현 객체에 접근할 수 있다.
+- 객체 내에서 선언된 클로저 내부의 $this는 해당 객체의 private protected 접근 제한자로 선언된 멤버 및 메소드에 접근할 수 있다. $this에 해당하는 객체에 대한 전체 액세스 권한을 갖는다. 이는 중첩된 클로저에도 적용된다.
+`return str_replace ($this->search, $replacement, $text);` 부분에서 $this는 Example 클래스가 인스턴스화 된 대상을 가리킴
 
-
-
+## 정적 클로저
+- 정적이라는 것은 클래스를 인스턴스화 되지 않은 클래스에서도 사용할 수 있도록 클래스의 맴버를 정의하는 것을 의미한다.
+- 클래스 내에서 선언된 클로저의 내부에서 현재 객체를 참조할 필요가 없을 때 정적 클로저를 만들어 사용할 수 있다.
+```
+     class Example {
+       public function doSomething () {
+         $x = 4;
+         $closure = static function ($y) use ($x) {
+           return $x + $y;
+         };
+         return $closure (6);
+       }
+     }
+```
+- 정적 클로저는 오랫동안 참조 클래스가 있을 때 메모리를 절약할 목적으로 전략적인 사용을 할 수 있다.
 
 ## Reference
 - https://wiki.php.net/rfc/closures
