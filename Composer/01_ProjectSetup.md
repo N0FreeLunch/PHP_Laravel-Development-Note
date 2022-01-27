@@ -41,5 +41,18 @@ php composer.phar update
 - 종속성 패키지가 설치되는 vendor 폴더는 git등에 의한 버전관리를 하지 않는다.
 - vendor 폴더가 버전관리 되지 않기 때문에 프로젝트를 클론해서 설치하는 경우 composer.lock (또는 lock 파일이 없다면 composer.json)의 패키지 버전으로 설치한다.
 
+## Packagist.org
+- 메인 Composer 저장소로, 컴포저를 통해 패키지를 가져올 수 있는 저장소이다.
+- 메인 저장소를 사용하지 않으면 컴포저를 통해 패키지를 다운로드 하기 위해서 저장소 위치를 추가로 지정해 줘야 한다. 곧 별도의 저장소 위치를 지정해 주지 않는다면 메인 저장소인 Packagist.org에서 패키지를 다운로드한다.
+- 라이브러리를 만들었다면 Packagist.org에 등록하는 것이 많은 사람들에게 채택될 수 있는 방법이다. 왜냐하면 패키지가 개인 저장소에서는 사라질 우려가 있고 저장소를 지정해야 하는 좀 더 복잡한 명령어를 요구하기 때문에 안전한 저장소인 Packagist.org를 우선할 것이기 때문이다.
+
+
+## 플렛폼 패키지
+
+## 오토로딩
+
+
+
+
 ## Reference
 - https://getcomposer.org/doc/01-basic-usage.md
