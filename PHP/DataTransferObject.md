@@ -27,9 +27,114 @@
 ### 라이브러리를 통한 DTO 객체 만들기
 - https://github.com/spatie/data-transfer-object // spatie에서 나온 신뢰할 수 있는 DTO 라이브러리
 - 연관 배열을 DTO 객체로 만들어 주는 기능을 제공하기 때문에 적은 코드로 DTO 객체를 만들어 쓸 수 있는 장점이 있다.
-- PHP의 기본 문법을 사용하지 않고 라이브러리 의존적이라서 새로운 개념을 배워야한다는 압박감을 줄 수 있지만, DTO 개념을 PHP에서 사용하고자 한다면 필수적이며, 객체지향의 원리에 맞고 타입 제한이 되어 있는 데이터전달 객체를 사용한 프로그래밍을 하려면 굉장히 유용한 대상이다.
+- PHP의 기본 문법을 사용하지 않고 라이브러리 의존적이라서 새로운 개념을 배워야한다는 압박감을 줄 수 있지만, DTO 개념을 PHP에서 사용하고자 한다면 필수적이며, 객체지향의 원리에 맞고 타입 제한이 되어 있는 데이터전달 객체를 사용한 프로그래밍을 하려면 굉장히 유용한 방법이다.
+
+
+## DTO의 구조
+- DTO의 구조는 단순해야 한다.
+- DTO는 데이터를 전달하는 목적으로 사용하기 때문에 비즈니스에 관한 로직을 처리를 하지 않는다.
+- DTO에 들어 오는 데이터의 범위를 제한 하기 위해서 잘못된 값이 들어 올 경우, 에러를 발생 시키는 등의 로직을 처리할 수 있다.
+```
+class BlogData
+{
+    /** @var string */
+    private $title;
+    
+    /** @var Status */
+    private $status;
+    
+    /** @var \DateTimeImmutable|null */
+    private $publishedAt;
+   
+   /**
+    * @param string $title 
+    * @param Status $status 
+    * @param \DateTimeImmutable|null $publishedAt 
+    */
+    public function __construct(
+        $title,
+        $status,
+        $publishedAt = null
+    ) {
+        $this->title = $title;
+        $this->status = $status;
+        $this->publishedAt = $publishedAt;
+    }
+    
+    /**
+     * @return string 
+     */
+    public function getTitle()
+    {
+        return $this->title;    
+    }
+    
+    /**
+     * @return Status 
+     */
+    public function getStatus() 
+    {
+        return $this->status;    
+    }
+    
+    /**
+     * @return \DateTimeImmutable|null 
+     */
+    public function getPublishedAt() 
+    {
+        return $this->publishedAt;    
+    }
+}
+```
+- 객체 외부에서 사용할 수 없는 멤버 변수를 선언한다.
+- 생성자를 통해 객체 생성 시 멤버 변수에 값을 할당한다.
+- 각각의 멤버를 객체 외부에서 불러 올 수 있는 메소드를 작성한다.
+
+
+### PHP 8.0에서의 DTO 구현
+```
+class BlogData
+{
+    public function __construct(
+        private string $title,
+        private Status $status,
+        private ?DateTimeImmutable $publishedAt = null,
+    ) {}
+    
+    public function getTitle(): string
+    {
+        return $this->title;    
+    }
+    
+    public function getStatus(): Status 
+    {
+        return $this->status;    
+    }
+    
+    public function getPublishedAt(): ?DateTimeImmutable
+    {
+        return $this->publishedAt;    
+    }
+}
+```
+- 클래스 내부에 멤버 변수를 따로 선언하지 않고, 생성자의 인자를 통해 멤버 변수를 생성할 수 있다.
+- 하지만 getter는 만들어 줘야 하는 불편함은 여전히 남아 있다.
+
+
+### PHP 8.1에서의 구현
+```
+class BlogData
+{
+    public function __construct(
+        public readonly string $title,
+        public readonly Status $status,
+        public readonly ?DateTimeImmutable $publishedAt = null,
+    ) {}
+}
+```
 
 
 ## Reference
 - https://library.gabia.com/contents/8488/
 - https://medium.com/musinsa-tech/%EB%AA%A8%EB%8D%98-php%EC%97%90%EC%84%9C-%EB%B0%B0%EC%97%B4-%EB%8C%80%EC%8B%A0-dto-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0-d9da20ea716e
+- https://stitcher.io/blog/php-81-readonly-properties
