@@ -166,7 +166,7 @@ class BlogData
 - 하지만 getter는 만들어 줘야 하는 불편함은 여전히 남아 있다.
 
 
-### PHP 8.1에서 DTO의 구현 (setter only)
+### PHP 8.1에서 DTO의 구현 (getter only)
 ```
 class BlogData
 {
