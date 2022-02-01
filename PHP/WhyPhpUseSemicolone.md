@@ -17,3 +17,12 @@
 ## 새미콜론의 역할
 - 새미콜론의 역할은 명령어 분리이다.
 - https://www.php.net/manual/en/language.basic-syntax.instruction-separation.php
+
+## 새미콜론의 활용 예
+- if문에 {}를 사용하지 않고 사용하기 위해 타 언어의 경우 if문과 동일한 줄 또는 if문 다음 한 줄만을 사용하는 방식을 쓰지만 php에서는 if() 다음에 {}를 쓰지 않고 여러줄의 코드를 작성할 수 있다. 물론 이 여러줄은 새미콜론으로 분리되는 코드가 아니어야 한다.
+```
+if($this->isA())
+    $this->b()
+        ->c()
+        ->d();
+```
