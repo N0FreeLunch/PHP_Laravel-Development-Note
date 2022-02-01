@@ -39,7 +39,7 @@
 
 
 ## MySql 이 아닌 다른 디비에서의 퍼시스트 커넥션
-- php는 트렌젝션을 처리할 수 있는 RDBMS에서 퍼시스트 커넥션을 지원하는 디비로 mysql, postgresql, mssql을 지원한다.
+- php는 트렌젝션을 처리할 수 있는 RDBMS에서 퍼시스트 커넥션을 지원하는 디비 연결을 위한 함수로 ibase_pconnect(), ociplogon(), odbc_pconnect(), oci_pconnect(), pfsockopen(), and pg_pconnect()을 지원한다.
 
 ### 퍼시스트 커넥션이 비효율적인 경우
 
