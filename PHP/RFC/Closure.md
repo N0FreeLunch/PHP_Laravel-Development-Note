@@ -162,6 +162,39 @@ $foo ();
 - Example 클래스는 함수처럼 사용할 수 있으며 ()를 통해서 \_\_invoke 메소드를 실행한다.
 - 객체의 경우는`new Example()`로만 사용해서 ()까지가 한 단위인 것으로 보인다. 하지만 `$foo = new Example;` 부분을 보면 알 수 있겠지만 객체가 클로저화 되면 `new Example`까지 한 단위이고 `(new Example)()`이렇게 실행할 수  있다는 것을 알 수 있다. `(new Example)` 문법이 성립한다는 것은 객체가 클로저화 되었을 때 성립하는 문법이다.
 
+
+## closure의 사양
+```
+final class Closure {
+    /* Methods */
+    private __construct()
+    public static bind(Closure $closure, ?object $newThis, object|string|null $newScope = "static"): ?Closure
+    public bindTo(?object $newThis, object|string|null $newScope = "static"): ?Closure
+    public call(object $newThis, mixed ...$args): mixed
+    public static fromCallable(callable $callback): Closure
+}
+```
+### 클로저 객체에서 사용할 수 있는 4가지 기능
+- bind 함수, bindTo 함수, call함수, fromCallable 함수
+
+### 객체 인스턴스화를 막기 위한 방법
+- `Closure::__construct`는 객체의 인스턴스화를 막는다.
+- `new Closure()`를 사용한 객체 생성을 막는다. 객체 생성이 안 될 경우 로직 처리를 어떻게 할지 PHP엔진은 찾게 되고 클로저 객체의 경우 함수로 실행한다.
+
+### 지정된 객체에 클로저를 복사해서 담는 기능
+- `Closure::bind`는 특정 바인딩 된 객체 및 클래스 범위로 클로저를 복제한다. $newThis 또는 새로운 객체에 클로저 객체를 바인딩 하는 함수
+- `Closure::bindTo` 새 바인딩 된 객체 및 클래스 범위로 클로저를 복제한다.
+- 클로저가 static인 경우는 bind 함수를 통해서 객체에 클로저를 바인딩 할 수 있다.
+- 클로저가 static이 아닌 경우는 bindTo 함수를 통해서 객체에 클로저를 바인딩 할 수 있다.
+
+### 지정한 객체를 클로저로 실행하고 실행할 때 지정된 인자를 사용한다.
+- `Closure::call` 클로저를 임시로 바인딩하고 newThis 객체를 `mixed ...$args`으로 전달된 인자를 매개변수로 하여 호출한다.
+
+### callable인 대상을 클로저로 변환한다.
+- `Closure::fromCallable` callable을 클로저로 변환
+- php에서 호출 가능한 유형을 클로저로 변환한다. 곧 클로저 객체를 기반으로 모두 바꾼다는 의미
+
 ## Reference
 - https://wiki.php.net/rfc/closures
+- https://www.php.net/manual/en/class.closure.php
 - https://stackoverflow.com/questions/4912116/closure-vs-anonymous-function-difference
