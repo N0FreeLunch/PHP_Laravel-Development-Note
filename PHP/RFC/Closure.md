@@ -160,7 +160,7 @@ $foo ();
 - 이런 클로저 구현의 특징을 사용해 \_\_invoke 메소드를 만들었다.
 - 따라서 \_\_invoke 메소드는 클로저와 동일한 방식으로 객체를 함수화 하는 역할을 한다.
 - Example 클래스는 함수처럼 사용할 수 있으며 ()를 통해서 \_\_invoke 메소드를 실행한다.
-- `$foo = new Example;` 부분을 보면 알 수 있겠지만, `new Example()`로만 사용해서 ()까지가 한 단위인 것으로 보이지만, `new Example`까지 한 단위이고 `(new Example)()`이렇게 실행할 수  있다는 것을 알 수 있다.
+- 객체의 경우는`new Example()`로만 사용해서 ()까지가 한 단위인 것으로 보인다. 하지만 `$foo = new Example;` 부분을 보면 알 수 있겠지만 객체가 클로저화 되면 `new Example`까지 한 단위이고 `(new Example)()`이렇게 실행할 수  있다는 것을 알 수 있다. `(new Example)` 문법이 성립한다는 것은 객체가 클로저화 되었을 때 성립하는 문법이다.
 
 ## Reference
 - https://wiki.php.net/rfc/closures
