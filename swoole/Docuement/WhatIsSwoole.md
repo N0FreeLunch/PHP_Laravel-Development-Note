@@ -11,6 +11,9 @@
 ## 호환성
 - 기존 PHP 구문으로 고성능의 확장이 가능하다.
 
+### 유명 라이브러리 중 호환 되지 않는 것들
+- Xdebug, phptrace, aop, molten, xhprof, Phalcon, BlackFire
+
 ## 알아두면 좋은 것
 - Apache, Nginx 등을 프록시 서버로 두고 swoole 서버에 연결할 수도 있다.
 
