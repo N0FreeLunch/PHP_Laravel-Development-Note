@@ -13,7 +13,6 @@
 - 코루틴의 작업을 지원하는 역할을 한다.
 - 모든 작업이 메모리 내에서 수행된다.
 
-
 ## swoole에서의 채널 사용
 - `\chan`으로 사용하거나 `Swoole\Coroutine\Channel` 네임스페이스를 통해서 사용할 수 있다.
 
@@ -21,7 +20,7 @@
 - 코루틴을 동기화 할 때는 WaitGroup, batch , Barrier를 사용한다.
 
 ## 채널 클래스 속성
-- ---
+??
 
 ### capacity
 - `Swoole\Coroutine\Channel->$capacity` : 채널의 대기열 용량으로, 새 채널을 생성할 때 생성자 내에서 설정됩니다. 1보다 크거나 같아야 합니다.
@@ -36,7 +35,6 @@
 #### 반환값이 -1인 경우
 - 상수 : SWOOL_CHANNEL_TIMEOUT
 - 채널이 타임아웃 상태일 때
-
 
 #### 반환값이 -2인 경우
 - 상수 : SWOOL_CHANNEL_CLOSED
@@ -75,8 +73,8 @@ Co\run(function () {
 - 하나의 컨텍스트 `Co\run()` 내에 루틴이 두 개 `go(function() use ($chan) {...});`, `go(function() use ($chan) {...});`가 들어가 있다.
 - 루틴을 정의할 때 사용하는 클로저는 설정한 채널 객체 `$chan`을 캡쳐링 한다. 클로저에 객체를 캡쳐하면 참조로 전달되므로 두 루틴은 $chan 객체를 공유하고 있다.
 - 각 루틴에서 각 루틴의 아이디를 `Swoole\Coroutine::getuid();`으로 가져온다.
-
-
+- 첫 번째 루틴은 1초에 한 번씩 4자릿수의 렌덤 숫자를 채널에 담고 출력한다. 두 번째 루틴 루틴이 동작할 때 계속 채널에서 뽑은 데이터를 출력한다.
+- 하나의 루틴에서 저장한 값을 다른 루틴에서 사용하기 위해 pop으로 뽑으면 채널에 저장된 데이터는 pop과 동시에 사라지기 때문에 다른 루틴에서 동일 메모리를 동시에 접근하여 수정하는 경우를 막을 수 있다. pop을 통해 값을 꺼내 처리를 하고 push를 통해 다시 값을 세팅하는 방식을 통해서 레이스 컨디션 상태를 막을 수 있다.
 
 ## Reference
 - https://openswoole.com/docs/modules/swoole-coroutine-channel
