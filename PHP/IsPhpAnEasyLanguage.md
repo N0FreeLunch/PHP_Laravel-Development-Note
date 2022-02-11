@@ -31,5 +31,5 @@
 
 ### 내장 함수들의 비일관 된 설계
 - 함수 이름 간의 비일관성
-- 비슷한 유형의 함수 간의 인자의 순서 또한 다르다. 예를 들어 array_filter의 경우는 첫 번째 인자가 array, 두 번째 인자가 callable이며 array_map의 경우는 첫 번째 인자가 callable 두 번째 인자가 array이다.
+- 비슷한 유형의 함수 간의 인자의 순서 또한 다르다. 예를 들어 array_filter의 경우는 첫 번째 인자가 array, 두 번째 인자가 callable이며 array_map의 경우는 첫 번째 인자가 callable 두 번째 인자가 array이다. (이건 너무 심한 문제)
 
