@@ -49,7 +49,7 @@ function getData() {
 - 세미콜론의 역할은 명령어 종료이다.
 - https://www.php.net/manual/en/language.basic-syntax.instruction-separation.php
 
-## 명령과 종결의 
+## 명령과 종결의 차이
 ### php 태그를 열고 닫지 않는 경우
 ```
 <?php echo 'Ending tag excluded';
