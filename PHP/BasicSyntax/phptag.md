@@ -17,6 +17,7 @@
 - php.ini 파일을 이 구문의 활성/비활성을 선택할 수 있다.
 - php.ini 파일 안에 `short_open_tag ` 옵션에 true, false를 지정하여 활성화/비활성화를 한다.
 - `php` 명령을 사용할 때 옵션으로 `--disable-short-tags`을 추가하면 실행 시 비활성화 된다.
+- 짧은 태그는 비활성화 가능하므로 호환성을 위해 가능하면 사용하지 않는 편이 좋다.
 
 ## php 태그 이외의 값은 무시
 - php 태그 안에 들어 있지 않은 값은 php 엔진에 의해 해석되지 않는다.
@@ -36,6 +37,9 @@ It's equivalent to <?php echo 'print this string' ?>.
 ```
 - 문자열에 개행이 포함되어 있으면 `documents,` 뒤 `들여쓰기 공백 use`앞에 개행이 포함된다.
 - `들여쓰기 공백` 문자열 개행 후 들여쓰기 한 공백도 모두 문자열의 출력 결과에 포함된다.
+
+## 닫는 태그 생략
+- 닫는 태그 뒤에 실수로 공백이나 새 줄이 추가되는 것을 방지할 수 있다.
 
 ## Reference
 - https://www.php.net/manual/en/language.basic-syntax.phptags.php
