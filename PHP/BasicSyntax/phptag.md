@@ -40,6 +40,7 @@ It's equivalent to <?php echo 'print this string' ?>.
 
 ## 닫는 태그 생략
 - 닫는 태그 뒤에 실수로 공백이나 새 줄이 추가되는 것을 방지할 수 있다.
+- 출력 버퍼링관 관련된 부분에 대해 조사할 필요가 
 
 ## Reference
 - https://www.php.net/manual/en/language.basic-syntax.phptags.php
