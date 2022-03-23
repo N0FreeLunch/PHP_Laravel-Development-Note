@@ -1,5 +1,8 @@
 ## 라라벨 어드민 판낼의 종류
-- Nova : 공식 어드민 패키지 (유료)
-- Laravel-admin (무료)
-- Voyager (무료)
-- backpack (상용은 유료)
+- https://voyager.devdojo.com/
+- https://orchid.software/
+- https://lean-admin.dev/
+- https://filamentphp.com/
+- https://nova.laravel.com/
+- https://backpackforlaravel.com/
+- https://laravel-admin.org/docs/en/
