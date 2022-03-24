@@ -28,8 +28,13 @@ $request->except(['param4', 'param5', 'param6']);
 ```
 $form->ignore('column1', 'column2', 'column3');
 ```
+```
+$form->submitted(function (Form $form) {
+    $form->ignore('username');
+ });
+```
 
-### 모델의 값 업데이트를 확인하는 방법
+### 모델의 값 업데이트를 확인하여 업데이트를 방지하는 방법
 ```
 // callback after form submission
 $form->submitted(function (Form $form) {
