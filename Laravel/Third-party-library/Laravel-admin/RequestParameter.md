@@ -1,7 +1,4 @@
 ## 라라벨 어드민에서 파라메터
-- 라라벨 어드민에서 Form 태그에서 전달 된 파라메터는 일반적인 파라메터의 방식과는 조금 다르다.
-- 일반적인 POST 통신의 파라메터 하나당 key : value 형식을 갖는 것에 반해 라라벨 어드민은 pjax를 사용하여 특정한 방식으로 key : value를 보낸다. 단순 key, value 뿐만 아니라 여러가지 부가적인 정보들을 섞어서 보낸다.
-- 따라서 라라벨의 Request 객체에서 파라메터를 획득할 수 없는 문제가 있다. 그리고 라라벨 어드민 실행 컨텍스트 내에서 `Illuminate\Http\Request` 객체를 사용해서 값을 받아오지 못하는 문제도 있다.
 - 라라벨 어드민에서 Form 태그를 정의하는 방식은 라라벨 어드민의 Form 객체를 사용하는 것이며, 라이브러리를 사용할 때 Form 객체에 Request 객체에서 받은 파라메터를 직접 집어넣지 않으며 라라벨 어드민 라이브러리가 알아서 전달 받은 파라메터를 처리한다. 그러므로 라라벨 어드민 라이브러리에서 Request에서 파라메터를 처리할 수 있는 기능을 지원하지 않는다면, 리퀘스트로 전달 받은 파라메터를 필터링 할 수 없는 문제가 있다.
 - 하지만 라라벨 어드민은 리퀘스트 파라메터를 직접적으로 컨트롤 할 수 있는 기능을 제공하지는 않는다.
 
@@ -31,7 +28,7 @@ $form->ignore('column1', 'column2', 'column3');
 ```
 $form->submitted(function (Form $form) {
     $form->ignore('username');
- });
+});
 ```
 
 ### 모델의 값 업데이트를 확인하여 업데이트를 방지하는 방법
@@ -57,4 +54,29 @@ $form->saved(function (Form $form) {
     $modelChanges = $form->models()->getChanges();
     unset($modelChanges['param1'], $modelChanges['param2'], $modelChanges['param3'] ...);
 });
+```
+
+### 화이트 리스트 만드는 법
+```php
+class formClass {
+    pulbic $updateParams = [
+        'name',
+        'age',
+        'gender'
+    ];
+
+    public handle()
+    {
+        $form->submitted(function (Form $form) {
+            $ignoreParams = array_fiter(
+                request()->all(), 
+                function ($value, $key) use ($updateParams) {
+                    return in_array($key, updateParams);
+                }
+            );
+
+            $form->ignore(...$ignoreParams);
+        });
+    }
+}
 ```
