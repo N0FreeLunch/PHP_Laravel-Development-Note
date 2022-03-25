@@ -59,7 +59,7 @@ $form->saved(function (Form $form) {
 ### 화이트 리스트 만드는 법
 ```php
 class formClass {
-    pulbic $updateParams = [
+    pulbic $whiteListParams = [
         'name',
         'age',
         'gender'
@@ -70,8 +70,8 @@ class formClass {
         $form->submitted(function (Form $form) {
             $ignoreParams = array_fiter(
                 request()->all(), 
-                function ($value, $key) use ($updateParams) {
-                    return in_array($key, updateParams);
+                function ($value, $key) {
+                    return !in_array($key, $this->whiteListParams);
                 }
             );
 
