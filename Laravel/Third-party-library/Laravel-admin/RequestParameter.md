@@ -23,11 +23,11 @@ $request->except(['param4', 'param5', 'param6']);
 
 ### ignore 메소드를 이용하는 방법
 ```
-$form->ignore('column1', 'column2', 'column3');
+$form->ignore(['param4', 'param5', 'param6']);
 ```
 ```
 $form->submitted(function (Form $form) {
-    $form->ignore('username');
+    $form->ignore(['param4', 'param5', 'param6']);
 });
 ```
 
