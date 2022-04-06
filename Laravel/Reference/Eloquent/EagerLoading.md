@@ -2,7 +2,8 @@
 - 엘로퀀트에서 연관 모델을 접근할 때 기본적으로 지연로딩이 이뤄진다.
 - `$modelA->modelB()`에서는 모델 A에서 모델 B를 접근할 때 지연로딩이 이뤄지는 것.
 - 지연로딩이란 모델 A의 데이터를 쿼리를 통해서 가져온 다음 모델 A의 각 레코드 데이터에 대해서 모델 B의 데이터를 쿼리를 통해 가져오는 방식이다.
-- 엘로퀀트는 상위모델을 조회할 때 연관 관계를 맺고 있는 하위 모델을 즉시 로딩(eager-loading) 할 수 있는 기능을 제공한다.
+- 엘로퀀트는 상위모델을 조회할 때 연관 관계를 맺고 있는 하위 모델을 즉시 로딩(eager-loading) 할 수 있는 기능을 제공한다. (하위 모델이 상위 모델을 즉시 로딩할 수 있는 기능을 지원하지는 않는다.)
+- 지연로딩의 경우 `$modelA->modelB()` 방식으로 연관 모델을 접근하지만 즉시로딩의 경우 `$modelA->modelB` 방식으로 연관 모델에 접근한다.
 
 ## N+1 문제
 ```
@@ -83,3 +84,24 @@ class Book extends Model
     }
 }
 ```
+
+## 여러 연관관계 모델에 대한 eager loading
+```
+$books = Book::with(['author', 'publisher'])->get();
+```
+- Book 모델에서 연관 관계를 정의한 메소드 명칭을 적는 것으로 eager 로딩을 할 수 있다.
+- Book 모델과 연관 관계를 정의한 Author 모델과 연관 관계를 갖는 `author` 메소드를 지정, Book 모델과 연관 관계를 정의한 Publisher 모델과 연관 관계를 갖는 `publisher` 메소드를 지정
+- `$books->author->'Author 모델의 멤버에 접근'`, - `$books->publisher->'Publisher 모델의 멤버에 접근'` 방식으로 사용할 수 있다.
+
+
+## 중첩된 모델에 대한 eager loading
+```
+$books = Book::with('author.contacts')->get();
+```
+- 연관 관계의 연관관계를 즉시로딩 하기 위해 사용한다.
+- `$books` 객체는 Book 모델의 연관 모델인 Author 모델을 미리 객체에 담아 놓고 Author 모델의 연관 모델인 Contacts 모델도 미리 $books 객체에 담아 놓는다.
+- `$books->author->contacts->'Contacts 모델의 멤버에 접근'`의 방식으로 사용한다.
+
+
+## Reference
+- https://laravel.kr/docs/8.x/eloquent-relationships#eager-loading
