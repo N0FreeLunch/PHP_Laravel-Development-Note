@@ -51,7 +51,7 @@ foreach ($books as $book) {
 }
 ```
 - 즉시 로딩은 `Book` 모델의 쿼리를 날릴 때 연관 되어 있는 `author` 모델의 데이터를 함께 가져오는 역할을 한다.
-- 따라서 루프 내의 `$book->author` 코드를 사용할 때 이미 `$books`에 저장되어 있는 정보를 이용하기 때문에 이 코드를 실행하는 시점에서 별도의 쿼리를 날리지 않는다.
+- 따라서 루프 내의 `$book->author` 코드를 사용할 때 이미 `$books`에 저장되어 있는 정보를 이용하기 때문에 이 코드를 실행하는 시점(author 프로퍼티에 접근하는 시점)에서 별도의 쿼리를 날리지 않는다.
 
 #### 실행 쿼리
 ```
@@ -98,7 +98,7 @@ $books = Book::with(['author', 'publisher'])->get();
 ```
 $books = Book::with('author.contacts')->get();
 ```
-- 연관관계의 연관관계를 즉시로딩 하기 위해 사용한다.
+- 연관관계의 연관관계를 eager loading 하기 위해 사용한다. 
 - `$books` 객체는 Book 모델의 연관 모델인 Author 모델을 미리 객체에 담아 놓고 Author 모델의 연관 모델인 Contacts 모델도 미리 $books 객체에 담아 놓는다.
 - `$books->author->contacts->'Contacts 모델의 멤버에 접근'`의 방식으로 사용한다.
 
