@@ -85,6 +85,14 @@ class Book extends Model
 }
 ```
 
+## Eager 로딩에서 컬럼 지정하기
+- 기본적으로 즉시 로딩을 사용할 때 엘로퀀트 모델에서 지정한 모든 컬럼을 다 들고 온다.
+- 특정한 컬럼을 지정하여 데이터를 가져오고 싶을 때 사용한다.
+```
+$books = Book::with('author:id,name,book_id')->get();
+```
+
+
 ## 여러 연관관계 모델에 대한 eager loading
 ```
 $books = Book::with(['author', 'publisher'])->get();
@@ -104,6 +112,8 @@ $books = Book::with('author.contacts')->get();
 
 
 ## morphTo 연관관계
+- 하나의 모델이 가지고 있는 여러 엔티티가 여러 상위 모델과 연관 관계를 형성할 때 사용하는 방법이다.
+
 ### 테이블 간 연관관계
 - Calendar:Event의 관계를 1:N
 - Photo:Tag의 관계를 N:M
@@ -125,13 +135,6 @@ class ActivityFeed extends Model
         return $this->morphTo();
     }
 }
-```
-
-## Eager 로딩에서 컬럼 지정하기
-- 기본적으로 즉시 로딩을 사용할 때 엘로퀀트 모델에서 지정한 모든 컬럼을 다 들고 온다.
-- 특정한 컬럼을 지정하여 데이터를 가져오고 싶을 때 사용한다.
-```
-$books = Book::with('author:id,name,book_id')->get();
 ```
 
 
