@@ -50,11 +50,12 @@ $names = $users->reject(function ($user) {
 
 ### contains 메소드
 - syntax : `contains($key, $operator = null, $value = null)`
-- contains 메소드는 주어진 모델 인스턴스가 컬렉션에 포함되어 있는지를 결정하는데 사용될 수 있습니다. 이 메소드는 기본-primary 키 또는 모델 인스턴스를 허용합니다.
+- contains 메소드는 주어진 모델 인스턴스가 컬렉션에 포함되어 있는지 확인할 때 사용한다. 이 메소드는 기본-primary 키 또는 모델 인스턴스를 허용합니다.
 ```
 $users->contains(1);
 ```
-- 기본 contains 메소드는 연관 배열의 key, value 엘리먼트에서 value 값이 존재하는지 확인한다. 연관 배열의 value 값에 1이란 값이 존재하는지 확인한다.
+- contains 메소드는 리스트에서 지정한 키에 할당된 지정한 값과 일치하는 레코드를 뽑아낸다.
+- $key 값이 수인 경우, primary 키 값이 일치하는 대상을 찾는다. 따라서 리스트에서 기본키의 값이 1인 대상을 찾는 코드이다.
 - 엘로퀀트 컬렉션의 경우 컬렉션 내부의 리스트의 하나의 엘리먼트가 연관 배열의 key, value 형식이 아니라, 하나의 레코드 정보를 담고 있는 stdClass 타입의 객체이다. 이런 경우 엘로퀀트 컬렉션의 메소드를 이용해서 stdClass 타입 객체의 primary-key에 해당하는 멤버 값을 매칭한다. primary-key는 엘로퀀트 모델에 설정되어 있는 값이다.
 
 ```
@@ -66,14 +67,17 @@ $users->contains(User::find(1));
 
 
 ### diff 메소드
-- syntax : diff($items)
+- syntax : `diff($items)`
+- diff 메소드는 리스트에서 주어진 리스트를 제외한 리스트를 반환한다.
 ```
 use App\User;
 $users = $users->diff(User::whereIn('id', [1, 2, 3])->get());
 ```
+- `$users` 리스트에서 `User::whereIn('id', [1, 2, 3]`로 가져온 리스트를 제외한 리스트를 반환한다.
 
 ### except 메소드
-- syntax : except($keys)
+- syntax : `except($keys)`
+- diff가 리스트 끼리의 차집합을 하는 기능이었던 것에 반해, 리스트에서 특정 배열에 들어간 번호에 해당하는 프라이머리키를 가진 대상을 제거하겠다는 의미를 가지고 있다. diff의 경우 제외할 리스트를 선택하는 것은 프라이머리 키를 통해 선택하지 않는 방법이 있는 반면 except의 경우 프라이머리 키를 꼭 사용해야 제외할 수 있다는 것이 차이점이다.
 
 ### find 메소드
 - syntax : find($key)
@@ -84,6 +88,7 @@ $user = $users->find(1);
 - `$users = User::all()`로 유저 리스트를 가진 엘로퀀트 컬렉션을 받아온다.
 - `$users -> find(1)` find 함수를 통해서 프라이머리 키가 1인 레코드를 찾는다.
 - 라라벨 기본 컬렉션에는 find라는 함수가 없다. 일반적으로 함수형 라이브러리에는 찾으면 순회를 종료하는 방식으로 find 함수를 만드는데 라라벨 컬렉션에서는 이와 동일한 기능을 가진 메소드는 search() 메소드이다. find 명칭의 메소드는 엘로퀀트 컬렉션의 특정 row를 뽑을 때 사용한다.
+- 엘로퀀트의 find 함수와 엘로퀀트 컬렉션의 find 함수를 구분해야 한다. 엘로퀀트의 find 함수는 지정한 프라이머리 키에 해당하는 대상을 쿼리 빌더로 뽑아서 새로운 엘로퀀트 객체를 반환하는 것에 반해, 엘로퀀트 컬렉션의 find 함수는 리스트에서 프라이머리 키에 해당하는 대상을 뽑아내는 역할을 한다.
 
 
 ### makeVisible 메소드
