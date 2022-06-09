@@ -102,6 +102,42 @@ $user = $users->find(1);
 - 라라벨 기본 컬렉션에는 find라는 함수가 없다. 일반적으로 함수형 라이브러리에는 찾으면 순회를 종료하는 방식으로 find 함수를 만드는데 라라벨 컬렉션에서는 이와 동일한 기능을 가진 메소드는 search() 메소드이다. find 명칭의 메소드는 엘로퀀트 컬렉션의 특정 row를 뽑을 때 사용한다.
 - 엘로퀀트의 find 함수와 엘로퀀트 컬렉션의 find 함수를 구분해야 한다. 엘로퀀트의 find 함수는 지정한 프라이머리 키에 해당하는 대상을 쿼리 빌더로 뽑아서 새로운 엘로퀀트 객체를 반환하는 것에 반해, 엘로퀀트 컬렉션의 find 함수는 리스트에서 프라이머리 키에 해당하는 대상을 뽑아내는 역할을 한다.
 
+### fresh
+- syntax : `fresh($with = [])`
+- 데이터베이스에서 컬렉션의 각 모델의 새로운 인스턴스 가져옴
+- 지정된 모든 관계가 eager load 됨
+```
+$users = $users->fresh();
+$users = $users->fresh('comments');
+```
+- 각각의 레코드에 해당하는 데이터를 데이터베이스에서 가져와서 갱신한다.
+- 레코드의 데이터가 변경되어 초기화를 하고 싶을 때, 또는 데이터베이스의 변경이 있어 데이터를 다시 가져와야 할 때 사용한다.
+- 각각의 레코드 인스턴스가 연관 관계를 가지고 있는 형태라면, 데이터베이스에서 연관 모델의 데이터도 함께 갱신한다.
+
+### intersect
+- syntax : `intersect($item)`
+- intersect는 교집합이란 의미를 가지고 잇다.
+- 리스트에서 인자로 주어진 리스트와의 교집합 부분에 해당하는 리스트를 뽑아낸다.
+- 교집합이기 때문에 `$item`은 엘로퀀트 컬렉션 형식이어야 한다.
+```
+use App\Models\User;
+$users = $users->intersect(User::whereIn('id', [1, 2, 3])->get());
+```
+- `$users` 엘로퀀트 컬렉션 리스트에서 `User::whereIn('id', [1, 2, 3])`에 해당하는 리스트와 공통되는 대상만 반환한다.
+
+
+### load
+- syntax : `load($relations)`
+- 리스트의 각각의 레코드에 연관 모델의 데이터를 추가로 로드한다.
+```
+$users->load(['comments', 'posts']);
+$users->load('comments.author');
+```
+- `['comments', 'posts']`는 users 모델의 연관 모델인 comments와 posts의 데이터를 각 레코드에 추가적으로 담는다.
+- `'comments.author'`는 users 모델의 연관 모델은 comments이며 comments 모델의 연관 모델은 author이다. users 모델과 comments 모델을 매개로 연결되는 author 연관 모델의 데이터를 users 모델에 담는다.
+
+### loadMissing
+- syntax : `loadMissing($relations)`
 
 ### makeVisible 메소드
 - syntax : makeVisible($attributes)
