@@ -138,6 +138,18 @@ $users->load('comments.author');
 
 ### loadMissing
 - syntax : `loadMissing($relations)`
+- 리스트의 각각의 레코드에 대해 연관 관계 데이터가 로드 되지 않은 경우, 연관 모델의 데이터를 추가적으로 로드한다. `load`는 리스트 각각의 레코드에 연관 관계 데이터가 있든 없든 추가적으로 지정한 연관 모델의 데이터를 로드하지만, `loadMissing`은 지정한 연관 관계가 로드 되지 않았을 때만 추가적인 로드를 한다.
+```
+$users->loadMissing(['comments', 'posts']);
+$users->loadMissing('comments.author');
+```
+- `['comments', 'posts']`는 users 모델의 연관 모델인 comments와 posts의 데이터를 각 레코드에 추가적으로 담는다. 단, comments가 이미 로드 되어 있다면 comments 연관 모델의 데이터를 로드하지 않고 posts가 이미 로드 되어 있다면 posts 연관 모델의 데이터를 로드하지 않는다.
+- `'comments.author'`는 users 모델의 연관 모델은 comments이며 comments 모델의 연관 모델은 author이다. users 모델과 comments 모델을 매개로 연결되는 author 연관 모델의 데이터를 users 모델에 담는다. 단, author 연관 모델의 데이터가 이미 로드 되어 있다면 author 연관 모델의 데이터를 로드하지 않는다.
+
+### modelKeys
+- syntax : `modelKeys()`
+```
+```
 
 ### makeVisible 메소드
 - syntax : makeVisible($attributes)
