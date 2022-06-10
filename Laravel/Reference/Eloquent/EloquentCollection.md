@@ -14,7 +14,7 @@
 - 엘로퀀트 그대로 all()을 사용해서 데이터를 받거나, 쿼리 빌더를 통해 get()을 통해 데이터를 가져오는 경우 컬렉션 타입으로 데이터가 반환된다.
 - get(), all()는 멀티 레코드를 반환한다. 이런 멀티 레코드를 반환하는 방식의 경우에는 컬렉션 타입으로 만들어져 있다.
 - 컬렉션 타입은 lluminate\Database\Eloquent\Collection 클래스를 기반으로 한다.
-- lluminate\Database\Eloquent\Collection 클래스는 Illuminate\Support\Collection 클래스를 상속받아 만들어 진다. 
+- lluminate\Database\Eloquent\Collection 클래스는 Illuminate\Support\Collection 클래스를 상속받아 만들어 진다.
 - 엘로퀀트 컬렉션이 기본 컬렉션을 상속하는 이유는 기본 컬렉션의 모든 메소드를 엘로퀀트 컬렉션에서도 사용 가능하게 하면서 몇 가지 엘로퀀트 컬렉션만의 기능을 추가해서 사용하기 위해서이다. 또한 기본 컬렉션 메소드를 오버라이딩해서 컬렉션 메소드의 인자로 엘로퀀트 모델을 넣어 사용할 수 있게 만든다.
 
 ### 주의점
@@ -54,9 +54,9 @@ $names = $users->reject(function ($user) {
 ```
 $users->contains(1);
 ```
-- contains 메소드는 리스트에서 지정한 키에 할당된 지정한 값과 일치하는 레코드를 뽑아낸다.
-- $key 값이 수인 경우, primary 키 값이 일치하는 대상을 찾는다. 따라서 리스트에서 기본키의 값이 1인 대상을 찾는 코드이다.
-- 엘로퀀트 컬렉션의 경우 컬렉션 내부의 리스트의 하나의 엘리먼트가 연관 배열의 key, value 형식이 아니라, 하나의 레코드 정보를 담고 있는 stdClass 타입의 객체이다. 이런 경우 엘로퀀트 컬렉션의 메소드를 이용해서 stdClass 타입 객체의 primary-key에 해당하는 멤버 값을 매칭한다. primary-key는 엘로퀀트 모델에 설정되어 있는 값이다.
+- contains 메소드는 엘로퀀트 컬렉션 리스트에서 지정한 키에 할당된 지정한 값과 일치하는 레코드를 뽑아낸다.
+- $key 값이 수인 경우, primary 키 값이 일치하는 대상을 찾는다. 따라서 엘로퀀트 컬렉션 리스트에서 기본키의 값이 1인 대상을 찾는 코드이다.
+- 엘로퀀트 컬렉션의 경우 컬렉션 내부의 엘로퀀트 컬렉션 리스트의 하나의 엘리먼트가 연관 배열의 key, value 형식이 아니라, 하나의 레코드 정보를 담고 있는 stdClass 타입의 객체이다. 이런 경우 엘로퀀트 컬렉션의 메소드를 이용해서 stdClass 타입 객체의 primary-key에 해당하는 멤버 값을 매칭한다. primary-key는 엘로퀀트 모델에 설정되어 있는 값이다.
 
 ```
 $users->contains(User::find(1));
@@ -68,14 +68,13 @@ $users->contains(User::find(1));
 
 ### diff 메소드
 - syntax : `diff($items)`
-- diff 메소드는 리스트에서 주어진 리스트를 제외한 리스트를 반환한다.
-
-#### 예제
+- diff 메소드는 엘로퀀트 컬렉션 리스트에서 주어진 엘로퀀트 컬렉션 리스트를 제외한 리스트를 반환한다.
 ```
 use App\User;
 $users = $users->diff(User::whereIn('id', [1, 2, 3])->get());
 ```
 - `$users` 리스트에서 `User::whereIn('id', [1, 2, 3]`로 가져온 리스트를 제외한 리스트를 반환한다.
+- 참고 : `diff` 메소드는 대상 엘로퀀트 컬렉션 리스트를 제외하는 반면 intersect 메소드는 대상 엘로퀀트 컬렉션 리스트을 뽑아내는 방식이다.
 
 ### except 메소드
 - syntax : `except($keys)`
@@ -125,7 +124,6 @@ $users = $users->intersect(User::whereIn('id', [1, 2, 3])->get());
 ```
 - `$users` 엘로퀀트 컬렉션 리스트에서 `User::whereIn('id', [1, 2, 3])`에 해당하는 리스트와 공통되는 대상만 반환한다.
 
-
 ### load
 - syntax : `load($relations)`
 - 리스트의 각각의 레코드에 연관 모델의 데이터를 추가로 로드한다.
@@ -148,7 +146,11 @@ $users->loadMissing('comments.author');
 
 ### modelKeys
 - syntax : `modelKeys()`
+- 엘로퀀트 컬렉션 리스트의 각각의 레코드가 가지고 있는 프라이머리 키의 리스트를 배열로 반환한다.
 ```
+$users->modelKeys();
+
+// [1, 2, 3, 4, 5]
 ```
 
 ### makeVisible 메소드
@@ -158,7 +160,24 @@ $users->loadMissing('comments.author');
 $users = $users->makeVisible(['address', 'phone_number']);
 ```
 
+### makeHidden
+- syntax : `makeHidden($attributes)`
+- 엘로퀀트 컬렉션 리스트의 각각의 레코드에 지정한 멤버가 로드되지 않도록 한다.
+```
+$users = $users->makeHidden(['address', 'phone_number']);
+```
+- `$users` 엘로퀀트 컬렉션 리스트의 각 레코드에 대해 레코드가 address, phone_number 멤버를 가지고 있다면 이 멤버를 로드하지 않으므로 멤버로 접근하지 못한다.
+
+### only
+- syntax : `only($keys)`
+- 엘로퀀트 컬렉션 리스트에서 주어진 배열의 엘리먼트에 대응하는 프라이머리키를 가진 레코드만을 선택적으로 반환한다.
+```
+$users = $users->only([1, 2, 3]);
+```
+- `$users` 엘로퀀트 컬렉션에서 프라이머리 키가 1, 2, 3인 대상만을 남긴다.
+
 ### toQuery()
+- syntax : `toQuery()`
 - 엘로퀀트는 기본적으로 기본키를 선택하는 방식으로 레코드를 뽑아낸다.
 - 엘로퀀트에 조건이 걸려 있다면 기본적으로 기본키를 whereIn으로 뽑는 쿼리빌더를 반환한다.
 - 기본 쿼리 빌더 인스턴스(Illuminate\Database\Query\Builder)가 아닌 엘로퀀트 쿼리빌더 인스턴스(Illuminate\Database\Eloquent\Builder)를 반환한다.
@@ -170,7 +189,6 @@ $users->toQuery()->update([
 ]);
 ```
 - `$users->toQuery()`쿼리빌더 인스턴스를 반환했기 때문에 쿼리 빌더의 update 메소드를 사용하는 것이 가능하다.
-
 
 
 
