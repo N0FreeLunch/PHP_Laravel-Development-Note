@@ -178,11 +178,13 @@ $users = $users->only([1, 2, 3]);
 
 ### toQuery()
 - syntax : `toQuery()`
-- 엘로퀀트는 기본적으로 기본키를 선택하는 방식으로 레코드를 뽑아낸다.
-- 엘로퀀트에 조건이 걸려 있다면 기본적으로 기본키를 whereIn으로 뽑는 쿼리빌더를 반환한다.
+- 엘로퀀트 컬렉션 리스트의 각각의 레코드는 엘로퀀트 모델의 여러 필드들의 값을 로드하고 있다. 하지만 이 레코드의 각각은 데이터를 로드한 집합에 불과하다. 데이터베이스의 데이터를 업데이트 하기 위해서는 엘로퀀트 모델을 사용해야 하지만 엘로퀀트 컬렉션 리스트와 그 레코드를 사용해서는 업데이트를 할 수 없다. 엘로퀀트 컬렉션 리스트로 데이터베이스의 값을 업데이트 하기 위해서 사용하는 것이 `toQuery()` 메소드이다.
+- 엘로퀀트 컬렉션 리스트에서 레코드 각각이 가지고 있는 기본키 모두를 쿼리 빌더의 `whereIn(기본키명, [...대상 기본키])`의 조건의 '대상 기본키'를 세팅한 쿼리 빌더를 반환한다.
 - 기본 쿼리 빌더 인스턴스(Illuminate\Database\Query\Builder)가 아닌 엘로퀀트 쿼리빌더 인스턴스(Illuminate\Database\Eloquent\Builder)를 반환한다.
 ```
-$users = App\Models\User::where('status', 'VIP')->get();
+use App\Models\User;
+
+$users = User::where('status', 'VIP')->get();
 
 $users->toQuery()->update([
     'status' => 'Administrator',
@@ -190,6 +192,36 @@ $users->toQuery()->update([
 ```
 - `$users->toQuery()`쿼리빌더 인스턴스를 반환했기 때문에 쿼리 빌더의 update 메소드를 사용하는 것이 가능하다.
 
+### unique
+- syntax : `unique($key = null, $strict = false)`
+- 엘로퀀트 컬렉션 리스트에서 기본키가 같은 레코드는 제외하고 기본키 중복이 없는 레코드만을 뽑아낸다.
+```
+$users = $users->unique();
+```
+
+### 커스텀 엘로퀀트 컬렉션
+```
+<?php
+
+namespace App\Models;
+
+use App\Support\UserCollection;
+use Illuminate\Database\Eloquent\Model;
+
+class User extends Model
+{
+    /**
+     * Create a new Eloquent Collection instance.
+     *
+     * @param  array  $models
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function newCollection(array $models = [])
+    {
+        return new UserCollection($models);
+    }
+}
+```
 
 
 ---
