@@ -225,6 +225,8 @@ class User extends Model
 - 앨로퀀트 모델에서 결과 값으로 리스트 형식의 데이터를 뽑을 경우, 엘로퀀트 컬렉션 타입의 인스턴스를 반환한다.
 - 엘로퀀트 모델에서 엘로퀀트 컬렉션을 만들 때, 모델에 `newCollection`을 메소드를 통해서 새로운 컬렉션 오브젝트를 반환하면 엘로퀀트 모델에서 엘로퀀트 컬렉션 타입의 인스턴스를 반환할 때 새롭게 정의된 컬렉션 인스턴스를 반환한다.
 - `return new UserCollection($models);`에서 `UserCollection` 오브젝트를 커스터마이징 하면 사용자 정의 엘로퀀트 컬렉션의 형태를 만들 수 있다.
+- 엘로퀀트 모델에 `newCollection` 메소드를 정의하면 엘로퀀트 모델을 통해서 `Illuminate\Database\Eloquent\Collection` 인스턴스를 반환할 때 마다 사용자 정의 컬렉션 인스턴스를 기본 컬렉션 인스턴스 대신에 사용한다. `newCollection`메소드의 리턴값으로 사용자 정의로 지정된 컬렉션 인스턴스를 만들 수 있다.
+
 
 ---
 
