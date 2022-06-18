@@ -13,3 +13,4 @@
 ## Reference
 - https://peakd.com/hive-168588/@crell/much-ado-about-null
 - https://en.wikipedia.org/wiki/Sentinel_value
+- https://wiki.php.net/rfc/null-false-standalone-typesx
