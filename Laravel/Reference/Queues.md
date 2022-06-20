@@ -78,6 +78,59 @@ QUEUE_CONNECTION=database
 ```
 php artisan make:job ProcessPodcast
 ```
+- 생성된 잡 클래스는 app/Jobs 디렉토리에 저장된다.
+- app/Jobs 디렉토리가 존재하지 않는 경우 make:job Artisan 명령을 실행할 때 생성된다.
+- 생성된 잡 클래스는 Illuminate\Contracts\Queue\ShouldQueue 인터페이스를 구현한다. (인터페이스를 설정한 특별한 이유가 있는지 확인 필요.)
+
+### job 클래스의 구조
+```php
+<?php
+
+namespace App\Jobs;
+
+use App\Models\Podcast;
+use App\Services\AudioProcessor;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+
+class ProcessPodcast implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    /**
+     * The podcast instance.
+     *
+     * @var \App\Models\Podcast
+     */
+    protected $podcast;
+
+    /**
+     * Create a new job instance.
+     *
+     * @param  App\Models\Podcast  $podcast
+     * @return void
+     */
+    public function __construct(Podcast $podcast)
+    {
+        $this->podcast = $podcast;
+    }
+
+    /**
+     * Execute the job.
+     *
+     * @param  App\Services\AudioProcessor  $processor
+     * @return void
+     */
+    public function handle(AudioProcessor $processor)
+    {
+        // Process uploaded podcast...
+    }
+}
+```
+- handle 메소드는 큐에서 작업을 꺼내 실행할 때 실행하는 부분이다. handle 메소드에 실행 로직을 짜 주면 된다.
 
 
 ## Refernece
