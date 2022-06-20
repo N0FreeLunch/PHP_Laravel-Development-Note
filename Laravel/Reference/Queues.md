@@ -35,6 +35,7 @@ ProcessPodcast::dispatch()->onQueue('emails');
 
 ## 멀티 큐의 우선순위
 - 여러개의 큐를 운용하다 보면 우선적으로 처리해야 할 큐 작업이 존재할 수 있다.
+- 큐의 우선순위를 정할 수 있는 명령어는 high, medium, low 만 존재하기 때문에 우선순위를 여러 큐 간의 실행 순서를 세부적으로 컨트롤하기 어려운 단점이 존재한다.
 ```
 php artisan queue:work --queue=high,default
 ```
@@ -131,6 +132,15 @@ class ProcessPodcast implements ShouldQueue
 }
 ```
 - handle 메소드는 큐에서 작업을 꺼내 실행할 때 실행하는 부분이다. handle 메소드에 실행 로직을 짜 주면 된다.
+```
+    use App\Models\Podcast;
+    ...
+    public function __construct(Podcast $podcast)
+    {
+        $this->podcast = $podcast;
+    }
+```
+- 엘로퀀트 모델을 생성자 주입할 수 있다.
 
 
 ## Refernece
