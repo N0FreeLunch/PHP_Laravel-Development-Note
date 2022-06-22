@@ -40,7 +40,45 @@ class ImportCsv implements ShouldQueue
 }
 ```
 
+```
+use App\Jobs\ImportCsv;
+use Illuminate\Bus\Batch;
+use Illuminate\Support\Facades\Bus;
+use Throwable;
 
+$batch = Bus::batch([
+    new ImportCsv(1, 100),
+    new ImportCsv(101, 200),
+    new ImportCsv(201, 300),
+    new ImportCsv(301, 400),
+    new ImportCsv(401, 500),
+])->then(function (Batch $batch) {
+    // All jobs completed successfully...
+})->catch(function (Batch $batch, Throwable $e) {
+    // First batch job failure detected...
+})->finally(function (Batch $batch) {
+    // The batch has finished executing...
+})->dispatch();
+
+return $batch->id;
+```
+- 일괄 작업에 대한 예제 코드를 보면 Bus::batch() 안에 배열로 넣는 대상이 `use App\Jobs\ImportCsv;`인 것으로 job을 할당하는 것을 알 수 있다.
+- 일괄 작업은 하나의 작업이 끝나고 다음 작업이 이뤄질 수 있도록 하기 위한 방법으로 사용한다.
+- 일괄 작업을 사용하기 위해서는 `use Illuminate\Bus\Batch;`를 사용한다.
+- 완료 콜백은 라라벨 큐에 의해 직렬화되어 실행되기 때문에 콜백 내에서 $this 변수를 사용하면 안된다.
+
+
+### 완료 콜백
+```
+>then(function (Batch $batch) {
+    // All jobs completed successfully...
+})->catch(function (Batch $batch, Throwable $e) {
+    // First batch job failure detected...
+})->finally(function (Batch $batch) {
+    // The batch has finished executing...
+})
+```
+- 완료 콜백은 `Batch $batch` 부분에서 알 수 있듯이 `Illuminate\Bus\Batch` 인스턴스를 매개변수로 받는다. 
 
 
 ## Reference
