@@ -158,7 +158,14 @@ class ProcessPodcast implements ShouldQueue
         $this->podcast = $podcast;
     }
 ```
+- SerializesModels 특성을 통해서 trait 때문에 Eloquent 모델과 로드된 관계는 작업이 처리될 때 정상적으로 직렬화되고 직렬화 해제
+- 작업이 실제로 처리되면 큐-queue 시스템은 데이터베이스에서 전체 모델 인스턴스와 로드된 관계를 자동으로 다시 검색
+- 모델 직렬화에 대한 이 접근 방식을 사용하면 훨씬 더 작은 작업 페이로드를 큐-queue 드라이버로 보낼 수 있다.
+
+### 생성자 주입
 - 엘로퀀트 모델을 생성자 주입할 수 있다.
+- SerializesModels 트레이트를 통해서 생성자를 통해 주입된 모델과 로드된 관계는 작업이 처리될 때 정상적으로 직렬화되고 직렬화 해제
+
 
 
 ## Refernece
