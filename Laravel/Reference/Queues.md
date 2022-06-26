@@ -158,13 +158,30 @@ class ProcessPodcast implements ShouldQueue
         $this->podcast = $podcast;
     }
 ```
-- SerializesModels 특성을 통해서 trait 때문에 Eloquent 모델과 로드된 관계는 작업이 처리될 때 정상적으로 직렬화되고 직렬화 해제
 - 작업이 실제로 처리되면 큐-queue 시스템은 데이터베이스에서 전체 모델 인스턴스와 로드된 관계를 자동으로 다시 검색
 - 모델 직렬화에 대한 이 접근 방식을 사용하면 훨씬 더 작은 작업 페이로드를 큐-queue 드라이버로 보낼 수 있다.
 
+
 ### 생성자 주입
 - 엘로퀀트 모델을 생성자 주입할 수 있다.
-- SerializesModels 트레이트를 통해서 생성자를 통해 주입된 모델과 로드된 관계는 작업이 처리될 때 정상적으로 직렬화되고 직렬화 해제
+- SerializesModels 트레이트를 통해서 생성자를 통해 주입된 모델과 모델에 로드된 관계 모델 데이터는 job이 처리될 때 정상적으로 직렬화되고 직렬화 해제된다.
+
+## handle 메소드 주입
+- handle 메서드는 작업이 큐-queue에서 처리될 때 호출됩니다. 
+- 작업의 handle 메서드에 대한 타입 힌트 의존성을 확인할 수 있습니다.
+- 라라벨 서비스 컨테이너는 이러한 의존성을 자동으로 주입합니다.
+- 컨테이너가 handle 메서드에 의존성을 주입하는 방법을 완전히 제어하려면 컨테이너의 bindMethod 메서드를 사용할 수 있습니다. 
+- bindMethod 메소드는 작업과 컨테이너를 수신하는 콜백을 입력받습니다. 
+- 콜백 내에서 원하는 대로 handle 메서드를 호출할 수 있습니다. 
+- 일반적으로 App\Providers\AppServiceProvider 서비스 컨테이너의 boot 메소드에서 이 메소드를 호출해야 합니다.
+```
+use App\Jobs\ProcessPodcast;
+use App\Services\AudioProcessor;
+
+$this->app->bindMethod([ProcessPodcast::class, 'handle'], function ($job, $app) {
+    return $job->handle($app->make(AudioProcessor::class));
+});
+```
 
 
 
