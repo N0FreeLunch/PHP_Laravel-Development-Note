@@ -193,6 +193,40 @@ $this->app->bindMethod([ProcessPodcast::class, 'handle'], function ($job, $app) 
 - 콜백 내에 정의한 `return $job->handle($app->make(AudioProcessor::class));`과 같이 원하는 대로 handle 메서드를 호출할 수 있습니다.
 - 일반적으로 `App\Providers\AppServiceProvider` 서비스 컨테이너의 `boot` 메소드에서 이 메소드를 호출해야 한다.
 
+#### 주의
+> Raw 이미지와 같은 바이너리 데이터의 경우, 큐를 통해서 처리되기 전에 base64_encode 함수가 적용된 상태로 전달되어야 합니다. 그렇지 않으면 Job이 큐에 입력 될 때 JSON으로 제대로 serialize 되지 않을 수 있습니다.
+
+##  relationship 처리
+- 엘로퀀트 모델을 의존성 주입하게 되면 모델 인스턴스에 로드된 관계 모델의 구조도 함께 시리얼라이징 된다. 로드된 관계 모델의 데이터가 많으면 많을수록 시리얼라이징 되어야 하는 데이터도 늘어나기 때문에 관계 모델이 로드될 가능성을 차단하는 코드가 필요할 경우가 있다. 모델 인스턴스에서 `withoutRelations`메소드를 호출하면 관계 모델을 로드하지 않기 때문에 시리얼라이징되는 데이터가 줄어드는 것을 이용하여 최적화에 쓰도록 하자.
+```
+/**
+ * Create a new job instance.
+ *
+ * @param  \App\Models\Podcast  $podcast
+ * @return void
+ */
+public function __construct(Podcast $podcast)
+{
+    $this->podcast = $podcast->withoutRelations();
+}
+```
+
+
+## 유니크 job
+- 동일한 타입의 job 인스턴스는 큐에 하나만 적재 되도록 하기 위해 사용하는 방법이다.
+- 같은 클래스의 인스턴스라도 내부 상태가 다를 수 있다. 서로 상태가 다른 인스턴스라고 하더라도 같은 job 클래스라면 하나만 queue에 적재할 필요가 있을 때 사용한다.
+```
+<?php
+
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
+
+class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
+{
+    ...
+}
+```
+
 
 
 ## Refernece
