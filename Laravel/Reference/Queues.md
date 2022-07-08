@@ -226,8 +226,46 @@ class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
     ...
 }
 ```
+- `ShouldBeUnique` 인터페이스를 사용하면 `UpdateSearchIndex` 잡은 하나의 큐 구조에 하나만 존재한다.
+- 이미 동일 타입의 잡이 적재되어 있거나 실행되어 있다면 큐에 더이상 동일 타입의 잡을 추가하지 않는다.
 
+### 유니크 잡을 위한 저장소 락
+- 유니크 잡을 만들기 위해서는 테이블락을 지원하는 저장소를 사용해야 한다. 
 
+```
+<?php
+
+use App\Product;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
+
+class UpdateSearchIndex implements ShouldQueue, ShouldBeUnique
+{
+    /**
+     * The product instance.
+     *
+     * @var \App\Product
+     */
+    public $product;
+
+    /**
+     * The number of seconds after which the job's unique lock will be released.
+     *
+     * @var int
+     */
+    public $uniqueFor = 3600;
+
+    /**
+     * The unique ID of the job.
+     *
+     * @return string
+     */
+    public function uniqueId()
+    {
+        return $this->product->id;
+    }
+}
+```
 
 ## Refernece
 - https://laravel.kr/docs/8.x/queues
