@@ -5,7 +5,8 @@
 - config/auth.php에서 라라벨을 인증에 관한 옵션을 설정할 수 있다.
 
 ## 라라벨의 기본 인증 시스템
-- guards 와 provider 로 구성 됨
+- guards 와 provider 로 구성 된다.
+
 ### guards
 #### session guard
 - 데이터베이스에 서버에서 관리하는 세션 스토리지를 형성하고 프론트에는 쿠키에 인증을 위한 쿠키 인증세션을 전달하여 인증하는 방식을 사용한다.
@@ -34,6 +35,11 @@
 - 세션 쿠키 : 브라우저 쿠키에 저장되는 인증 세션 값
 - 사용자 세션 : 데이터베이스에 세션 정보를 저장하는 테이블을 의미
 
+## 세션
+- 라라벨의 인증은 세션을 통해서 처리된다. 세션이란 클라이언트를 식별하기 위한 장치이며 서버는 세션을 통해서 접속한 유저가 같은 유저인지 다른 유저인지를 구분하며, 로그인한 유저인지 로그인한 유저가 같은지 다른지를 알 수 있다. 
+- 서버에서는 저장소에 유저 식별 정보인 세션정보를 기록한다. 클라이언트는 세션정보를 매칭할 수 있는 키를 가지고 있고 보통 클라이언트 쿠키에 키 정보를 저장한다.
+- 통신이 일어나면서 쿠키에 저장된 키를 전송하고 서버는 이 키를 읽어서 서버에 저장된 세션 중 매칭되는 세션 정보를 가져와 유저를 식별한다.
+
 ## 인증의 흐름
 1. 브라우저의 로그인 form을 통해 ID, PASS를 입력
 2. 서버에서 입력한 데이터가 로그인을 허용하기에 적절한지 비교한다.
@@ -53,7 +59,6 @@
 ### 내장 인증 서비스
 - 쿠키 기반의 인증 세션 값을 통해 인증하는 방식을 기본적으로 제공
 - Auth 및 Session 파사드를 통해 인증에 관한 처리를 쉽게 할 수 있다.
-
 
 ### Fortify
 - 쿠키 기반 인증
@@ -80,11 +85,72 @@
 - 세션 쿠키를 통한 인증이 이뤄지지 않을 경우 Sanctum은 요청에서 API 토큰을 검사한다. (API 토큰이 있으면 세션 인증을 무시하는 것 같던데 실제 경험이랑 문서랑 다름 확인할 필요가 있음)
 
 # 수동인증
-- 라라벨 Facades(`Illuminate\Support\Facades`)를 사용한다. 파사드는 파사드가 동작하는 범위 내에서 컨트롤러, 모델, 라우터 등등의 모든 곳에서 호출할 수 있다.
-- 보통 인증은 컨트롤러(`app\Http\Controllers`) 부분에서 이뤄진다.
+- 수동인증이란 미리 짜여진 스케폴딩으로 구성하는 것이 아닌, 개발자가 직접 정의해서 사용하는 인증 방식을 의미한다.
+- 라라벨에서는 인증을 간편하게 할 수 있게 하기 위해서 Auth 파사드를 제공한다. Auth 파사드는 `Auth::`방식으로 사용한다.
+
+## Auth 파사드
+- 인증에 사용되는 파사드는 Facades(`Illuminate\Support\Facades`)를 사용한다. 
+- 파사드는 파사드가 동작하는 범위 내에서 컨트롤러, 모델, 라우터 등등의 모든 곳에서 호출할 수 있으며 보통 인증 파사드는 컨트롤러(`app\Http\Controllers`) 부분에서 사용된다.
+
+### Auth 파사드 호출
 ```
 use Illuminate\Support\Facades\Auth;
 ```
+- 사용할 수 있는 파사드 클래스를 지정하고
+```
+Auth::메소드;
+```
+또는
+```
+\Auth::메소드;
+```
+- use 키워드 사용 없이 파사드명 앞에 `\`을 붙여주어 사용하기도 한다.
+
+
+## 인증처리
+- 클라이언트로 부터 로그인 폼을 통해 유저 정보 (아이디와 패스워드)를 받아서 일치하는 유저 정보가 있나 확인한다.
+- 인증된 사용자 정보를 식별할 수 있는 세션을 만들어 서버의 저장소에 저장하고, 이 세션에 매칭되는 키를 클라이언트에게 보낸다. 클라이언트는 이 정보를 일반적으로 쿠키 정보로 받아 저장하며 통신을 할 때마다 쿠키 정보를 사용해서 인증여부를 확인하게 된다.
+- 로그인 할 때 새로운 세션을 만드는 방법도 있지만 클라이언트가 로그인 하기 전에 가지고 있던 세션 정보를 변경하는 방식도 사용한다. 로그인 정보를 통해 로그인이 성공하면 해당 유저 정보를 현재 접속한 세션 정보에 저장을 한다.
+- 클라이언트가 일반적으로 쿠키로 가지고 있는 세션 아이디는 쿠키를 공유하지 않는 다른 브라우저 컴퓨터에서 복사되어 해킹에 사용될 수 있다. 따라서 클라이언트가 가지고 있는 세션 아이디를 자주 바꿔주기 위해서 세션을 리프레시 해 준다.
+
+### 인증 처리의 예
+```
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class LoginController extends Controller
+{
+    /**
+     * Handle an authentication attempt.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function authenticate(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+
+            return redirect()->intended('dashboard');
+        }
+
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ]);
+    }
+}
+```
+
+## Guard
 
 
 
