@@ -85,3 +85,4 @@ Cage<Animal> ca = new Cage<Tiger>();
 - https://wiki.php.net/rfc/generics
 - https://blog.jetbrains.com/phpstorm/2021/07/phpstorm-2021-2-beta/
 - https://youtu.be/PtM44sO-A6g
+- https://edykim.com/ko/post/php-generics-with-phpstan/
