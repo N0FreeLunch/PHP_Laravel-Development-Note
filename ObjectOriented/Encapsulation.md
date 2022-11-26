@@ -55,25 +55,55 @@ class Dog
   protected bool $sitStatus = false;
   protected int $positionX;
   protected int $positionY;
-  protected string $target = null;
+  protected Target $target;
+  protected bool $biteingTargetFlag = false;
   
   public function sit(): void
   {
     $this->sitStatus = true;
   }
   
-  public function getUp(): void
+  public function standUp(): void
   {
     $this->sitStatus = false;
   }
   
-  public function setTarget(string $target)
+  public function setTarget(Target $target): self
   {
-    $this->throwTarget = $target;
+    $this->target = $target;
+    return $this;
   }
-
+  
+  public function bring(Owner $owner): Target
+  {
+    $this->moveTo($this->target->positoinX, $this->target->positoinY);
+    $this->biteingTargetFlag = true;
+    $this->moveTo($owner->positoinX, $owner->positionY);
+    return $target;
+  }
+  
+  public function setPositionWhenWalk(Owner $owner): self
+  {
+     $walkPosition = $this->getWalkPosition($owner->positoinX, $owner->positionY);
+     $this->positionX = $walkPosition['positionX'];
+     $this->positionY = $walkPosition['positionY'];
+     return $this;
+  }
+  
+  public function getStatuses()
+  {
+  
+  }
+  
 }
 ```
+
+### '앉아' 명령의 예
+```
+$dog = new Doc();
+$dog->sit();
+```
+- 개의 상태는 앉은 상태가 된다.
 
 ### 요구사항
 - PDF 파일을 다운로드 할 때는 파일명에 다운로드 카운트를 붙여 준다.
