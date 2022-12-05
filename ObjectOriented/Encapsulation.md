@@ -63,6 +63,11 @@ class Dog
     $this->sitStatus = true;
   }
   
+  public function isSit(): bool
+  {
+    return $this->sitStatus;
+  }
+  
   public function standUp(): void
   {
     $this->sitStatus = false;
@@ -74,7 +79,7 @@ class Dog
     return $this;
   }
   
-  public function bring(Owner $owner): Target
+  public function bringTo(Owner $owner): Target
   {
     $this->moveTo($this->target->positoinX, $this->target->positoinY);
     $this->biteingTargetFlag = true;
@@ -90,20 +95,51 @@ class Dog
      return $this;
   }
   
-  public function getStatuses()
+  public function getStatuses(): array
   {
-  
+    return [
+      'sit_flag' => $this->sitStatus,
+      'x_position' => $this->positionX,
+      'y_position' => $this->positionY,
+      'target' => $this->target
+    ];
   }
   
 }
 ```
 
 ### '앉아' 명령의 예
+```php
+$this->dog->sit();
 ```
-$dog = new Doc();
-$dog->sit();
+- `$dog` 객체에 앉으라는 상태를 명령하였다.
+- `$dog` 객체를 이용하는 사람은 `$sitStatus`의 변수가 어떻게 변했는지 알 필요는 없다.
+- `isSit` 메소드 또는 `getStatuses` 메소드를 통해서 개가 앉아 있는지 아닌지 확인하면 된다.
+
+### 공을 던지는 명령의 예
+```php
+public function throwItem($ballObj)
+{
+  $this->dog->setTarget($ballObj)->bringTo($this);
+}
 ```
-- 개의 상태는 앉은 상태가 된다.
+- 주인이 던진 공을 개가 가져오는 명령을 내려보자. 주인 객체는 `throwItem` 메소드를 통해서 던지는 공을 던지는 명령을 내린다.
+- 이는 개에게 있어 던진 공을 물고 주인의 위치로 가져오라는 지시이기도 하다. 따라서 `throwItem` 메소드는 개가 공을 가지고 `setTarget($ballObj)` 주인의 위치로 이동 `bringTo($this)` 시키는 동작을 하게 된다.
+- 이때 `$dog` 객체가 가지고 있는 타겟은 `$ballObj`가 되고, 공을 가지고 주인에게 오게 되기 때문에 `$dog` 개체의 위치정보가 주인의 위치로 이동하게 된다. (물론 공을 쫒아 갔다가 다시 돌아오는 과정이 있지만 생략하도록 하자.)
+- 주인이 개의 동작을 지시할 때 주인 객체의 `throwItem` 메소드 내부의 동작이 어떻게 일어나는지 알 필요가 없다. `$ownerObj->throwItem($ballObj);`으로 주인 객체는 공을 던지라는 명령만을 내리면 된다.
+- 또한 개의 동작을 지시할 때도 타겟과 주인 객체만을 지정하였다. 주인은 개에게 가져오라는 명령만 내리면 되며 개의 위치가 어떻게 변하는지 신경을 쓰지 않아도 된다.
+
+### 산책하는 명령의 예
+```php
+$second = 0;
+while($second < 1800) {
+  $this->dog->setPositionWhenWalk($this);
+  $second++;
+  sleep(1);
+}
+```
+- 30분 60\*30 = 1800초 동안 산책을 한다고 하자. 그러면 매 초당 개의 위치는 주인으로 부터 반경 얼마 이내의 위치에 위치한다.
+
 
 ### 요구사항
 - PDF 파일을 다운로드 할 때는 파일명에 다운로드 카운트를 붙여 준다.
