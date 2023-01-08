@@ -18,7 +18,7 @@ $a =& $b;
 - 변수 `$b`는 어떤 값을 가지고 있다. `& $b`는 변수 `$b`의 공간에 할당되어 있거나 참조하고 있는 참조 원형을 의미한다.
 - 변수 `$a`는 변수 $b를 참조한다. 다른 변수를 참조한다는 것은 다른 변수가 가지고 있는 변수를 참조하는 것이 아니라 해당 변수가 가지고 있거나 참조하는 값의 원본을 가리킨다.
 
-## undefined의 참조
+### undefined 변수의 참조
 ```php
 <?php
 function foo(&$var) { }
@@ -33,7 +33,13 @@ $c = new StdClass;
 foo($c->d);
 var_dump(property_exists($c, 'd')); // bool(true)
 ?>
-```
+``` 
+> If you assign, pass, or return an undefined variable by reference, it will get created.
+- `undefined` 변수를 참조로 할당, 전달, 리턴할 때 기본값으로 `null`이 할당된다. 
+
+#### 해석
+- `foo($a)`에서 `$a`는 위 코드에서 정의되지 않았으므로 `undefined`이다. 정의되지 않은 변수를 함수의 인자로 넘겨주었을 때 함수의 내부에서는 넘겨 받은 값을 `null`으로 취급한다. 이 때 함수의 파라메터가 참조일 경우에는 null을 내부로 전달하며, 함수의 파라메터가 참조가 아닐 때는 `Warning: Undefined variable $a`메시지를 띄운다.
+
 
 #### 함수 리턴값에 대한 참조 할당
 ```php
