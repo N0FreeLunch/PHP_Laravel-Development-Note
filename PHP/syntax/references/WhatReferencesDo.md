@@ -87,7 +87,7 @@ echo "var2 is set to '$var2'\n"; // var2 is set to 'Example variable'
 - 함수 내에서 전역 변수(외부 스코프를 가진)를 사용할 때 `$GLOBALS["변수명"]`을 사용하는 것 보다는 `global $변수명`을 사용하는 것이 안전하게 참조를 해제하기 때문에 메모리 릭을 줄일 수 있는 방법이다. 함수의 라이프 사이클이 종료되고 함수 내부에서 사용한 참조를 깨끗하게 정리하기 위해 `$GLOBALS["변수명"]` 보다는 `global $변수명`을 사용하는 것을 권장하며, 함수의 내부에서 전역변수의 참조를 꼭 바꿔야 하는 일이 있는 경우에만 `$GLOBALS["변수명"]`을 사용하는 코딩을 하는 편이 좋아 보인다.
 
 ### foreach와 참조
-```
+```php
 <?php
 $ref = 0;
 $row =& $ref;
@@ -100,6 +100,27 @@ echo $ref; // 3 - last element of the iterated array
 - `foreach (이터레이터값 as $원소)` 문법에서 이터레이터의 원소에 해당하는 변수가 처음 만들어질 때 참조로 만들어진 경우이다.
 - `foreach (array(1, 2, 3) as $row)`에서 `$row`변수가 처음 선언된 것이 아니라 `$row =& $ref;`에서 변수가 이미 선언되었다.
 - 변수가 선언될 시점에 그냥 변수가 아니라 참조로 변수를 선언하였기 때문에 해당 변수에 다른 값을 할당하지 않는다면 계속 이 변수는 참조변수로 사용된다.
+- `foreach (이터레이터값 as $원소)`에서 `$원소`에는 값을 할당하는 `=` 연산자가 사용되지 않았다. `as $원소`의 표현은 값을 할당하는 것은 아니며 참조로 변경한다.
+- foreach문이 순회를 할 때 각 원소의 값을 `$원소`에 집어 넣으며 집어 넣는 공간이 `$ref = 0`의 값 0이 있는 공간이다. 이 공간의 값을 계속 변경시킨다. 따라서 `echo $ref;`의 값도 3이 된다.
+- 이 때 `$ref = 0;`에서 `0`이란 값이 있는 공간은 바뀌지 않는다. 예를 들어 이 공간을 `int`가 아닌 `string`으로 선언하면 `foreach (array(1, 2, 3) as $row)`에서 문자열 공간을 가리키는 `$row`에 수가 할당되므로 에러가 발생한다. 
+```php
+class Test
+{
+	public string $ref = 0;
+	
+	public function __construct()
+	{
+		$row =& $this->ref;
+		foreach (array(1, 2, 3) as $row) {
+    	// do something
+		}
+		echo $ref;
+	}
+}
+
+new Test
+```
+- `public string $ref = 0;` 부분을 `public int $ref = 0;`로 바꾸면 애러가 발생하지 않는다.
 
 ## Reference
 - https://www.php.net/manual/en/language.references.whatdo.php
