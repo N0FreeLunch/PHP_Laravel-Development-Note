@@ -44,8 +44,11 @@ var_dump(property_exists($c, 'd')); // bool(true)
 ```php
 <?php
 $foo =& find_var($bar);
+var_dump($foo);
 ?>
 ```
+- 함수의 리턴값을 참조로 사용하기 위해서 함수는 반드시 값을 반환해야 한다. 값을 반환하지 않는 함수의 리턴 유형이 `void`인 경우에는 `$foo`값이 `null`이 되겠지만 `undefined`를 받아서 디폴트 값인 `null`을 세팅했기 때문에 `undefined`값을 참조로 할당하지 않도록 시정을 요구하는 메시지가 나온다.
+- `Warning: Undefined variable` `Notice: Only variables should be assigned by reference`라는 에러 메시지가 나타난다.
 
 ### 함수 내에서 글로벌 변수 참조
 - 기본적으로 함수는 클로저를 설정하지 않는 한 함수 내부에서 정의한 변수를 함수 밖으로 내 보낼 수 없다. 함수 바깥 스코프에서 정의한 값을 함수 내부에서 사용하여 바깥 스코프에서 정의한 변수의 값을 바꾸는 것은 가능하다.
@@ -81,6 +84,22 @@ echo "var2 is set to '$var2'\n"; // var2 is set to 'Example variable'
 - global 키워드의 경우 글로벌 스코프에 정의된 변수를 함수 내에서 사용하게 해 주는 키워드이다. 참조기호(`&`)가 없어도 `global $var1, $var2`으로 가져온 값은 참조로 대상을 가리키고 있다.
 - `$var2`는 함수 내부에서 `$var1`의 값으로 변경되었으나 글로벌 스코프의 `$var2`의 값은 변하지 않았다는 것을 `echo $GLOBALS["var2"].PHP_EOL;` 부분을 통해서 알 수 있다. 곧 `global` 키워드를 통해서 함수 외부의 변수를 가져왔다고 하더라도 참조 할당자 `=&`를 사용한 경우에는 지역변수로 사용된다는 것을 알 수 있다.
 - 그에 반해 `$GLOBALS["var2"]`에 참조 할당을 한 경우에는 글로벌 스코프의 `$var2`의 값도 변경된다는 것을 알 수 있다.
+- 함수 내에서 전역 변수(외부 스코프를 가진)를 사용할 때 `$GLOBALS["변수명"]`을 사용하는 것 보다는 `global $변수명`을 사용하는 것이 안전하게 참조를 해제하기 때문에 메모리 릭을 줄일 수 있는 방법이다. 함수의 라이프 사이클이 종료되고 함수 내부에서 사용한 참조를 깨끗하게 정리하기 위해 `$GLOBALS["변수명"]` 보다는 `global $변수명`을 사용하는 것을 권장하며, 함수의 내부에서 전역변수의 참조를 꼭 바꿔야 하는 일이 있는 경우에만 `$GLOBALS["변수명"]`을 사용하는 코딩을 하는 편이 좋아 보인다.
+
+### foreach와 참조
+```
+<?php
+$ref = 0;
+$row =& $ref;
+foreach (array(1, 2, 3) as $row) {
+    // do something
+}
+echo $ref; // 3 - last element of the iterated array
+?>
+```
+- `foreach (이터레이터값 as $원소)` 문법에서 이터레이터의 원소에 해당하는 변수가 처음 만들어질 때 참조로 만들어진 경우이다.
+- `foreach (array(1, 2, 3) as $row)`에서 `$row`변수가 처음 선언된 것이 아니라 `$row =& $ref;`에서 변수가 이미 선언되었다.
+- 변수가 선언될 시점에 그냥 변수가 아니라 참조로 변수를 선언하였기 때문에 해당 변수에 다른 값을 할당하지 않는다면 계속 이 변수는 참조변수로 사용된다.
 
 ## Reference
 - https://www.php.net/manual/en/language.references.whatdo.php
