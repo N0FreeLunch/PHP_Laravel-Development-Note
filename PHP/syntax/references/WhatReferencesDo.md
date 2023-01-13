@@ -143,6 +143,10 @@ $arr[0]++; $arr[1]++; $arr[2]++;
 - `$arr`을 구성하는 세 원소는 다른 값을 참조하고 있다. 따라서 각각의 값에 대해 값을 `$대상++`으로 늘려주면 원본값이 늘어난다. 따라서 원본을 가리키는 `$a`, `$b`의 값이 바뀐 것을 확인할 수 있다.
 
 ### 참조에 의한 배열의 원소할당이 좋지 않은 이유
+> Note, however, that references inside arrays are potentially dangerous. Doing a normal (not by reference) assignment with a reference on the right side does not turn the left side into a reference, but references inside arrays are preserved in these normal assignments. This also applies to function calls where the array is passed by value.
+- 참조에 의한 할당이 아닌 보통의 할당 (`=&`가 아닌 `=`)을 사용할 때는 할당 기호의 오른쪽에 의해 왼쪽이 참조로 바뀌지는 않는다. 하지만 보통의 할당을 사용하더라도 배열을 할당한 경우에는 배열 내부는 참조로 유지된다. 함수의 인자로 배열을 전달하는 경우에도 마찬가지 논리가 적용된다.
+
+#### 배열이 아닌 경우 할당의 예
 ```
 <?php
 /* Assignment of scalar variables */
@@ -155,6 +159,7 @@ $c = 7; //$c is not a reference; no change to $a or $b
 - `$b` 값을 변경하게 된다면 `$a`가 가리키고 있는 1이란 값이 들어 있는 공간의 값도 변경이 된다.
 - 그런데 `$c = $b;`에서 `$c`는 `$b`에 의해 할당이 되었다. 참조에 의한 할당이 아니므로 `$c`는 `$b`가 갖는 값의 복사본을 가지게 되며 `$c`의 값의 공간과 `$b`가 가리키고 있는 값의 공간은 분리된다.
 
+#### 배열인 경우 할당의 예
 ```
 /* Assignment of array variables */
 $arr = array(1);
@@ -165,8 +170,14 @@ $arr2[0]++;
 /* The contents of $arr are changed even though it's not a reference! */
 ?>
 ```
+- `$arr2 = $arr`에서 `$arr2`에는 배열을 할당을 했지만 참조로 할당(`=&`)은 하지 않았다.
+- 그럼에도 불구하고 `$arr2[0]++`를 하자 `$arr`가 가리키는 배열값의 첫번째 인자가 1에서 2로 바뀌게 되었다.
+- 또한 이 배열을 참조하는 `$a =& $arr[0]`부분의 `$a`도 값이 2가 된다.
+- 참조를 할당하지 않았음에도 불구하고 배열의 원소를 접근할 때는 참조로 접근을 하게 된다. 이 때 참조에 의한 접근은 `$배열[키]` 표현을 통해서 이뤄진다.
 
-
+#### 배열의 참조는 원소별로 이뤄진다.
+> In other words, the reference behavior of arrays is defined in an element-by-element basis; the reference behavior of individual elements is dissociated from the reference status of the array container.
+- 배열의 참조는 원소별로 이뤄진다. 개별 원소의 참조 방식은 배열 컨테이너의 참조 상태와 분리된다.
 
 ## Reference
 - https://www.php.net/manual/en/language.references.whatdo.php
