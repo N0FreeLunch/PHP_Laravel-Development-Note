@@ -179,5 +179,26 @@ $arr2[0]++;
 > In other words, the reference behavior of arrays is defined in an element-by-element basis; the reference behavior of individual elements is dissociated from the reference status of the array container.
 - 배열의 참조는 원소별로 이뤄진다. 개별 원소의 참조 방식은 배열 컨테이너의 참조 상태와 분리된다.
 
+## 참조에 의한 전달
+> The second thing references do is to pass variables by reference. This is done by making a local variable in a function and a variable in the calling scope referencing the same content.
+- 변수를 참조로 전달하는 경우, 함수 내부의 지역변수는 전달한 값과 동일한 값을 가리키는 참조로 동작한다.
+
+```
+<?php
+function foo(&$var)
+{
+    $var++;
+}
+
+$a=5;
+foo($a);
+echo $a; // 6
+?>
+```
+> will make $a to be 6. This happens because in the function foo the variable $var refers to the same content as $a. For more information on this, read the passing by reference section.
+
+## 참조로 반환
+- 참조로 반환 문서에서 설명
+
 ## Reference
 - https://www.php.net/manual/en/language.references.whatdo.php
