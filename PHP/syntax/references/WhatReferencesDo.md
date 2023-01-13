@@ -17,6 +17,7 @@ $a =& $b;
 ### 해석
 - 변수 `$b`는 어떤 값을 가지고 있다. `& $b`는 변수 `$b`의 공간에 할당되어 있거나 참조하고 있는 참조 원형을 의미한다.
 - 변수 `$a`는 변수 $b를 참조한다. 다른 변수를 참조한다는 것은 다른 변수가 가지고 있는 변수를 참조하는 것이 아니라 해당 변수가 가지고 있거나 참조하는 값의 원본을 가리킨다.
+- `$a =& $b;`를 보면 `$a = &$b`가 아니라 `=&`으로 표기 되어 있다. 참조에 의한 할당은 하나의 연산기호이며 `=&`으로 표기된다. 
 
 ### undefined 변수의 참조
 ```php
@@ -112,7 +113,7 @@ class Test
 	{
 		$row =& $this->ref;
 		foreach (array(1, 2, 3) as $row) {
-    	// do something
+    			// do something
 		}
 		echo $ref;
 	}
@@ -121,6 +122,51 @@ class Test
 new Test
 ```
 - `public string $ref = 0;` 부분을 `public int $ref = 0;`로 바꾸면 애러가 발생하지 않는다.
+
+### 배열 원소의 참조
+> While not being strictly an assignment by reference, expressions created with the language construct array() can also behave as such by prefixing & to the array element to add. 
+- 배열의 원소를 참조할 때 참조에 의한 할당 기호인 `=&`를 사용하지 않고 배열의 원소 값에 직접 `&$변수`으로 원소를 할당한 것을 알 수 있다. 따라서 엄밀한 표현으로는 참조에 의한 할당이라고 표현하기 어렵다. 참조에 의한 배열의 원소할당과 같은 구분된 명칭으로 불러주는 것이 좋다.
+- 참조에 의한 배열의 원소할당은 `array()` 문법으로 배열을 정의할 때 사용할 수 있다.
+```
+<?php
+$a = 1;
+$b = array(2, 3);
+$arr = array(&$a, &$b[0], &$b[1]);
+$arr[0]++; $arr[1]++; $arr[2]++;
+/* $a == 2, $b == array(3, 4); */
+?>
+```
+- `$arr`이란 배열에서 `array(&$a, &$b[0], &$b[1])`를 보면 배열의 원소를 정의할 때 참조를 사용하였다.
+- `&$a`는 `$a`에 할당한 1이란 값을 가리키며, `&$b[0]`는 `$b`는 배열인 `array(2, 3)`의 첫 번째 원소값 2를 참조하고 있다.
+- 배열을 `$배열[키] = 값` 방식으로 변경하는 것은 배열을 값 자체를 바꾸는 것이므로 참조할당을 하지 않아도 배열은 참조로 바뀐다. 주의할 것은 배열을 참조로 바꾸는 것과 배열의 원소값을 참조로 바꾸는 것은 다른 것이라는 부분이다. 동일한 배열에 대해 배열을 구성하는 내부 구성이 바뀌는 것도 참조이며, 배열의 원소값이 다른 공간을 값으로 대체되는 것이 아니라 동일한 값공간을 가지면서 해당 공간 안의 값만 바꾸는 것도 참조이다.
+- `&$b[0]`와 `&$b[1]`는 배열에 대한 참조가 아닌 배열의 원소값에 대한 참조를 설정한다.
+- `$arr`을 구성하는 세 원소는 다른 값을 참조하고 있다. 따라서 각각의 값에 대해 값을 `$대상++`으로 늘려주면 원본값이 늘어난다. 따라서 원본을 가리키는 `$a`, `$b`의 값이 바뀐 것을 확인할 수 있다.
+
+### 참조에 의한 배열의 원소할당이 좋지 않은 이유
+```
+<?php
+/* Assignment of scalar variables */
+$a = 1;
+$b =& $a;
+$c = $b;
+$c = 7; //$c is not a reference; no change to $a or $b
+```
+- `$b =& $a`에서 `$b`는 참조에 의한 할당을 받았다.
+- `$b` 값을 변경하게 된다면 `$a`가 가리키고 있는 1이란 값이 들어 있는 공간의 값도 변경이 된다.
+- 그런데 `$c = $b;`에서 `$c`는 `$b`에 의해 할당이 되었다. 참조에 의한 할당이 아니므로 `$c`는 `$b`가 갖는 값의 복사본을 가지게 되며 `$c`의 값의 공간과 `$b`가 가리키고 있는 값의 공간은 분리된다.
+
+```
+/* Assignment of array variables */
+$arr = array(1);
+$a =& $arr[0]; //$a and $arr[0] are in the same reference set
+$arr2 = $arr; //not an assignment-by-reference!
+$arr2[0]++;
+/* $a == 2, $arr == array(2) */
+/* The contents of $arr are changed even though it's not a reference! */
+?>
+```
+
+
 
 ## Reference
 - https://www.php.net/manual/en/language.references.whatdo.php
