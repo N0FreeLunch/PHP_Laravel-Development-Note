@@ -52,11 +52,11 @@
 ```php
 class Dog
 {
-  protected bool $sitStatus = false;
-  protected int $positionX;
-  protected int $positionY;
-  protected Target $target;
-  protected bool $biteingTargetFlag = false;
+  private bool $sitStatus = false;
+  private int $positionX;
+  private int $positionY;
+  private Target $target;
+  private bool $biteingTargetFlag = false;
   
   // 생성자 
   
