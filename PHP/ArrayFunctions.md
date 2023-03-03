@@ -9,12 +9,12 @@
 ```
 array_filter(
     fn($x) => $x >= 3,
-    array_map(
-        fn($x) => $x+1,
+    array_walk(
         array_map(
             fn($x) => $x+1,
             [1,2,3,4,5]
         ),
+        fn($x) => $x+1,
     )
 )
 ```
@@ -24,8 +24,8 @@ array_filter(
 ```
 $array = [1,2,3,4,5];
 $array = array_filter($array, fn($x) => $x >= 3);
-$array = array_map(fn($x) => $x+1, $array);
-$array = array_map(fn($x) => $x+1, $array);
+$array = array_walk($array, fn($x) => $x+1);
+$array = array_walk($array, fn($x) => $x+1);
 ```
 - 변수에 값을 재할당 하는 방식으로 사용해야 한다.
 - 뒤에서도 살펴 보겠지만 php에서는 이런 방식의 사용이 배열 함수를 사용함에 있어서 가장 깔끔한 코드를 만든다.
@@ -34,8 +34,8 @@ $array = array_map(fn($x) => $x+1, $array);
 ```
 [1,2,3,4,5]
 |> fn($x) => array_filter($x, fn($x) => $x >= 3),
-|> fn($x) => array_map(fn($x) => $x+1, $x),
-|> fn($x) => array_map(fn($x) => $x+1, $x)
+|> fn($x) => array_walk($x, fn($x) => $x+1),
+|> fn($x) => array_walk($x, fn($x) => $x+1)
 ```
 - 이런식으로 파이프 연산자를 도입해서 array_function의 체이닝을 할 수 있는 방식도 도입 되지 않았다.
 - 파이프 연산자를 도입하면 그나마 쉽게 만들 수 있지만, 만약 도입한다고 해도 php의 기본 배열함수는 함수로 한 번 레핑을 해야 사용할 수 있는 단점이 있다.
@@ -46,8 +46,8 @@ $array = array_map(fn($x) => $x+1, $array);
 array_reduce(
     [
         fn($x) => array_filter($x, fn($x) => $x >= 3),
-        fn($x) => array_map(fn($x) => $x+1, $x),
-        fn($x) => array_map(fn($x) => $x+1, $x)
+        fn($x) => array_walk($x, fn($x) => $x+1),
+        fn($x) => array_walk($x, fn($x) => $x+1)
     ]
 , fn($x, $y) => $y($x), [1,2,3,4,5]);
 ```
@@ -67,7 +67,6 @@ array_reduce(
 ## 체이닝을 사용하고 싶다면?
 - 함수형 라이브러리를 사용해 보자.
 - 파이프 연산자에 대한 라이브러리 : https://github.com/boostphp/pipe-operator
-
 
 ## Reference
 - https://www.php.net/manual/en/ref.array.php
