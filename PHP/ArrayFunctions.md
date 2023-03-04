@@ -88,6 +88,7 @@ array_reduce(
 ## 체이닝을 사용하고 싶다면?
 - 함수형 라이브러리를 사용해 보자.
 - 파이프 연산자에 대한 라이브러리 : https://github.com/boostphp/pipe-operator
+- 하지만 이런 라이브러리를 쓰는 것은 회사마다 프로젝트 마다 서로 다른 배열 라이브러리 사용을 초래하는 파편화의 문제에 직면할 수 있다는 문제점이 있다. 어렵지는 않겠지만 그에 따른 사용자의 학습 부담도 늘어나게 되는 문제를 가진다.
 
 ## Reference
 - https://www.php.net/manual/en/ref.array.php
