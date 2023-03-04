@@ -13,12 +13,12 @@
 ```
 array_filter(
     fn($x) => $x >= 3,
-    array_walk(
+    array_map(
+        fn($x) => $x+1,
         array_map(
             fn($x) => $x+1,
             [1,2,3,4,5]
         ),
-        fn($x) => $x+1,
     )
 )
 ```
