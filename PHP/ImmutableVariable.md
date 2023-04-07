@@ -161,7 +161,7 @@ class SampleClass
 {
    public function introduceMessage($id)
    {
-      $userInfo = (new Class {
+      $userInfo = new Class (User::find($id)) {
          public readonly string $name;
          public readonly string $address;
          public readonly string $birthDate;
@@ -170,7 +170,7 @@ class SampleClass
             $this->address = $user->address;
             $this->birthDate = $user->birthDate;
          }
-      })(User::find($id));
+      };
       echo "{$user->address}지역에 사는 {$userInfo->name}님의 생년월일은 {$userInfo->birthDate} 입니다.";
    }
 }
