@@ -47,3 +47,23 @@
 - 오브젝트를 만들 때 생성자에 멤버를 초기화할 때 필요한 값을 전달하는 방법을 사용할 수도 있지만, 생성자 주입 등의 기술을 사용하면 생성자를 전달하는 시점과 별도로 멤버를 초기화 시켜야 할 필요가 있다. 이럴 경우 일반적으로 setter 메소드를 사용해서 멤버의 값을 초기화하는 방법을 사용한다.
 - 오브젝트의 어떤 메소드를 실행하기 위해서는 필수적으로 할당되어야 할 멤버의 값이 필요할 수 있다. 메소드의 로직을 실행하기에 앞서 필요한 멤버의 값이 모두 제대로 할당이 되었는지를 체크하는 메소드를 만들고 검증을 통과하지 못한 경우에는 에러를 발생시키는 방법을 사용한다.
 - 요구되는 멤버의 할당 여부를 확인하는 메소드에 `isset` 함수를 사용하여 변수의 할당 여부를 체크하여 오브젝트의 할당 여부를 체크한다.
+
+### null coalescing operator
+- php에서 널 병합 연산자라고 불리는 null coalescing operator는 `??`으로 표기되는 연산자이다. 이 연산자는 다른 연산자 `?->`의 nullsafe operator (php8.0)가 `null` 만을 확인하는 것과 달리 값의 존재여부인 `undefined`의 확인도 한다.
+- php에서 `undefined`를 확인하는 기능은 `isset` 함수와 `??` 연산자 뿐이다. 이는 애초에 php에서 `undefined`가 php에서 다룰 수 있는 value의 형태가 아니기 때문이다. 값을 다루는 기능이 할당조차 되지 않은 상태가 `undefined`이므로 할당여부도 확인하는 기능과 할당된 값이 어떤 값인지 확인하는 다른 여러 기능들과는 다른점이 있는 것이다.
+
+#### `??` null coalescing operator (php 7.0)
+```php
+// Fetches the value of $_GET['user'] and returns 'nobody'
+// if it does not exist.
+$username = $_GET['user'] ?? 'nobody';
+// This is equivalent to:
+$username = isset($_GET['user']) ? $_GET['user'] : 'nobody';
+
+// Coalescing can be chained: this will return the first
+// defined value out of $_GET['user'], $_POST['user'], and
+// 'nobody'.
+$username = $_GET['user'] ?? $_POST['user'] ?? 'nobody';
+```
+- 위의 예제로 확인가능한 것은 `??` 연산자가 `undefined`도 확인할 수 있다는 점이다.
+- 이는 접근하려는 대상에 값이 할당되지 않았을 때, default 값으로 가질 값을 설정하여 추후 연산에서 계속적인 `undefied`의 확인 없이 연산 로직을 수행할 수 있도록 하는 장점이 있다.
