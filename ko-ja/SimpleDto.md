@@ -47,7 +47,7 @@ class Buy
           public string $fruit = 'apple';
           public string $price = 500;
           public string $amount = 2;
-      };
+        };
     }
 
     public function do(): void
