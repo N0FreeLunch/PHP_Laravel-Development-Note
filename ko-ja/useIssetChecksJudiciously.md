@@ -53,8 +53,8 @@
 ```php
 class Message
 {
-    private string $message;
-    private string $name;
+    private readonly string $message;
+    private readonly string $name;
 
     public function setMessage(string $message): self
     {
@@ -89,5 +89,6 @@ echo (new Message)->setName("David")->setMessage("Nice to Meet You")->getMessage
 - `setName` 메소드와 `setMessage` 메소드를 사용하여 `undefined`인 멤버에 값을 정의해 주었다.
 - `setName` 메소드를 사용하지 않은 경우, `fillUndefinedMember` 메소드에 의해 빈 문자열이 `$name`에 할당된다. 따라서 `setName`는 옵션인 메소드이다.
 - `setMessage` 메소드를 사용하지 않은 경우, `fillUndefinedMember`에 의해 디폴트 값이 할당되지 않으므로 `$message`멤버를 사용할 때 에러가 발생한다. 이는 일부러 에러를 발생 시킨 것으로 `setMessage`는 필수 메소드이다.
+- `private string $name = "";`으로 처음 멤버 변수를 선언할 때 디폴트 값을 할당해도 되지만, `readonly`를 사용하는 경우에는 변수를 한 번만 할당할 수 있으므로 `setter`로 값을 받는 경우에는 디폴트 값을 멤버 선언과 동시에 할당하지 않았다.
 - 이름이 전달되지 않는 경우는 빈 문자열이므로 `empty($this->name)`로 이름이 할당되었는지 되지 않았는지를 `empty` 함수로 확인하였다.
 - 위 과정은 `setter` 메소드를 통해 1에 해당하는 '변수의 기본 값 지정' -> `fillUndefinedMember` 메소드를 사용하여 2에 해당하는 '정의되지 않은 경우 디폴트 값 지정' -> `getMessage`의 리턴값에서 '로직을 전개하는데 필요한 변수들이 다 모인 이후, 로직의 흐름을 나타내는 코드를 실행'의 단계로 나눠져 있다.
