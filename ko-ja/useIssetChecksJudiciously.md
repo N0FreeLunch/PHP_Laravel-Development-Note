@@ -48,3 +48,41 @@
 - is_​array, is_​bool, is_​callable, is_​countable, is_​double, is_​float, is_​int, is_​integer, is_​iterable, is_​long, is_​null, is_​numeric, is_​object, is_​real, is_​resource, is_​scalar, is_​string
 - 이들 키워드는 `null` 타입과 병용하여 값이 준비 되었는지 준비되지 않았는지 확인할 수 있게 해 주며, 중간중간 변수의 타입을 알 수 있게 해 주기 때문에 타입 안정적인 코드를 짜는데 도움을 주기도 한다.
 - 어떤 변수의 디폴트 값을 먼저 선언하고자 한다면 각 타입의 빈 값 또는 `null`타입을 사용한 코드를 만들도록 하자.
+
+### 예제 코드
+```php
+class Message
+{
+    private string $message;
+    private string $name;
+
+    public function setMessage(string $message): self
+    {
+        $this->message = $message;
+        return $this;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    public function getMessage(): string
+    {
+        $this->fillUndefinedMember();
+        $objectPhrase = empty($this->name) ? $this->name : " to {$this->name}";
+        return "Jimmy said{$objectPhrase}, {$this->message}";
+    }
+
+    private function fillUndefinedMember(): void
+    {
+        $this->name ??= "";
+    }
+}
+
+echo (new Message)->setMessage("Nice to Meet You")->getMessage();
+echo PHP_EOL;
+echo (new Message)->setName("David")->setMessage("Nice to Meet You")->getMessage();
+
+```
