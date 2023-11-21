@@ -19,7 +19,8 @@
 - 이런 코딩 스타일을 갖게 되면, `isset`을 사용했을 때는 변수의 선언을 확인하는 용도로 바라보게 되고, `is_null`이나 `=== null`을 사용했을 때는 변수에 들어 있는 타입이 `null`인지 확인하는 용도로 바라보게 되어 정의되지 않은 값인지 `null` 값인지 명확하게 이해할 수 있는 로직을 짤 수 있다.
 
 #### `??`, `??=`에 대해 알아보기
-- `??` : `변수 = 대상 ?? 기본값`의 문법은 `if(isset(대상)) { 변수 = 대상 } else { 변수 = 기본값}`의 문법과 동일하다. [Null Coalescing Operator](https://www.php.net/manual/en/language.operators.comparison.php#language.operators.comparison.coalesce)으로 불린다.
+- `??` : `변수 = 대상 ?? 기본값`의 문법은 `변수 = (fn() => isset(대상) ? 대상 : 기본값)();`의 문법과 동일하다. [Null Coalescing Operator](https://www.php.net/manual/en/language.operators.comparison.php#language.operators.comparison.coalesce)으로 불린다.
+- `??=` : `대상 ??= 기본값`의 문법은 `if(!isset(대상)) { 대상 = 기본값; }`의 문법과 동일하다. [Null Coalescing Assignment Operator](https://www.php.net/manual/en/migration74.new-features.php#migration74.new-features.core.null-coalescing-assignment-operator)으로 불린다.
 
 ### 정의된 변수와 정의되지 않은 변수의 구분의 중요성
 - 정의되지 않은 대상은 php에서 값 자체가 없는 것으로 대부분의 php 함수나 문법은 값의 존재를 상정하고 동작을 수행하기 때문에 `isset`, `??`, `??=` 이외의 코드에서 에러가 발생하는 경우가 대부분이다.
