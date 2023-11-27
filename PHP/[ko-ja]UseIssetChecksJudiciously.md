@@ -35,10 +35,15 @@
 
 #### `??`, `??=`에 대해 알아보기
 #### `??`, `??=`に関して説明
-- `??` : `변수 = 대상 ?? 기본값`의 문법은 `변수 = (fn() => isset(대상) ? 대상 : 기본값)();`의 문법과 동일하다. [Null coalescing operator](https://www.php.net/manual/en/language.operators.comparison.php#language.operators.comparison.coalesce)으로 불린다.
-- `??` : `変数 = 対象 ?? デフォルト値`の文法は、`変数 = (fn()=>isset(対象) ? 対象 : デフォルト値)();`の文法と同じです。[Null coalescing operator](https://www.php.net/manual/en/language.operators.comparison.php#language.operators.comparison.coalesce)と呼ばれています。
-- `??=` : `대상 ??= 기본값`의 문법은 `if(!isset(대상)) { 대상 = 기본값; }`의 문법과 동일하다. [Null coalescing assignment operator](https://www.php.net/manual/en/migration74.new-features.php#migration74.new-features.core.null-coalescing-assignment-operator)으로 불린다.
-- `??=` : `対象 ??= デフォルト値`の文法は、`if(!isset(対象)) { 対象 = デフォルト値; }`の文法と同じです。 [Null coalescing assignment operator](https://www.php.net/manual/en/migration74.new-features.php#migration74.new-features.core.null-coalescing-assignment-operator)と呼ばれています。
+`??` : [Null coalescing operator](https://www.php.net/manual/en/language.operators.comparison.php#language.operators.comparison.coalesce)
+- `변수 = 대상 ?? 기본값`의 문법은 `변수 = (fn() => isset(대상) ? 대상 : 기본값)();`의 문법과 동일하다.
+- `??` : `変数 = 対象 ?? デフォルト値`の文法は、`変数 = (fn()=>isset(対象) ? 対象 : デフォルト値)();`の文法と同じです。
+
+`??=` : [Null coalescing assignment operator](https://www.php.net/manual/en/migration74.new-features.php#migration74.new-features.core.null-coalescing-assignment-operator)
+- `대상 ??= 기본값`의 문법은 `if(!isset(대상)) { 대상 = 기본값; }`의 문법과 동일하다. [Null coalescing assignment operator](https://www.php.net/manual/en/migration74.new-features.php#migration74.new-features.core.null-coalescing-assignment-operator)으로 불린다.
+- `??=` : `対象 ??= デフォルト値`の文法は、`if(!isset(対象)) { 対象 = デフォルト値; }`の文法と同じです。
+
+`isset`, `??`, `??=`는 값의 존재를 확인할 수 있는 특별한 기능
 - 변수가 정의되어 있는 경우 `isset`은 `null`인지 확인하므로 `is_null`을 사용할 수 있지만, `??`, `??=`는 축약된 문법이므로 대체할 수 있는 표현이 없다. 따라서 반드시 정의되지 않은 대상인지 확인하는데만 쓰는 것을 강제하지는 않으며 필요에 따라 값이 `null`인 경우에도 사용하는 경우도 있다고 본다. 하지만 php에서 정의되지 않은 변수를 확인하는 수단이 `isset`, `??`, `??=`의 3개로 제한되어 있기 때문에 가능한 이들 문법은 변수의 값이 정의되어 있을 때 사용되는 문법과 구분되게 사용하는 것을 권장한다.
 - 変数が定義されている場合、`isset`は`null`か確認するので`is_null`を使用することができますが、`??`, `??=`は縮約された文法なので代わりに使える表現がありません。 したがって、必ずしも定義されていないかどうかを確認する用途だけに使うことを強制するのではなく、必要に応じて値が `null`の場合にも使用する場合もあると思います。しかし、phpで定義されていない変数を確認する手段が、 `isset`, `??`, `??=`の3つに制限されているため、可能な限りこれらの文法は変数の値が定義されているときに使用される文法と区別されるように使用することをお勧めします。
 
@@ -87,8 +92,8 @@
 2. 
     1. 1段階のロジックの結果によって新しい変数が導入される場合、途中で変数を追加する。 できるだけこのプロセスで未定義の変数が生じないようにする。
     2. 2段階のロジックを展開するために必要な変数を追加した後、2段階ロジックの流れを表すコードを作成する。
-3. 2段階でロジックが終わらずに新しい変数が追加される場合、3は2段階の繰り返しだ。
-4. 3段階でロジックが終わらずに新しい変数が追加される場合、4は3段階の繰り返しだ。
+3. 2段階でロジックが終わらずに新しい変数が追加される場合、3は2段階の繰り返しす。
+4. 3段階でロジックが終わらずに新しい変数が追加される場合、4は3段階の繰り返しす。
 5. ...
 
 ### 데이터 전달 프로토콜에 대한 이해 결여
@@ -210,5 +215,5 @@ echo (new Conversation)->setName("David")->setMessage("Nice to Meet You")->getCo
 - `isset`を使用する際は、定義されていない変数を確認してロジックを実行しない方式で使用するのではなく、定義されていない変数に値が漏れないように確認およびデフォルト値を設定する用途で使用しましょう。
 - 이렇게 `isset`을 사용하는 스타일을 갖게 되면, `isset`을 사용한 코드를 읽을 때 `null` 확인으로 해석하는 경우의 수를 줄여서 코드를 좀 더 빠르고 명확하게 이해할 수 있는 코드를 만들 수 있다.
 - このように`isset`を使うスタイルを採用すると、`isset`を使ったコードを読む時、`null`を確認で解釈する場合の数を減らしてより速く明確に理解できるコードを作ることができます。
-- 또한 검증할 대상이 배열과 같이 값에 접근하는 형태가 조금이라도 복잡해진다면, 무엇이 문제인지 명확히 알 수 있는 `array_key_exists`와 같은 기능을 사용하자.
-- また、検証対象が配列のように値にアクセスする形が少しでも複雑になったら、何が問題なのか明確に分かる`array_key_exists`のような機能を使いましょう。
+- 또한 검증할 대상이 배열과 같이 값에 접근하는 형태가 조금이라도 복잡해진다면, 무엇이 문제인지 명확히 알 수 있는 `array_key_exists`와 같은 기능을 `isset`대신에 사용하자.
+- また、検証対象が配列のように値にアクセスする形が少しでも複雑になったら、何が問題なのか明確に分かる`array_key_exists`のような機能を`isset`の代わりに使いましょう。
