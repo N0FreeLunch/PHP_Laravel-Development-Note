@@ -159,7 +159,7 @@ class Conversation
     public function getConversation(): string
     {
         $this->fillUndefinedMember();
-        $objectPhrase = empty($this->name) ? $this->name : " to {$this->name}";
+        $objectPhrase = empty($this->name) ? "" : " to {$this->name}";
         return "Jimmy said{$objectPhrase}, {$this->message}";
     }
 
