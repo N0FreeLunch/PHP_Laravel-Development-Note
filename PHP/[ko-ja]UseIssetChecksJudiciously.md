@@ -141,51 +141,50 @@
 ```php
 class Conversation
 {
-    private readonly string $message;
-    private readonly string $name;
+    private readonly string $sayMessage;
+    private readonly string $receiverName;
 
-    public function setMessage(string $message): self
+    public function setSayMessage(string $message): self
     {
-        $this->message = $message;
+        $this->sayMessage = $message;
         return $this;
     }
 
-    public function setName(string $name): self
+    public function setReceiverName(string $name): self
     {
-        $this->name = $name;
+        $this->receiverName = $name;
         return $this;
     }
 
     public function getConversation(): string
     {
         $this->fillUndefinedMember();
-        $objectPhrase = empty($this->name) ? "" : " to {$this->name}";
-        return "Jimmy said{$objectPhrase}, {$this->message}";
+        $objectPhrase = empty($this->receiverName) ? "" : " to {$this->receiverName}";
+        return "Jimmy said{$objectPhrase}, {$this->sayMessage}";
     }
 
-    private function fillUndefinedMember(): void
+    private function fillUndefinedOptionalMember(): void
     {
-        $this->name ??= "";
+        $this->receiverName ??= "";
     }
 }
 
-echo (new Conversation)->setMessage("Nice to Meet You")->getConversation();
+echo (new Conversation)->setSayMessage("Nice to Meet You")->getConversation();
 echo PHP_EOL;
-echo (new Conversation)->setName("David")->setMessage("Nice to Meet You")->getConversation();
-
+echo (new Conversation)->setReceiverName("David")->setSayMessage("Nice to Meet You")->getConversation();
 ```
-- `setName` 메소드와 `setMessage` 메소드를 사용하여 `undefined`인 멤버에 값을 정의해 주었다.
-- `setName` メソッドと `setMessage` メソッドを使用して `undefined`のメンバーに値を定義しました。
-- `setName` 메소드를 사용하지 않은 경우, `fillUndefinedMember` 메소드에 의해 빈 문자열이 `$name`에 할당된다. 따라서 `setName`는 옵션인 메소드이다.
-- `setName` メソッドを使用しない場合 `fillUndefinedMember` メソッドによって空の文字列が `$name`に割り当てられます。 したがって、`setName`はオプションのメソッドです。
-- `setMessage` 메소드를 사용하지 않은 경우, `fillUndefinedMember`에 의해 디폴트 값이 할당되지 않으므로 `$message`멤버를 사용할 때 에러가 발생한다. 이는 일부러 에러를 발생 시킨 것으로 `setMessage`는 필수 메소드이다.
--  `setMessage` メソッドを使用していない場合, `fillUndefinedMember`によってデフォルト値が割り当てられないため `$message`メンバーを使用する際にエラーが発生すします。 これはわざとエラーを発生させたものであり、`setMessage`は必須メソッドです。
-- `private string $name = "";`으로 처음 멤버 변수를 선언할 때 디폴트 값을 할당해도 되지만, `readonly`를 사용하는 경우에는 변수를 한 번만 할당할 수 있으므로 `setter`로 값을 받는 경우에는 디폴트 값을 멤버 선언과 동시에 할당하지 않았다.
-- `private string $name = "";`で最初にメンバー変数を宣言する際にデフォルト値を割り当ててもよいですが、`readonly`を使用する場合は変数を一度だけ割り当てることができます。そのため、`setter`で値を受け取る場合はデフォルト値をメンバー宣言と同時に割り当てませんでした。
-- 이름이 전달되지 않는 경우는 빈 문자열이므로 `empty($this->name)`로 이름이 할당되었는지 되지 않았는지를 `empty` 함수로 확인하였다.
-- 名前が伝わらない場合は空の文字列であるため、`empty($this->name)`として、名前が割り当てられているかどうかを`empty`関数で確認しました。
-- 위 과정은 `setter` 메소드를 통해 1에 해당하는 '변수의 기본 값 지정' -> `fillUndefinedMember` 메소드를 사용하여 2에 해당하는 '정의되지 않은 경우 디폴트 값 지정' -> `getConversation`의 리턴값에서 3에 해당하는 '로직을 전개하는데 필요한 변수들이 다 모인 이후, 로직의 흐름을 나타내는 코드를 실행'의 단계로 나눠져 있다.
-- 上記のプロセスは、`setter` メソッドを介して1に該当する「変数のデフォルト値指定」 -> `fillUndefinedMember`メソッドを使用して、2に該当する「定義されていない場合、デフォルト値指定」 -> `getConversation`のリターン値から3に該当する「ロジックを展開するのに必要な変数がすべて集まった後、ロジックの流れを表すコードを実行」の段階に分かれています。
+- `setReceiverName` 메소드와 `setSayMessage` 메소드를 사용하여 `undefined`인 멤버에 값을 정의해 주었다.
+- `setReceiverName` メソッドと `setSayMessage` メソッドを使用して `undefined`のメンバーに値を定義しました。
+- `setReceiverName` 메소드를 사용하지 않은 경우, `fillUndefinedMember` 메소드에 의해 빈 문자열이 `$receiverName`에 할당된다. 따라서 `setReceiverName`는 옵션인 메소드이다.
+- `setReceiverName` メソッドを使用しない場合 `fillUndefinedMember` メソッドによって空の文字列が `$receiverName`に割り当てられます。 したがって、`setReceiverName`はオプションのメソッドです。
+- `setSayMessage` 메소드를 사용하지 않은 경우, `fillUndefinedOptionalMember`에 의해 디폴트 값이 할당되지 않으므로 `$sayMessage`멤버를 사용할 때 에러가 발생한다. 이는 일부러 에러를 발생 시킨 것으로 `setSayMessage`는 필수 메소드이다.
+-  `setSayMessage` メソッドを使用していない場合, `fillUndefinedOptionalMember`によってデフォルト値が割り当てられないため `$sayMessage`メンバーを使用する際にエラーが発生すします。 これはわざとエラーを発生させたものであり、`setSayMessage`は必須メソッドです。
+- `private string $receiverName = "";`으로 처음 멤버 변수를 선언할 때 디폴트 값을 할당해도 되지만, `readonly`를 사용하는 경우에는 변수를 한 번만 할당할 수 있으므로 `setter`로 값을 받는 경우에는 디폴트 값을 멤버 선언과 동시에 할당하지 않았다.
+- `private string $receiverName = "";`で最初にメンバー変数を宣言する際にデフォルト値を割り当ててもよいですが、`readonly`を使用する場合は変数を一度だけ割り当てることができます。そのため、`setter`で値を受け取る場合はデフォルト値をメンバー宣言と同時に割り当てませんでした。
+- 이름이 전달되지 않는 경우는 빈 문자열이므로 `empty($this->receiverName)`로 이름이 할당되었는지 되지 않았는지를 `empty` 함수로 확인하였다.
+- 名前が伝わらない場合は空の文字列であるため、`empty($this->receiverName)`として、名前が割り当てられているかどうかを`empty`関数で確認しました。
+- 위 과정은 `setter` 메소드를 통해 1에 해당하는 '변수의 기본 값 지정' -> `fillUndefinedOptionalMember` 메소드를 사용하여 2에 해당하는 '정의되지 않은 경우 디폴트 값 지정' -> `getConversation`의 리턴값에서 3에 해당하는 '로직을 전개하는데 필요한 변수들이 다 모인 이후, 로직의 흐름을 나타내는 코드를 실행'의 단계로 나눠져 있다.
+- 上記のプロセスは、`setter` メソッドを介して1に該当する「変数のデフォルト値指定」 → `fillUndefinedOptionalMember`メソッドを使用して、2に該当する「定義されていない場合、デフォルト値指定」 → `getConversation`のリターン値から3に該当する「ロジックを展開するのに必要な変数がすべて集まった後、ロジックの流れを表すコードを実行」の段階に分かれています。
 
 ### isset의 모호성
 ### issetの曖昧さ
