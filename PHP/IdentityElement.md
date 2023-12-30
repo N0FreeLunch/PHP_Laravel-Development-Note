@@ -32,8 +32,32 @@
 
 #### dot
 - dot(.)은 문자열을 결합하는 연산이다. 임의의 문자열에 대해서 빈 문자열을 dot(.)으로 결합하면 그 결과는 이전의 문자열과 동일하다. 빈 문자열은 dot(.) 연산의 항등원이다.
+```php
+echo "hello"."";
+echo "hello"."world";
+```
+- `"hello".""`에서 `""`는 문자열 결합 연산 dot(.)에 대한 항등원에 해당한다.
+
+#### str_replace
+- `str_replace(array|string $search, array|string $replace, string|array $subject, int &$count = null): string|array`
+```php
+$hello = "hello";
+echo str_replace("", "_", $hello);
+```
+- `str_replace`에서 어떤 값을 찾아서 해당 값을 `-`으로 바꾸는 위의 코드를 실행한다고 하자.
+- search 부분에 빈 문자열 `""`이 들어가면 대체할 대상을 아무것도 찾지 않으므로 대체할 대상이 없어서 위의 결과는 "hello"가 그대로 나온다.
+- 곧 빈 문자열은 `str_replace`의 search 부분에서 사용될 때, 아무것도 대체하지 않은 원본 결과를 반환하므로 항등원의 역할을 한다. 
 
 ### 배열의 항등원
+#### 스프레드 연산자
+```php
+$oneToFive = [1, 2, 3, 4, 5];
+$emptyArr = [];
+var_dump([10, 11, 12, ...$oneToFive]);
+var_dump([10, 11, 12, ...$emptyArr]);
+```
+- `[10, 11, 12, ...$oneToFive]`은 `[10, 11, 12]` 배열 안에 스프레드 연산자 형태의 배열을 포함될 때 `$oneToFive` 배열 안의 원소들이 `[10, 11, 12]`의 배열에 포함되어 나온다.
+- 그러나 빈 배열을 스프레드 연산자로 포함하면, `[10, 11, 12]`으로 아무 원소도 추가되지 않은 결과가 나온다. 스프레드 연산자에 대해 빈 배열의 배열 안에서의 포함이란 연산에 대해 항등원이라고 볼 수 있다.
 
 #### array_walk
 - `array_walk(array|object &$array, callable $callback, mixed $arg = null): bool`를 생각해 보자.
