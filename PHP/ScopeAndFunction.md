@@ -70,6 +70,7 @@ namedFunction();
 ```
 - 글로벌 변수에는 `'hello'`라는 값의 변수가 있고, 지역 변수에는 `'world'`라는 값의 변수가 있다. 함수 안에 내포된 기명함수를 호출했을 때, 전역 변수의 값 `'hello'`는 출력 되는 반면, 지역 변수의 값 `'world'`의 값은 전역변수의 값이 아니기 때문에 가져올 수 없어서 `null`이 되어 출력되지 않는다.
 
+#### 기명함수와 순수함수
 ```php
 function factorial($n) {
     if ($n <= 1) {
@@ -97,21 +98,31 @@ var_dump($factorial(5));
 ```php
 class PureFunctionTest
 {
-	private string $hello = 'hello';
+    private string $hello = 'hello';
 
-	public function method()
-	{
-		function namedFunction() {
-			return $this->hello;
-		}
-		
-		return namedFunction();
-	}
+    public function method()
+    {
+        function namedFunction() {
+            return $this->hello;
+        }
+        return namedFunction();
+    }
 }
 
-(new PureFunctionTest)->method();
+echo (new PureFunctionTest)->method();
 ```
 - 위 코드에서 기명 함수 내에서 `$this->hello`으로 객체의 멤버에 접근하는 코드는 에러를 발생시킨다.
 
 ### 함수와 스코프
+- 자바스크립트의 변수는 `const`나 `let`으로 선언되면, 블록 스코프를 갖는다. 함수인지 관계 없이 중괄호 `{}`가 변수의 스코프가 된다. `var`나 선언 키워드 없이 사용된 변수의 경우 `function` 함수의 스코프를 갖는다. 그래서 조건문이나 반복문의 중괄호 안에 사용된 변수도 스코프를 갖는다.
+- 자바스크립트와 달리, 그리고 대부분의 언어에서는 블록 스코프를 사용하지 않고, 함수 스코프를 사용한다. 조건문이나 반복문 안의 중괄호가 변수의 스코프가 되지 않는 것은, php의 변수가 함수 스코프를 갖기 때문이다.
+```php
+if(true) {
+    $innerIf = 'hello';
+}
+echo $innerIf;
+```
+- 블록 내에서 선언한 변수가 소멸되지 않고 블록 밖에서도 소멸하지 않았는데, 이는 함수 스코프내에서 선언된 변수가 아니기 때문에 전역 변수로 선언된 것이라서 그렇다.
+
+### 로컬 선언 키워드
 
