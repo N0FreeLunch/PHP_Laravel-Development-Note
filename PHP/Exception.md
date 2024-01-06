@@ -16,3 +16,4 @@
 
 ## Reference
 - https://www.php.net/manual/en/language.exceptions.php
+- https://wiki.php.net/rfc/throw_expression
