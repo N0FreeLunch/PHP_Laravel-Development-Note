@@ -26,6 +26,12 @@ try {
 }
 ```
 - 모든 예외는 php의 `Throwable` 인터페이스의 구현인 내장 `Exception` 객체를 통해서 상속을 받아 만들어지기 때문에 `Throwable` 인터페이스는 모든 예외를 케치할 수 있다.
+- 여러 인터페이스 유형을 상속 받는 관계를 생각해 보자. `Throwable` 인터페이스는 모든 예외 객체가 갖고 있는 값이지만, 어떤 예외 객체는 다른 유형을 함께 구현했다고 하자. 그럼 해당 인터페이스만 구현된 예외 객체의 그룹을 선택적으로 catch 할 수 있다. php는 다중상속을 지원하지 않지만, 인터페이스를 통해서 상위-하위 관계가 아닌 여러 타입을 가질 수 있다. 상위-하위 관계는 아니지만 특정 유형의 예외를 그룹화 하고 싶을 때 인터페이스를 이용한 예외를 만들어 유형별로 케치를 할 수 있다.
+```php
+try {
+} catch(CustomAddtionalExceptionInterface $e) {
+}
+```
 
 #### 예외 객체로 캐치
 ```php
@@ -36,7 +42,7 @@ try {
 - `Throwable` 인터페이스를 사용하지 않더라도 php의 디폴트 내장 `Exception` 객체를 사용하여 모든 객체를 잡을 수 있다.
 - `Exception $e`에서 `Exception` 부분은 케치하는 대상의 타입을 지정하는 부분이다. 타입힌트와 마찬가지로 자신의 하위 타입을 모두 받을 수 있는 특징을 갖는다.
 - 하위 타입은 상위 타입의 인터페이스를 포함한다. 하위 타입에서는 상위 타입이 가지지 못한 인터페이스를 추가할 수 있다. 컴파일 언어의 경우, `Exception`으로 하위 타입의 예외 객체를 받으면 추가된 인터페이스에 접근 불가능한 특성이 있으나, php와 같은 동적 언어는 `Exception` 타입으로 캐치를 할 때 하위 타입에 접근할 수 있다.
-- `catch` 구문에서 상위 타입을 지정하게 되면, 하위 타입은 모두 받게 되고 하나의 try-catch 문에서 catch를 여러번 사용했을 때 먼저 실행 된 catch 문에서 예외를 포착했다면, 다음으로 실행된 catch 문에서 동일한 타입의 예외를 캐치할 수 없다.
+- `catch` 구문에서 상위 타입을 지정하게 되면, 하위 타입은 모두 받게 되고 하나의 try-catch 문에서 catch를 여러번 사용했을 때 먼저 실행 된 `catch` 문에서 예외를 포착했다면, 다음으로 실행된 `catch` 문에서 동일한 타입의 예외를 캐치할 수 없다.
 ```php
 try {
 } catch(Exception1 $e) {
@@ -44,7 +50,7 @@ try {
 } catch(Exception3 $e) {
 } 
 ```
-- 위의 코드에서 catch 문은 단 한 곳에서만 실행이 된다. `Exception1`에서 예외를 잡았다면 다음 catch 문에서 잡을 수 없고, `Exception2`에서 예외를 잡았다면 다음 catch 문에서 잡을 수 없다.
+- 위의 코드에서 `catch` 문은 단 한 곳에서만 실행이 된다. `Exception1`에서 예외를 잡았다면 다음 catch 문에서 잡을 수 없고, `Exception2`에서 예외를 잡았다면 다음 `catch` 문에서 잡을 수 없다.
 
 #### 커스텀 예외 캐치
 ```php
@@ -55,32 +61,47 @@ class CustomException extends Exception
     }
 }
 
-function someException() {
-	return new CustomException();
+class CustomException2 extends Exception
+{
+    public function __toString() {
+        return "Custom Exception2";
+    }
 }
 
 try {
-	throw someException();
-	echo "try completed\n";
+    throw new CustomException();
+    echo "try completed\n";
 } catch(Exception $e) {
-	echo "all Exception catch\n";
+    echo "all Exception catch\n";
 } catch(CustomException $e) {
-	echo "custom Exception catch\n";
+    echo "custom Exception catch\n";
 } finally {
-	echo "finally is always run\n";
+    echo "finally is always run\n";
 }
 
 echo PHP_EOL;
 
 try {
-	throw someException();
-	echo "try completed\n";
+    throw new CustomException2();
+    echo "try completed\n";
 } catch(CustomException $e) {
-	echo "custom Exception catch\n";
+    echo "custom Exception catch\n";
+} catch(CustomException2 $e) {
+    echo "custom Exception2 catch\n";
 } finally {
-	echo "finally is always run\n";
+    echo "finally is always run\n";
 }
 ```
+- 위의 예제는 커스텀 예외 클래스를 만들고 이를 `catch`하는 코드이다.
+```php
+catch(Exception $e) {
+    echo "all Exception catch\n";
+} catch(CustomException $e) {
+    echo "custom Exception catch\n";
+}
+```
+- 위 코드는 상위 타입 `Exception`에서 하위 타입 `CustomException`을 받기 때문에 `catch(Exception $e) { echo "all Exception catch\n"; }` 부분이 실행되며, `catch(CustomException $e) { echo "custom Exception catch\n"; }` 부분이 예외를 케치 할 수 있는 부분임에도 불구하고 앞선 `catch` 문이 먼저 예외를 케치하여 실행되지 않는다.
+- `throw new CustomException2();`로 예외를 던진 케이스를 보면, `catch(CustomException $e) { echo "custom Exception catch\n"; }`에서는 타입 불일치로 예외를 잡지 않고, `catch(CustomException2 $e) { echo "custom Exception2 catch\n"; }`에서는 예외를 잡는다.
 
 ## Reference
 - https://www.php.net/manual/en/language.exceptions.php
