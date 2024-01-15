@@ -17,7 +17,70 @@
 
 ### 예외의 캐치
 - 예외는 예외를 던진 부분을 실행하는 코드에서 실행된다. A라는 코드가 B를 실행하고, B라는 코드가 C를 실행하고, C라는 코드에서 예외를 던지게 되면, C의 예외 발생한 부분을 감싸는 `catch` 문이 있다면 `catch`문에서 예외를 잡고, C를 감싸는 `catch` 문이 없다면, B라는 코드를 감싸는 `catch` 문이 있는지 확인하고 있다면 예외를 잡고, 없다면 A라는 코드를 감싸는 `catch`문이 있는지 확인을 하고 있다면 예외를 잡고, 없다면 php의 전역 예외 처리기에 예외를 던지고 예외를 처리하지 못하면, php 프로세스는 종료가 된다.
-- 예외는 예외를 실행하는 코드를 둘러싼 부분에서 코드를 처리한다. A, B, C를 둘러싼 어디서 코드를 처리한다는 것이다. 하지만 발생한 에외를 처리하는 곳이 A, B, C 중의 한 곳을 선택한다고 처리 로직의 맥락과 흐름에 맞는가를 생각해 봐야 한다. 아키텍처적으로 C에서 발생한 에러를 B에서 처리하도록 하면 좋은 구조 특별히 만들지 않는한, 예외를 처리할 부분으로 적당한 곳을 선정하기 어려운 문제가 있다.
+- 예외는 예외를 실행하는 코드를 둘러싼 부분에서 코드를 처리한다. A, B, C를 둘러싼 어디서 코드를 처리한다는 것이다. 하지만 발생한 에외를 처리하는 곳이 A, B, C 중의 한 곳을 선택한다고 처리 로직의 맥락과 흐름에 맞는가를 생각해 봐야 한다. 아키텍처적으로 C에서 발생한 에러를 B에서 처리하도록 하면 좋은 구조를 특별히 만들지 않는한, 예외를 처리할 부분으로 적당한 곳을 선정하기 어려운 문제가 있다.
+
+#### throwable 인터페이스로 케치
+```php
+try {
+} catch(Throwable $e) {
+}
+```
+- 모든 예외는 php의 `Throwable` 인터페이스의 구현인 내장 `Exception` 객체를 통해서 상속을 받아 만들어지기 때문에 `Throwable` 인터페이스는 모든 예외를 케치할 수 있다.
+
+#### 예외 객체로 캐치
+```php
+try {
+} catch(Exception $e) {
+}
+```
+- `Throwable` 인터페이스를 사용하지 않더라도 php의 디폴트 내장 `Exception` 객체를 사용하여 모든 객체를 잡을 수 있다.
+- `Exception $e`에서 `Exception` 부분은 케치하는 대상의 타입을 지정하는 부분이다. 타입힌트와 마찬가지로 자신의 하위 타입을 모두 받을 수 있는 특징을 갖는다.
+- 하위 타입은 상위 타입의 인터페이스를 포함한다. 하위 타입에서는 상위 타입이 가지지 못한 인터페이스를 추가할 수 있다. 컴파일 언어의 경우, `Exception`으로 하위 타입의 예외 객체를 받으면 추가된 인터페이스에 접근 불가능한 특성이 있으나, php와 같은 동적 언어는 `Exception` 타입으로 캐치를 할 때 하위 타입에 접근할 수 있다.
+- `catch` 구문에서 상위 타입을 지정하게 되면, 하위 타입은 모두 받게 되고 하나의 try-catch 문에서 catch를 여러번 사용했을 때 먼저 실행 된 catch 문에서 예외를 포착했다면, 다음으로 실행된 catch 문에서 동일한 타입의 예외를 캐치할 수 없다.
+```php
+try {
+} catch(Exception1 $e) {
+} catch(Exception2 $e) {
+} catch(Exception3 $e) {
+} 
+```
+- 위의 코드에서 catch 문은 단 한 곳에서만 실행이 된다. `Exception1`에서 예외를 잡았다면 다음 catch 문에서 잡을 수 없고, `Exception2`에서 예외를 잡았다면 다음 catch 문에서 잡을 수 없다.
+
+#### 커스텀 예외 캐치
+```php
+class CustomException extends Exception
+{
+    public function __toString() {
+        return "Custom Exception";
+    }
+}
+
+function someException() {
+	return new CustomException();
+}
+
+try {
+	throw someException();
+	echo "try completed\n";
+} catch(Exception $e) {
+	echo "all Exception catch\n";
+} catch(CustomException $e) {
+	echo "custom Exception catch\n";
+} finally {
+	echo "finally is always run\n";
+}
+
+echo PHP_EOL;
+
+try {
+	throw someException();
+	echo "try completed\n";
+} catch(CustomException $e) {
+	echo "custom Exception catch\n";
+} finally {
+	echo "finally is always run\n";
+}
+```
 
 ## Reference
 - https://www.php.net/manual/en/language.exceptions.php
