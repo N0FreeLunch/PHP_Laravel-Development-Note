@@ -29,9 +29,10 @@ try {
 - 여러 인터페이스 유형을 상속 받는 관계를 생각해 보자. `Throwable` 인터페이스는 모든 예외 객체가 갖고 있는 값이지만, 어떤 예외 객체는 다른 유형을 함께 구현했다고 하자. 그럼 해당 인터페이스만 구현된 예외 객체의 그룹을 선택적으로 catch 할 수 있다. php는 다중상속을 지원하지 않지만, 인터페이스를 통해서 상위-하위 관계가 아닌 여러 타입을 가질 수 있다. 상위-하위 관계는 아니지만 특정 유형의 예외를 그룹화 하고 싶을 때 인터페이스를 이용한 예외를 만들어 유형별로 케치를 할 수 있다.
 ```php
 try {
-} catch(CustomAddtionalExceptionInterface $e) {
+} catch(CustomAddtionalMethodExceptionInterface $e) {
 }
 ```
+- 하지만 예외 처리는 `Throwable&CustomAddtionalMethodExceptionInterface`과 같은 교차 유형을 지원하지는 않는데, 이런 기능 도입에 미흡한 것을 보면 인터페이스를 통해서 예외를 케치하는 것을 자주 사용하는 것 같지는 않아 보인다.
 
 #### 예외 객체로 캐치
 ```php
@@ -74,7 +75,7 @@ try {
 } catch(Exception $e) {
     echo "all Exception catch\n";
 } catch(CustomException $e) {
-    echo "custom Exception catch\n";
+    echo "$e catch\n";
 } finally {
     echo "finally is always run\n";
 }
@@ -85,9 +86,9 @@ try {
     throw new CustomException2();
     echo "try completed\n";
 } catch(CustomException $e) {
-    echo "custom Exception catch\n";
+    echo "$e catched\n";
 } catch(CustomException2 $e) {
-    echo "custom Exception2 catch\n";
+    echo "$e $e catched\n";
 } finally {
     echo "finally is always run\n";
 }
@@ -95,13 +96,18 @@ try {
 - 위의 예제는 커스텀 예외 클래스를 만들고 이를 `catch`하는 코드이다.
 ```php
 catch(Exception $e) {
-    echo "all Exception catch\n";
+    echo "all Exception catched\n";
 } catch(CustomException $e) {
-    echo "custom Exception catch\n";
+    echo "$e catched\n";
 }
 ```
 - 위 코드는 상위 타입 `Exception`에서 하위 타입 `CustomException`을 받기 때문에 `catch(Exception $e) { echo "all Exception catch\n"; }` 부분이 실행되며, `catch(CustomException $e) { echo "custom Exception catch\n"; }` 부분이 예외를 케치 할 수 있는 부분임에도 불구하고 앞선 `catch` 문이 먼저 예외를 케치하여 실행되지 않는다.
-- `throw new CustomException2();`로 예외를 던진 케이스를 보면, `catch(CustomException $e) { echo "custom Exception catch\n"; }`에서는 타입 불일치로 예외를 잡지 않고, `catch(CustomException2 $e) { echo "custom Exception2 catch\n"; }`에서는 예외를 잡는다.
+- `throw new CustomException2();`로 예외를 던진 케이스를 보면, `catch(CustomException $e) { echo "$e catched\n"; }`에서는 타입 불일치로 예외를 잡지 않고, `catch(CustomException2 $e) { echo "$e catched\n"; }`에서는 예외를 잡는다.
+
+### 처리의 중단과 상태 복구
+- 어떤 처리를 함에 있어서 예외가 발생하면 catch로 잡아서 처리하지 않는 한 에러가 발생하고 프로세스는 종료된다. 하나의 프로세스에서 여러 스레드로 리퀘스트를 처리하는 php 이외의 다른 여러 프로그래밍 언어의 프레임워크들은 예외를 하나의 리퀘스트틑 처리 단위로 자동으로 잡아서 에러 로그를 남기고 해당 리퀘스트 처리를 종료 시킨다. 이는 하나의 리퀘스트가 독립된 처리 단위이며 다른 리퀘스트에 영향을 주지 않기 때문에 채택되는 방식이다.
+- 처리를 중단하게 되면, 에러가 나서 처리가 중단된 이전 부분까지의 로직의 진행 과정에서 상태 변경(데이터베이스의 값의 변경 등)이 일어났다면 이를 복구 해 줘야 한다. 이를 위해 데이터를 저장하는 부분의 로직에서는 적절하게 트렌젝션 처리를 해 줘야 하며, 처리를 하면서 지속적으로 상태를 변경하는 로직을 짜는 것 보다는 리퀘스트 단위 내에서 다 처리하고 한 번에 상태 변경을 시도하는 것이 좋다. 예를 들어 어떤 데이터를 파일로 저장을 하는데 조금씩 파일에 저장하는 로직 보다는 리퀘스트 처리 과정에서 파일을 만들어 한 번에 외부 저장소에 저장하는 편이 낫다. 그렇지 않다면 동일한 결과를 만드는 리퀘스트가 다시 실행되었을 때 이전의 실패한 처리에 영향을 받지 않도록 로직을 짜야 하는데, 실패로 변경된 외부 상태를 초기화하는 로직이 필요하다.
+- 예기치 못한 처리로 인해서 중단된 경우를 위해 상태 변경의 영향을 최소화하기 위한 코드를 짜는 것이 중요하다. 해당 리퀘스트 처리 이상의 반영구적인 상태 변경을 초래하는 코드의 경우 코드를 짜는데 있어 주의를 요구한다.
 
 ## Reference
 - https://www.php.net/manual/en/language.exceptions.php
