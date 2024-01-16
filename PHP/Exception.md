@@ -47,6 +47,13 @@ try {
 }
 ```
 - 하지만 예외 처리는 `Throwable&CustomAddtionalMethodExceptionInterface`과 같은 교차 유형을 지원하지는 않는데, 이런 기능 도입에 미흡한 것을 보면 인터페이스를 통해서 예외를 케치하는 것을 자주 사용하는 것 같지는 않아 보인다.
+- 하지만 인터페이스를 활용해 그룹화 하는 것 보다 보통은 `|` 파이프 기호로 `catch`할 대상들을 나열하는 방식, 여러 타입의 예외를 받을 수 있는 구문을 자주 사용한다.
+```php
+try {
+} catch(Exception1 | Exception2 | Exception3 $e) {
+}
+```
+- 위의 방식으로 여러 타입의 대상을 하나의 케치문에서 받아서 해당 `catch` 문에서 공통된 처리를 할 수 있다.
 
 #### 예외 객체로 캐치
 ```php
@@ -82,7 +89,9 @@ class CustomException2 extends Exception
         return "Custom Exception2";
     }
 }
-
+```
+- 위의 코드는 아래의 예제에서 사용할 커스텀 예외 클래스를 정의한 것이다.
+```php
 try {
     throw new CustomException();
     echo "try completed\n";
@@ -93,9 +102,17 @@ try {
 } finally {
     echo "finally is always run\n";
 }
-
-echo PHP_EOL;
-
+```
+- 위 코드는 상위 타입 `Exception`에서 하위 타입 `CustomException`을 받기 때문에 `catch(Exception $e) { echo "all Exception catch\n"; }` 부분이 실행되며, `catch(CustomException $e) { echo "custom Exception catch\n"; }` 부분이 예외를 케치 할 수 있는 부분임에도 불구하고 앞선 `catch` 문이 먼저 예외를 케치하여 실행되지 않는다.
+```php
+catch(CustomException $e) {
+    echo "$e catched\n";
+} catch(Exception $e) {
+    echo "all Exception catched\n";
+}
+```
+- 위와 같이 하면 `CustomException`가 먼저 실행되고 나머지 에러에 대해 포착하는 `Exception`가 실행되는 순서가 되므로 나머지 모든 에러를 잡아서 처리하고 싶을 때 그에 앞서 특정한 에러를 먼저 잡아 낼 수 있다. 곧, `catch`를 작성하는 순서는 더 작은 범위 부터 큰 범위 순의 에러를 포착하는 방향으로 만들어야 큰 범위의 `catch`에서 포착되어 작은 범위의 `catch`에서 포착할 수 없는 일이 발생하지 않는다.
+```php
 try {
     throw new CustomException2();
     echo "try completed\n";
@@ -107,15 +124,6 @@ try {
     echo "finally is always run\n";
 }
 ```
-- 위의 예제는 커스텀 예외 클래스를 만들고 이를 `catch`하는 코드이다.
-```php
-catch(Exception $e) {
-    echo "all Exception catched\n";
-} catch(CustomException $e) {
-    echo "$e catched\n";
-}
-```
-- 위 코드는 상위 타입 `Exception`에서 하위 타입 `CustomException`을 받기 때문에 `catch(Exception $e) { echo "all Exception catch\n"; }` 부분이 실행되며, `catch(CustomException $e) { echo "custom Exception catch\n"; }` 부분이 예외를 케치 할 수 있는 부분임에도 불구하고 앞선 `catch` 문이 먼저 예외를 케치하여 실행되지 않는다.
 - `throw new CustomException2();`로 예외를 던진 케이스를 보면, `catch(CustomException $e) { echo "$e catched\n"; }`에서는 타입 불일치로 예외를 잡지 않고, `catch(CustomException2 $e) { echo "$e catched\n"; }`에서는 예외를 잡는다.
 
 ### 처리의 중단과 상태 복구
