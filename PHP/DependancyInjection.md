@@ -26,4 +26,43 @@
 
 ### Factory pattern
 - 의존성 주입을 하게 되면, `new` 키워드로 객체를 생성하지 않고 파라메터를 통해서 생성된 객체를 전달 받기 때문에 주입된 단 하나의 객체만 사용할 수 있다. 이 때문에 주입된 객체를 `clone`하는 코드를 통해서 여러번 재사용하려는 시도를 할 수 있다.
-- 이러한 재사용의 문제점을 해결하기 위한 방법으로 펙토리 패턴을 사용한다. 펙토리 객체는 객체를 복사 또는 생성하는 기능을 갖고 있다. 펙토리 객체가 가진 `create` 접미사의 메소드를 사용해서 의존성 주입할 대상을 펙토리 객체로 받고, `create` 메소드를 호출하는 것으로 객체를 여러번 재사용할 수 있는 코드를 만들 수 있다.
+- 이러한 재사용의 문제점을 해결하기 위한 방법으로 펙토리 패턴을 사용한다. 펙토리 객체는 객체를 복사 또는 생성하는 기능을 갖고 있다. 펙토리 객체가 가진 `create` 접미사의 메소드를 사용해서 객체를 반복적으로 찍어내며 의존성 주입할 대상을 펙토리 객체로 받고, `create` 메소드를 호출하는 것으로 객체를 여러번 재사용할 수 있는 코드를 만들 수 있다.
+```php
+class Service
+{
+    public function run()
+    {
+        echo "Service".PHP_EOL;
+    }
+}
+
+class ServiceFactory
+{
+    public function __construct(private readonly Service $service) {}
+
+    public function create()
+    {
+        return clone $this->service;
+    }
+}
+
+class Controller
+{
+    public function action(ServiceFactory $seviceFactory)
+    {
+        $seviceFactory->create()->run();
+        $seviceFactory->create()->run();
+        $seviceFactory->create()->run();
+    }
+}
+
+function runImitationIoC() {
+    (new Controller)->action(new ServiceFactory(new Service));
+}
+
+runImitationFramework();
+```
+
+### 생성자 사용 불가
+- 프레임워크의 IoC 기능을 사용하면, 프레임워크에 의해 의존성이 자동으로 주입된다. 라라벨 프레임워크의 많은 기능에서 타입힌트를 통해서 생성자 주입을 사용할 수 있다.
+- 생성자를 주입하게 되면, 일반적인 코드 정의 영역에서 생성자를 사용하지 못하게 된다. 보통 인스턴스를 만들 때, 객체의 상태를 만들 때 멤버를 초기화 할 때 필수적인 값들은 생성자를 통해서 받는 것이 일반적이다. 필수적인 값은 생성자를 통해서 받고, 옵션 값은 메소드를 통해서 받는 식이다. 하지만, 생성자를 실행할 권한을 프레임워크가 가져갔기 때문에 메소드를 통해서 필수 멤버와 옵션 멤버를 받아야 한다.
