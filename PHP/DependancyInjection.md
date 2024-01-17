@@ -60,9 +60,47 @@ function runImitationIoC() {
     (new Controller)->action(new ServiceFactory(new Service));
 }
 
-runImitationFramework();
+runImitationIoC();
 ```
 
 ### 생성자 사용 불가
 - 프레임워크의 IoC 기능을 사용하면, 프레임워크에 의해 의존성이 자동으로 주입된다. 라라벨 프레임워크의 많은 기능에서 타입힌트를 통해서 생성자 주입을 사용할 수 있다.
 - 생성자를 주입하게 되면, 일반적인 코드 정의 영역에서 생성자를 사용하지 못하게 된다. 보통 인스턴스를 만들 때, 객체의 상태를 만들 때 멤버를 초기화 할 때 필수적인 값들은 생성자를 통해서 받는 것이 일반적이다. 필수적인 값은 생성자를 통해서 받고, 옵션 값은 메소드를 통해서 받는 식이다. 하지만, 생성자를 실행할 권한을 프레임워크가 가져갔기 때문에 메소드를 통해서 필수 멤버와 옵션 멤버를 받아야 한다.
+```php
+class NoConstructorClass
+{
+    private readonly mixed $optionalMember;
+    private readonly mixed $requiredMember;
+	
+    public function optionalSetter($value): self
+    {
+        $this->optionalMember = $value;
+        return $this;
+    }
+	
+    public function requiredSetter(): self
+    {
+        $this->requiredMember = $value;
+        return $this;
+    }
+	
+    public function runSomething()
+    {
+        $this->defineOptionalMemeber();
+        echo "run something".PHP_EOL;
+        echo "optionalMember : ".PHP_EOL;
+        var_dump($this->optionalMember);
+        echo "requiredMember : ".PHP_EOL;
+        var_dump($this->requiredMember);
+	}
+	
+    private function defineOptionalMemeber()
+    {
+        $this->optionalMember ?? null;
+    }
+}
+
+// (new NoConstructorClass)->runSomething(); // error
+(new NoConstructorClass)->optionalSetter('a')->requiredSetter('b')->runSomething();
+```
+- php에서 멤버 변수를 선언할 때 멤버 변수의 타입을 지정하지 않으면 기본적으로 `null`이 할당된다. 멤버의 타입을 선언하면 반드시 값이 할당되어야 하며 기본값 `null`이 할당되지 않는다. 이를 이용하여, 정의가 되지 않은 멤버 변수를 사용할 때는 에러가 발생하는 것을 이용해서 필수로 받아야 하는 `setter`를 만들 수 있다. `optional`으로 만들기 위해서는 객체의 핵심 로직을 실행하기 전에 옵션 멤버의 경우 기본값을 할당하는 방식을 사용하면 된다. 필수 메소드의 경우 정의되지 않았기 때문에 실행되지 않는 메시지 보다는 'not define required member'와 같은 에러 메시지를 던져주는 편이 좋다. 하지만 이것은 사용상의 편의를 위한 조치로 시간적인 개발 시간적인 여유를 고려하여 추가하도록 하자.
