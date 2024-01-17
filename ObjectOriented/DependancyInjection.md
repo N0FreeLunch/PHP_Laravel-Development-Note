@@ -103,4 +103,10 @@ class NoConstructorClass
 // (new NoConstructorClass)->runSomething(); // error
 (new NoConstructorClass)->optionalSetter('a')->requiredSetter('b')->runSomething();
 ```
-- php에서 멤버 변수를 선언할 때 멤버 변수의 타입을 지정하지 않으면 기본적으로 `null`이 할당된다. 멤버의 타입을 선언하면 반드시 값이 할당되어야 하며 기본값 `null`이 할당되지 않는다. 이를 이용하여, 정의가 되지 않은 멤버 변수를 사용할 때는 에러가 발생하는 것을 이용해서 필수로 받아야 하는 `setter`를 만들 수 있다. `optional`으로 만들기 위해서는 객체의 핵심 로직을 실행하기 전에 옵션 멤버의 경우 기본값을 할당하는 방식을 사용하면 된다. 필수 메소드의 경우 정의되지 않았기 때문에 실행되지 않는 메시지 보다는 'not define required member'와 같은 에러 메시지를 던져주는 편이 좋다. 하지만 이것은 사용상의 편의를 위한 조치로 시간적인 개발 시간적인 여유를 고려하여 추가하도록 하자.
+- php에서 멤버 변수를 선언할 때 멤버 변수의 타입을 지정하지 않으면 기본적으로 `null`이 할당된다. 멤버의 타입을 선언하면 반드시 값이 할당되어야 하며 기본값 `null`이 할당되지 않는다. 이를 이용하여, 정의가 되지 않은 멤버 변수를 사용할 때는 에러가 발생하는 것을 이용해서 필수로 받아야 하는 `setter`를 만들 수 있다. `optional`으로 만들기 위해서는 객체의 핵심 로직을 실행하기 전에 옵션 멤버의 경우 기본값을 할당하는 방식을 사용하면 된다. 필수 메소드의 경우 정의되지 않았기 때문에 실행되지 않는 메시지 보다는 'not defined required member'와 같은 에러 메시지를 던져주는 편이 좋다. 하지만 이것은 사용상의 편의를 위한 조치로 시간적인 개발 시간적인 여유를 고려하여 추가하도록 하자.
+```php
+private function checkRequiredMember()
+{
+    $this->requiredMember ?? throw new Exception("not defined required member");
+}
+```
