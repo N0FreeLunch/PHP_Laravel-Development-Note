@@ -21,3 +21,7 @@ Deprecated: Creation of dynamic property DynamicProperty::$property is deprecate
 ### 조기 실패(fail fast)
 - 정적 언어는 컴파일시에 어떤 문제가 있는 컴파일 과정을 통해서 알려 준다. 그에 반해 동적인 언어는 직접 코드를 실행하면서 코드에 문제가 있다면 코드의 실행이 실패하고 에러를 발생시킨다.
 - 어떤 문제의 소지가 있는 코드에 대한 에러를 발생시켜서 해당 코드를 사용하는 프로그래머가 코드를 실행하면서 무엇을 잘못 사용했는지 알게 하는 피드백을 제공하는 과정이 '조기 실패'라는 개념이다.
+
+#### 동적 프로퍼티
+- php9 부터는 동적 프로퍼티에 접근했을 때 에러를 발생시킨다. 이를 통해서 동적 프로퍼티를 생성하고 접근하려는 시도를 했을 때 정의되지 않은 속성이므로 에러를 발생시킨다.
+- [RFC: undefined_property_error_promotion](https://wiki.php.net/rfc/undefined_property_error_promotion), 아마도 php9에서는 `throwable` 인터페이스의 구현체인 에러를 발생시키는 방식으로 구현될 것으로 예상된다.
