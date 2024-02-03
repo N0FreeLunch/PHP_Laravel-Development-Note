@@ -19,7 +19,7 @@
 - 예외는 예외를 던진 부분을 실행하는 코드에서 실행된다. A라는 코드가 B를 실행하고, B라는 코드가 C를 실행하고, C라는 코드에서 예외를 던지게 되면, C의 예외 발생한 부분을 감싸는 `catch` 문이 있다면 `catch`문에서 예외를 잡고, C를 감싸는 `catch` 문이 없다면, B라는 코드를 감싸는 `catch` 문이 있는지 확인하고 있다면 예외를 잡고, 없다면 A라는 코드를 감싸는 `catch`문이 있는지 확인을 하고 있다면 예외를 잡고, 없다면 php의 전역 예외 처리기에 예외를 던지고 예외를 처리하지 못하면, php 프로세스는 종료가 된다.
 - 예외는 예외를 실행하는 코드를 둘러싼 부분에서 코드를 처리한다. A, B, C를 둘러싼 어디서 코드를 처리한다는 것이다. 하지만 발생한 에외를 처리하는 곳이 A, B, C 중의 한 곳을 선택한다고 처리 로직의 맥락과 흐름에 맞는가를 생각해 봐야 한다. 아키텍처적으로 C에서 발생한 예외를 B에서 처리하도록 하면 좋은 구조를 특별히 만들지 않는한, 예외를 처리할 부분으로 적당한 곳을 선정하기 어려운 문제가 있다.
 - 로직을 실행하는 구조나 계층에 따라 동일한 예외에 대한 처리를 다르게 처리해야 하는 경우가 있다.
-```
+```php
 try {
     try {
         throw new CustomException();
@@ -141,7 +141,7 @@ Exception -- Exception-A -- Exception-A-A -- Exception-A-A-A
                          |                -- Exception-B-A-A
                          |                -- Exception-B-A-C
                          -- Exception-B-B -- Exception-B-B-A
-                            Exception-B-C -- Exception-B-C-A
+                         |- Exception-B-C -- Exception-B-C-A
 ```
 - 위의 예외 트리를 보면, `Exception-A-A`라는 예외는 이를 상속하는 `Exception-A-A-A`, `Exception-A-A-B`, `Exception-A-A-C`의 예외를 받을 수 있다. 이러한 예외 트리를 생성하는 것을 통해서 예외를 분류 및 그룹화 할 수 있다.
 
