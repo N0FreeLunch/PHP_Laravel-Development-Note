@@ -33,4 +33,20 @@
 - 프로덕션에서 사용할 코드라면 굳이 Assert라는 것을 사용할 필요가 있는지를 생각해 볼 수 있을 것이다. 그냥 커스텀 예외를 만들면 되는 것 아닌가라는 생각을 할 수 있다. 그러나 대부분의 경우 Assert는 catch로 잡아서 처리하는 에러는 아니라 완전 프로세스를 정지한 후 이를 발생 시킨 로직의 원인을 찾아 코드를 수정해야 하는 에러이다. php에서는 Assert를 통과하지 못했을 때 예외가 아닌 AssertionError라는 에러가 발생한다. 일반적으로 catch 문에 잡는 것은 예외인 Exception 류를 잡는데 Error가 발생했으므로 이에 유의하여 catch 문을 잘 만들어 두었다면 에러를 캡쳐하지 않을 것이고 의도된 프로세스의 실행 중단에 이를 수 있다.
 
 ### php에서의 assert
+[공식문서](https://www.php.net/manual/en/function.assert.php)에서는 다음과 같이 설명하고 있다.
+> assert() allows for the definition of expectations: assertions that take effect in development and testing environments, but are optimised away to have zero cost in production.
+
+> Assertions should be used as a debugging feature only. One use case for them is to act as sanity-checks for preconditions that should always be true and that if they aren't upheld this indicates some programming errors. Another use case is to ensure the presence of certain features like extension functions or certain system limits and features.
+
+> As assertions can be configured to be eliminated, they should not be used for normal runtime operations like input parameter checks. As a rule of thumb code should behave as expected even if assertion checking is deactivated.
+
+- 위의 내용을 요약하면
+- assertion의 목적은 개발환경이나 테스팅환경에서는 적용되지만, 프로덕션 환경에서는 실행을 하지 않아 리소스를 소모하는 비용을 없애는 것에 있다.
+- assertion은 디버깅용으로만 사용되어야 하며, 어떤 기능의 전제조건이 만족되지 않으면 에러를 발생시키는 목적 또는 확장 기능, 시스템의 제약사항을 나타내는 용도로 사용된다.
+- assertion은 제거되어도 코드에 영향이 없는 런타임의 기능에 영향을 주지 않는 방식으로 사용되어야 한다.
+
+
+
+
+
 
