@@ -37,3 +37,47 @@
 - 예를 들어 프레임워크에 의한 생성자 주입을 하게 되면, 생성자에 대한 권한을 프레임워크에 빼앗기게 되어 객체 내부의 readonly 속성을 생성자에서 초기화할 수 없는 문제가 있을 수 있다. 이를 위해서 setter를 사용한 readonly 속성 초기화를 사용하는 경우가 있을 수 있다.
 - 위 issue의 내용을 보면 readonly 속성에 값을 할당하는 것은 생성자에서만 초기화 하지 않는 다양한 코딩 방식을 생각할 수 있음에도 불구하고, phpstan의 작성자는 생성자를 사용한 초기화가 아닌 경우에는 정적 분석의 오류로 보고하는 것을 기본적으로 설정하는 것이 대체로 올바른 코딩스타일이라고 판단하고 있다. 만약 예외를 허용하려고 한다면, 주석을 통해 phpstan의 감지를 무시하거나, phpstan의 설정을 통해 오해당 오류 메시지를 무시하는 ignore 필터를 작성하라고 조언하며 정적 분석 툴의 공식적인 오류 보고의 제외 사항으로는 생각하고 있지 않은 것을 알 수 있다.
 - php에는 다양한 코딩 스타일이 존재할 수 있지만, 정적 분석은 php의 다양한 코딩 스타일을 일부 제약하는 역할을 하기도 한다. 그리고 해당 제약이 대체로 옳다고 생각되는 방향일 수는 있지만 절대적으로 옳은 방향이 아닐 수도 있다.
+
+#### 런타임에서만 알 수 있는 지식을 알지못한다.
+- https://phpstan.org/writing-php-code/solving-undefined-variables
+```php
+function getUserStatusColor(User $user): srting
+{
+    if($user->isDelete()) {
+        $statusColor = 'red';
+    } elseif ($user->isActive()) {
+        $statusColor = 'blue';
+    }
+    return $statusColor;
+}
+```
+- 예를 들어서 위와 같은 코드가 있다고 하자. 유저 객체의 isDelete 메소드와 isActive 메소드는 서로 베타적이라고 하자. isDelete isActive 이외의 케이스는 존재하지 않음에도 불구하고 정적 분석 도구는 위의 코드에서 `$statusColor`가 정의되지 않은 경우가 발생할 수 없다는 것을 알 수 없다. 그래서 `might not be defined`라는 에러를 보고할 것이다.
+```php
+function getUserStatusColor(User $user): srting
+{
+    if($user->isDelete()) {
+        $statusColor = 'red';
+    } elseif ($user->isActive()) {
+        $statusColor = 'blue';
+    } else {
+        assert(false, 'isDelete, isActive 이외는 존재할 수 없는 케이스입니다.');
+    }
+    return $statusColor;
+}
+```
+- 위와 같은 코드도 정적 분석으로 감지 할 수 없으며 다음과 같은 코드를 생각해 볼 수 있지만, 반환값이 정의되지 않은 경우가 있을 수 있기 때문에 에러가 발생할 수도 있을 것이다.
+```php
+function getUserStatusColor(User $user): srting
+{
+    if($user->isDelete()) {
+        return 'red';
+    } elseif ($user->isActive()) {
+        return 'blue';
+    } else {
+        assert(false, 'isDelete, isActive 이외는 존재할 수 없는 케이스입니다.');
+    }
+}
+```
+- php는 기본적으로 런타임에 동작하는 언어라서 위와 같은 코드는 합법적인 코딩 스타일이다. 하지만, 런타임의 실행을 감지할 수 없는 정적 분석은 위와 같은 코드들이 불법에 해당한다.
+
+### 정적 분석의 코드 스타일에 맞춰야 하는가?
