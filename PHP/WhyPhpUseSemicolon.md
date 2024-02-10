@@ -6,7 +6,7 @@
 
 ## 자바스크립트에서 세미콜론을 생략할 때 발생하는 문제
 #### 사용자가 작성한 코드
-```
+```php
 function getData() {
     return
         {
@@ -17,7 +17,7 @@ function getData() {
 ```
 
 #### 파서가 처리하는 코드
-```
+```php
 function getData() {
     return;
         {
@@ -51,12 +51,12 @@ function getData() {
 
 ## 명령과 종결의 차이
 ### php 태그를 열고 닫지 않는 경우
-```
+```php
 <?php echo 'Ending tag excluded';
 ```
 - 위 코드는 동작한다. 세미콜론은 명령의 종결이기 때문에 뒤에 php 코드가 더 있을 수 있음을 암시한다.
 - 하지만 파일이 끝났기 때문에 더이상 php 코드가 있을 것을 염두하지 않을 수 있다.
-```
+```php
 <div>
 <?php echo 'Ending tag excluded';
 </div>
@@ -72,11 +72,11 @@ function getData() {
 - https://stackoverflow.com/questions/29284075/why-is-the-semicolon-optional-in-the-last-statement-in-php/29284131
 
 ### PHP 태그를 닫을 때
-```
+```php
 <?php echo "test"; ?>
 ```
 뿐만 아니라
-```
+```php
 <?php echo "test" ?>
 ```
 도 가능하다.
@@ -84,7 +84,7 @@ function getData() {
 
 ## 세미콜론을 표기 해야 하는 경우
 ### 일급 시민의 경우에는 세미콜론을 표기해야 한다.
-```
+```php
 class Sample
 {
     $nestedObj = new class {
@@ -96,9 +96,9 @@ class Sample
 - 클래스, 메소드, if문 while 문 등은 하나의 독립적인 단위로 쓴다. 반면 익명 클래스의 경우에는 `$nestedObj = new class {};`으로 할당하는 방식 곧 일급 시민으로 사용된다. 일급 시민의 역할을 가진다면 다른 문법들과 함께 사용했을 때 명령의 끝이 어디서 끝나는지 알려 줄 필요가 있기 때문에 종결을 나타내는 세미콜론을 요구한다.
 
 ### 문자열 키워드는 종결의 의미라도 세미콜론을 요구
-```
+```php
 if (true):
- echo "<p>Hello World !!!</p>";
+    echo "<p>Hello World !!!</p>";
 endif;
 ```
 - 위의 경우 endif는 명시적으로 if문을 닫는다는 역할을 가지고 있다. 그럼에도 불구하고 꼭 세미콜론을 강조하고 있다.
