@@ -8,8 +8,8 @@ class HelloWorld
     ];
 
     /**
-    * @return array<string,float>
-    */
+     * @return array<string,float>
+     */
     public function sayHello(): array
     {
         return self::GROUPS;
