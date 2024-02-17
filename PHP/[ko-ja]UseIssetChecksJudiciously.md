@@ -8,13 +8,6 @@
 - 적절하지 않게 `isset`을 사용한 코드를 볼 때 마다 불편한 느낌이 있었고 이 이유를 명확히 밝혀 `isset`을 남발하는 코드의 사용을 최소화하기 위한 목적으로 작성하였다.
 - `isset`が不適切に使用されたコードを見るたびに好ましくない感じがありました。この理由を明確にして`isset`を乱発するコードを最小化するためにこの記事を作成しました。
 
-### 전제
-### 前提
-- php8에서 정의되지 않은 변수는 Warning 레벨의 로그가 발생하지만, php의 설정에 따라 Warning이라도 에러로 처리하도록 만들 수 있습니다.
-- php8では、未定義の変数を使用するとWarningレベルのログが発生しますが、phpの設定によっては、そのWarningをエラーとして処理するようにできます。
-- php9의 변경을 미리 대비한다는 의미로 정의되지 않은 변수를 사용할 때 에러 레벨로 처리되는 것을 상정합니다.
-- php9では、未定義の変数を使用する際にエラーレベルで処理されることになったので、この変更に備える意味で述べています。
-
 ### 좋은 코드란 무엇인가?
 ### 良いコードは何か？
 - 좋은 코드란 해석의 다양성을 줄이는 것이다. 해석할 수 있는 경우의 가짓수를 줄이는 것은 코드를 빠르고 명확하게 이해할 수 있도록 한다.
@@ -222,7 +215,7 @@ class Conversation
         return $this;
     }
 
-    public function setReceiverName(string $name): self
+    public function withReceiverName(string $name): self
     {
         $this->receiverName = $name;
         return $this;
@@ -243,12 +236,12 @@ class Conversation
 
 echo (new Conversation)->setSayMessage("Nice to Meet You")->getConversation();
 echo PHP_EOL;
-echo (new Conversation)->setReceiverName("David")->setSayMessage("Nice to Meet You")->getConversation();
+echo (new Conversation)->withReceiverName("David")->setSayMessage("Nice to Meet You")->getConversation();
 ```
-- `setReceiverName` 메소드와 `setSayMessage` 메소드를 사용하여 `undefined`인 멤버에 값을 정의해 주었다.
-- `setReceiverName` メソッドと `setSayMessage` メソッドを使用して `undefined`のメンバーに値を定義しました。
-- `setReceiverName` 메소드를 사용하지 않은 경우, `fillUndefinedMember` 메소드에 의해 빈 문자열이 `$receiverName`에 할당된다. 따라서 `setReceiverName`는 옵션인 메소드이다.
-- `setReceiverName` メソッドを使用しない場合 `fillUndefinedMember` メソッドによって空の文字列が `$receiverName`に割り当てられます。 したがって、`setReceiverName`はオプションのメソッドです。
+- `withReceiverName` 메소드와 `setSayMessage` 메소드를 사용하여 `undefined`인 멤버에 값을 정의해 주었다.
+- `withReceiverName` メソッドと `setSayMessage` メソッドを使用して `undefined`のメンバーに値を定義しました。
+- `withReceiverName` 메소드를 사용하지 않은 경우, `fillUndefinedMember` 메소드에 의해 빈 문자열이 `$receiverName`에 할당된다. 따라서 `withReceiverName`는 옵션인 메소드이다.
+- `withReceiverName` メソッドを使用しない場合 `fillUndefinedMember` メソッドによって空の文字列が `$receiverName`に割り当てられます。 したがって、`withReceiverName`はオプションのメソッドです。
 - `setSayMessage` 메소드를 사용하지 않은 경우, `fillUndefinedOptionalMember`에 의해 디폴트 값이 할당되지 않으므로 `$sayMessage`멤버를 사용할 때 에러가 발생한다. 이는 일부러 에러를 발생 시킨 것으로 `setSayMessage`는 필수 메소드이다.
 -  `setSayMessage` メソッドを使用していない場合, `fillUndefinedOptionalMember`によってデフォルト値が割り当てられないため `$sayMessage`メンバーを使用する際にエラーが発生すします。 これはわざとエラーを発生させたものであり、`setSayMessage`は必須メソッドです。
 - `private string $receiverName = "";`으로 처음 멤버 변수를 선언할 때 디폴트 값을 할당해도 되지만, `readonly`를 사용하는 경우에는 변수를 한 번만 할당할 수 있으므로 `setter`로 값을 받는 경우에는 디폴트 값을 멤버 선언과 동시에 할당하지 않았다.
@@ -257,6 +250,10 @@ echo (new Conversation)->setReceiverName("David")->setSayMessage("Nice to Meet Y
 - 名前が伝わらない場合は空の文字列であるため、`empty($this->receiverName)`として、名前が割り当てられているかどうかを`empty`関数で確認しました。
 - 위 과정은 `setter` 메소드를 통해 1에 해당하는 '변수의 기본 값 지정' -> `fillUndefinedOptionalMember` 메소드를 사용하여 2에 해당하는 '정의되지 않은 경우 디폴트 값 지정' -> `getConversation`의 리턴값에서 3에 해당하는 '로직을 전개하는데 필요한 변수들이 다 모인 이후, 로직의 흐름을 나타내는 코드를 실행'의 단계로 나눠져 있다.
 - 上記のプロセスは、`setter` メソッドを介して1に該当する「変数のデフォルト値指定」 → `fillUndefinedOptionalMember`メソッドを使用して、2に該当する「定義されていない場合、デフォルト値指定」 → `getConversation`のリターン値から3に該当する「ロジックを展開するのに必要な変数がすべて集まった後、ロジックの流れを表すコードを実行」の段階に分かれています。
+- php8에서 정의되지 않은 변수는 대부분의 php 내장 함수 또는 타입힌트에 의해 에러를 발생시키며, 일부 구문에서 Warning 레벨의 로그가 발생시킨다. Warning은 해당 구문을 무시하고 이후의 코드를 실행하기 때문에 문제가 있을 때의 처리를 멈추게 하지 않으므로 정의되지 않은 변수 처리시 Warning이 발생하는 로직을 만들지 않도록 하는 것이 좋다. php9에서는 모든 코드에서 정의되지 않은 변수 사용시 에러를 던지므로 확실히 로직의 실행을 멈출 수 있다.
+- php8では、未定義の変数はほとんどのphp組み込み関数やタイプヒントでエラーを引き起こし、一部の構文ではWarningレベルのログが生成されます。Warningは、その構文を無視して以降のコードを実行しますが、問題が発生する際の処理を止めないので、未定義の変数処理時にWarningが発生するロジックを作らないようにすると良いでしょう。php9では、未定義の変数を使用すると必ずエラーが発生するため、コードの実行を確実に停止させることができます。ができます。
+- 에러가 난 원인을 명확히 하기 위해서 정의되지 않은 변수가 전달 되었을 때는 예외를 정의하여 'Required Method Not Defined' 등의 메시지를 던져주는 코드를 추가하는 것도 좋다.
+- エラーの原因をより明確にするために、未定義の変数が伝播した場合には、例外を用いて「Required Method Not Defined」などのメッセージを投げるコードを追加することも良いです。
 
 ### isset의 모호성
 ### issetの曖昧さ
