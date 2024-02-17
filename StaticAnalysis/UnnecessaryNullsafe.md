@@ -4,11 +4,11 @@
 
 class HelloWorld
 {
-	public function sayHello(): void
-	{
-		$object = null;
-		$id = $object?->id;
-	}
+    public function sayHello(): void
+    {
+        $object = null;
+        $id = $object?->id;
+    }
 }
 ```
 > Cannot access property $id on null.
