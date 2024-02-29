@@ -96,8 +96,13 @@ chagneGear(bool $upDown, bool $pressClutch = true)
 ```
 - 위의 코드에서 현재의 기어가 무엇인지 알고 기어를 올리거나 내릴 것인지 알 수 없다.
 ```php
-public function dashboard(): DashboardDto
-public function getCurrentGear(): GearEnum
+    public function dashboard(): DashboardDto
+    {
+    }
+
+    public function getCurrentGear(): GearEnum
+    {
+    }
 ```
 - 데시보드의 속도와 현재 기어를 확인한 후 기어를 높일 것인지 줄일 것인지를 판단 해 줘야 한다.
 - 메소드로 모든 제약 조건을 드러낸다고 생각하기 보다는 어느 정도의 제약 조건을 부여하여 도메인에 대해 어느 정도 이해하고 있는 사람이 객체와 객체의 인터페이스(퍼블릭 메소드)를 보고 어떤 역할을 하는지 파악할 수 있도록, 제약 조건을 추측할 수 있을 정도로만 만들어 주면 된다.
