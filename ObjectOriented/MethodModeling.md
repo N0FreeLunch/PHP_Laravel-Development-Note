@@ -88,7 +88,7 @@ class Car
 
 ### 메소드는 제한된 표현력을 가진다.
 ```php
-chagneGear(bool $upDown, bool $pressClutch = true)
+    public function chagneGear(bool $upDown, bool $pressClutch = true)
 ```
 - 위의 코드에서 현재의 기어가 무엇인지 알고 기어를 올리거나 내릴 것인지 알 수 없다.
 ```php
