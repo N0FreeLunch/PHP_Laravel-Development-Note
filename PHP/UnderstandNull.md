@@ -80,6 +80,7 @@ if(!is_null($var)) $withNullableArgument('Hello');
 ```
 - 함수에 null을 전달하지 않기 위해서 null인지 확인하는 분기 처리가 늘어났다는 단점이 생기게 되었다. 함수란 함수의 인자로 전달된 값을 통해서 함수의 동작이 어떻게 일어날 것인지 대략적인 추측을 할 수 있어야 한다. `null`이라는 불필요한 상태 전달을 줄였으므로 함수의 상태 변화 추측을 좀 더 명확하게 할 수 있다는 의견을 가질 수도 있다.
 - php9에서 php의 내장 함수는 null을 인자로 받지 못하도록 하는 [RFC](https://wiki.php.net/rfc/deprecate_null_to_scalar_internal_arg)가 통과 되었다. 이는 비록 php의 내장함수에 한하는 결정이지만, null이 인자로 들어왔을 때의 암묵적인 형변환이나 별도의 특수 처리를 추가적으로 고려하지 않고 함수를 명확하게 사용하는 이점을 제공한다.
+- 일부 코딩 스텐다드에서는 함수의 파라메터에 null을 전달하는 경우에는 파라메터 이름의 접미어로 orNull을 붇여서 null을 파라메터로 허용할 경우 특별한 상태이므로 파라메터명에 null이 들어갈 수 있으니 해당 부분을 주의깊게 코딩하라는 의미를 담고자 하기도 한다.
 
 ## Reference
 - https://peakd.com/hive-168588/@crell/much-ado-about-null
