@@ -56,14 +56,14 @@ $writeOuterVariable();
 $glovalVariable = 'hello';
 
 function namedFunction() {
-	$localVariable = 'world';
-	
-	function namedNestedFunction() {
-		global $glovalVariable, $localVariable;
-		echo "$glovalVariable $localVariable";
-	};
-	
-	namedNestedFunction();
+    $localVariable = 'world';
+
+    function namedNestedFunction() {
+        global $glovalVariable, $localVariable;
+        echo "$glovalVariable $localVariable";
+    };
+
+    namedNestedFunction();
 }
 
 namedFunction();
