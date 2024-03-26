@@ -30,7 +30,7 @@ Deprecated: Creation of dynamic property DynamicProperty::$property is deprecate
 - [RFC: Undefined Variable Error Promotion](https://wiki.php.net/rfc/undefined_variable_error_promotion)에서는 정의되지 않은 변수를 사용할 경우 에러가 발생하도록 오류로 승격한다는 내용이 있다. 위 RFC의 몇 가지 예제를 살펴 보자. 예제를 좀 더 이하하기 쉽게 변경 해 보았다.
 ```php
 $user = new class {
-	  public bool $admin = false;
+    public bool $admin = false;
 };
 
 
@@ -50,7 +50,7 @@ echo 'end';
 - RFC에서는 위와 같은 코드의 사용 방식을 다음과 같이 변수를 정의하는 방식으로 사용할 것을 권장하고 있다.
 ```php
 $user = new class {
-	  public bool $admin = false;
+    public bool $admin = false;
 };
 
 $restricted = true;
