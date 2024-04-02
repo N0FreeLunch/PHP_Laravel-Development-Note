@@ -24,3 +24,7 @@
 > Although they are supported, including constructors in interfaces is strongly discouraged. Doing so significantly reduces the flexibility of the object implementing the interface. Additionally, constructors are not enforced by inheritance rules, which can cause inconsistent and unexpected behavior. <sup>[링크](https://www.php.net/manual/en/language.oop5.interfaces.php)</sup>
 - 정적 언어에서는 인터페이스에 생성자를 포함할 수 없으며, 생성자를 포함하는 기능을 만들 때는 추상 클래스를 만들라고 제안을 한다. 그에 반해 php는 인터페이스에서 생성자를 제한할 수 있는데, 인터페이스로 생성자를 제한한 경우 생성자의 형태가 고정되어 있기 때문에 상속할 때 생성자의 변경이나 확장을 할 수 없어서 필수값이 더 추가될 필요성이 있는 경우 생성자를 통해서 필수적인 의존 값을 추가로 받지 못하게 된다는 문제점이 발생한다.
 - 이런 제약 사항을 잘 이해하고 있다면, 인터페이스를 구현(implement) 할 때 인터페이스가 생성자를 제한하고 있다면 생성자의 확장이 불가능하다는 것을 인지하고 코드를 작성해야 한다.
+
+### Builder pattern
+- 객체의 상태를 setter로 주입하게 되면, 객체의 특정 상태가 설정되지 않아 버그 또는 에러가 발생할 수 있다. builder 패턴이란 이름이 붙은 이유는 미리 객체의 상태를 만들어(building) 객체를 사용할 때 메소드를 자유롭게 사용하기 위함이다. Builder 객체를 통해서 미리 객체의 상태를 만들고, Builder 객체를 다른 객체를 생성할 때 생성자로 주입하여, 객체의 어떤 메소드를 사용하더라도 이미 상태가 주입되어 있어 빠진 상태로 인한 메소드 사용의 에러가 발생하지 않도록 한다.
+- 도메인 로직을 담당하는 클래스에 setter을 직접 정의하는 대신, 빌더 객체를 만들어 객체의 생성과 동시에 미리 상태가 만들어진 빌더를 생성자에 주입하여 도메인 객체를 setter 주입 없이 사용하도록 한다. 도메인 계층의 클래스를 보면, setter나 getter 없이 간략한 서술만을 메소드명으로 만드는 경우가 많은데, 이는 빌더 패턴을 이용해서 미리 상태를 주입하여 정해진 상태 기반에서 어떤 다른 동작(메소드의 실행)을 하더라도 객체에 누락된 상태가 없으므로 상태의 누락으로 인한 에러가 발생하지 않도록 하게 하기 위함이다.
