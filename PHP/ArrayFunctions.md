@@ -105,6 +105,7 @@ Collection::make(배열)->메소드();
 - 라라벨에서 간단히 사용할 수 있는 것과 달리 좀 더 코드량이 늘어나는 단점이 있긴하다.
 - 라라벨은 php에서 가장 인기 있고 전망있는 라이브러리이다. 인기 있는 라라벨의 컬렉션을 별도의 라이브러리로 설치해서 사용할 수 있기 때문에, php 생태계에서 컬렉션 라이브러리를 다루는 사람을 잘 만날 수 있고, php 생태계에 있다면 라라벨을 추후에 접할 가능성이 상당히 높기 때문에 다른 사람들에게도 배움을 권유할만하다. 배열 보다는 컬렉션 라이브러리를 사용하는 추천하도록 하자.
 - 라라벨 컬렉션 라이브러리는 라라벨 버전 8 버전 부터 별도 설치가 가능해졌기 때문에 라라벨 버전 8이 요구하는 php 버전이 요구된다. 그 이전의 버전에서 컬렉션 기능을 사용하고 싶은 경우에는 [collect](https://github.com/tighten/collect) 라이브러리를 사용하도록 한다.
+- [라라벨 라이브러리](https://github.com/laravel/framework)에서 composer.json 파일을 보면 `"illuminate/collections": "self.version"`라는 라이브러리 의존성을 가지고 있다. [컬렉션 라이브러리](https://github.com/illuminate/collections)의 버전과 라라벨 프레임워크의 버전이 일치하므로 라라벨 프레임워크가 사용하는 환경을 참고하면 된다. 컬렉션 라이브러리의 composer.json 파일에도 php 버전 의존성이 기재되어 있으므로 의존성을 보고 설치하면 된다.
 - 참고 : https://dev.to/robertobutti/using-collections-package-outside-of-laravel-1alk
 
 ### DS Vector 확장 설치
