@@ -72,9 +72,9 @@
 - 프로그래밍에서 빈 값은 많은 경우 수학에서의 고정값의 역할을 하며, 빈값을 사용할 때 처리 전후의 상태가 동일하다는 특성을 이용해서 if문의 사용을 줄이는 코딩을 할 수 있다.
 - プログラミングにおいて、空の値は多くの場合、数学での固定値の役割を果たし、空の値を使用するとき、処理前後の状態が同じであるという特性を利用して、if文の使用を減らすコーディングができます。
 
-### 빈 값이 처리의 영향을 주지 않는 예제 코드
+### 빈 값을 사용한 분기 줄이기의 예시
 
-#### dot
+#### 문자열 결합 연산자 닷(.)
 - dot(.)은 문자열을 결합하는 연산이다. 임의의 문자열에 대해서 빈 문자열을 dot(.)으로 결합하면 그 결과는 이전의 문자열과 동일하다. 빈 문자열의 `.` 연산을 통한 연결은 처리 전후의 결과가 동일한 결과를 얻는다.
 ```php
 $var = "";
@@ -84,14 +84,15 @@ echo "hello".$var;
 
 ```php
 $var = null;
-if(!is_null($var)) {
+if(is_null($var)) {
+    echo "hello";
+} else {
     echo "hello".$var;
 }
 ```
-- 빈 문자열을 사용하는 것을 통해서 if문의 사용을 줄일 수 있다.
+- 변수의 초기값으로 null을 주든, 빈 문자열을 주든 출력되는 결과는 `"hello"`으로 동일하다. 하지만 빈 문자열을 사용하는 것을 통해서 if문의 사용을 줄일 수 있다는 것을 알 수 있다.
 
-#### str_replace
-- 먼저 `str_replace`의 문법은 다음과 같다. `str_replace(array|string $search, array|string $replace, string|array $subject, int &$count = null): string|array`
+#### 문자열 대체 함수
 ```php
 $search = "";
 $subject = "subject";
@@ -99,13 +100,15 @@ echo str_replace($search, "*", $subject);
 ```
 - `str_replace`에서 `$search` 변수에 해당하는 문자열 값을 찾아서 `*`으로 바꾸는 코드를 실행한다고 하자.
 - `$search`가 빈 문자열인 경우 대체할 대상을 아무것도 찾지 않으므로 대체할 대상이 없어서 위의 결과는 `"subject"`가 그대로 나온다.
+- 위의 코드의 `echo str_replace($search, "*", $subject)` 부분은 `"*"`와 `$subject`가 고정값이기 때문에 `$search`에 대해서만 생각해 보자. `f("subject", $search) = "subject"`의 꼴으로 표현할 수 있다. 이 방정식의 고정값은 `$search`가 빈 문자열인 경우이다.
+
 ```php
 $search = null;
 $subject = "subject";
-if(!is_null($search)) {
-    echo str_replace($search, "*", $subject);
-} else {
+if(is_null($search)) {
     echo $subject;
+} else {
+    echo str_replace($search, "*", $subject);
 }
 ```
 - 만약 `$search`에 빈 값이 아닌 `null`을 할당했다면, 위와 같이 분기 처리가 늘어날 것이다.
@@ -129,8 +132,7 @@ if(!is_null($arr)) {
     var_dump([10, 11, 12]);
 }
 ```
-- 만약 `$arr`에 빈 값이 아닌 `null`을 할당했다면, 위와 같이 분기 처리가 늘어날 것이다.
-- 빈 배열을 사용하는 것을 통해서 if문의 사용을 줄일 수 있다.
+- 만약 `$arr`에 빈 값이 아닌 `null`을 할당했다면, 위와 같이 분기 처리가 늘어날 것이다. 변수의 초기값으로 빈 배열을 사용하는 것을 통해서 if문의 사용을 줄일 수 있다.
 
 #### 배열 함수 (array_walk)
 ```
