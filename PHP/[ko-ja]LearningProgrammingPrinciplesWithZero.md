@@ -47,6 +47,7 @@ var_dump((new CheckEntrance(age: '4'))->canEnter()); // false
 ```
 
 #### 변수에 하나의 타입을 사용한 예
+#### 変数に一つのタイプを使用する例
 ```php
 class CheckEntrance
 {
