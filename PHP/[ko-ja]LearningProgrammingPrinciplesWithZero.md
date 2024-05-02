@@ -281,8 +281,6 @@ $typeList = array_map(function (mixed $e) {
 $arr = null;
 $typeList = [];
 if(is_array($arr)) {
-    $typeList = [];
-} else {
     $typeList = array_map(function (mixed $e) {
         return gettype($e);
     }, $arr);
