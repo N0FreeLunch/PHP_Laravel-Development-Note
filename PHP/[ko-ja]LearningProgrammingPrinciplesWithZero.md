@@ -381,9 +381,12 @@ var_dump((new AddToCart(price: 0, quantity: 3))->totalPrice()); // 0
 var_dump((new AddToCart(price: 1000, quantity: 0))->totalPrice()); // Exception: cannot purchase it.
 var_dump((new AddToCart(price: 1000, quantity: 3))->addAmount(-3)->totalPrice()); // Exception: cannot purchase it.
 ```
-- 절차지향적인 코드를 만들 때 변수에 null을 초기값으로 넣는 것과 달리 객체의 생성자를 이용해 `$price`를 전달 받는 코드를 만들었다.
-- `$this->quantity`값을 사용하는 코드마다 `is_int($this->quantity) && $this->quantity > 0`과 같이 정수인지 확인하고 수량이 0이 아닌지 확인하는 코드가 들어간다. 애초에 수량 멤버가 정수 타입으로 선언되었다면 `$this->quantity > 0`의 코드만으로 충분했을 것이다.
-- `if($result === 0) { $this->quantity = null; }`는 수량의 수치가 0이 되었을때 유효한 수량이 아닌 경우를 0과 null 두 가지가 아닌 null으로 바꾸고 있다. 이렇게 null으로 바꾸면, `$this->quantity`는 일단 초기값 설정에서 음수가 되지 않도록 설정했고, `addAmount` 메소드에서는 음수가 되지 않도록 설정했으므로 null이 아니면 사용할 수 있는 값이란 것을 알 수 있다. `is_int($this->quantity) && $this->quantity > 0`은 `!is_null($this->quantity)`만 확인하는 것으로도 충분해진다. 그러나 `if($result === 0) { $this->quantity = null; }`와 같은 직관적이지 않은 방식의 변경이 들어간다.
+- 절차지향적인 코드를 만들 때 변수에 null을 초기값으로 넣는 것과 달리 객체의 생성자를 이용해 `$price`를 받드시 전달 받으므로 null 타입을 제외하였다.
+- 手続き型のコードを作る際に変数にnullを初期値として入れるのとは異なり、オブジェクトのコンストラクタを利用して`$price`を必ず受け取るようにしたのでnull型を除外しました。
+- `$this->quantity`값을 사용하는 코드마다 `is_int($this->quantity) && $this->quantity > 0`과 같이 정수인지 확인하고 수량이 0이 아닌지 확인하는 코드가 들어간다. 애초에 수량 멤버가 정수 타입으로 정의되었다면 `$this->quantity > 0`의 코드만으로 충분했을 것이다.
+- `$this->quantity`の値を使うコードごとに`is_int($this->quantity) && $this->quantity > 0`という、整数であるかどうかを確認して数量が0でないかを確認するコードが入っています。もともと数量メンバが整数型でけで定義されたら`$this->quantity > 0`のコードだけで十分であったでしょう。
+- `if($result === 0) { $this->quantity = null; }`는 수량의 수치가 0이 되었을때 유효한 수량이 아닌 경우를 0과 null 두 가지가 아닌 null으로 바꾸고 있다. 이렇게 null으로 바꾸면, `$this->quantity`는 초기값 설정에서 음수가 되지 않도록 설정했고, `addAmount` 메소드에서는 음수가 되지 않도록 설정했으므로 null이 아니면 사용할 수 있는 값이란 것을 알 수 있다. `is_int($this->quantity) && $this->quantity > 0`은 `!is_null($this->quantity)`만 확인하는 것으로도 충분해진다. 그러나 `if($result === 0) { $this->quantity = null; }`와 같은 직관적이지 않은 방식의 변경이 들어간다.
+- `if($result === 0) { $this->quantity = null; }`は数量の数値が0になった場合、有効な数量でない場合を0とnullの2つではなくnullに変えています。このようにnullに変えると、`$this->quantity`は初期値設定で負数にならないように設定し、`addAmount`メソッドでは負数にならないように設定したので、nullでなければ使用できる値であることがわかります。`is_int($this->quantity) && $this->quantity > 0`は`!is_null($this->quantity)`だけを確認するだけで十分です。しかし、`if($result === 0) { $this->quantity = null; }`という直感的でない変更が入ります。
 
 #### 빈 값
 #### 空の値
@@ -444,11 +447,13 @@ class AddToCart
 }
 
 var_dump((new AddToCart(price: 1000, quantity: 3))->totalPrice()); // 3000
+var_dump((new AddToCart(price: 1000, quantity: 3))->discountPerItem(200)->totalPrice()); // 2400
 var_dump((new AddToCart(price: 0, quantity: 3))->totalPrice()); // 0
 var_dump((new AddToCart(price: 1000, quantity: 0))->totalPrice()); // Exception: cannot purchase it.
 var_dump((new AddToCart(price: 1000, quantity: 3))->addAmount(-3)->totalPrice()); // Exception: cannot purchase it.
 ```
 - 변수의 타입을 줄임으로써 로직을 훨씬 간결하게 표현할 수 있다.
+- 変数のタイプを減すことでロジックをもっと簡潔に表現できます。
 
 ### 정적 타입 언어와의 비교
 ### 静的型言語との比較
