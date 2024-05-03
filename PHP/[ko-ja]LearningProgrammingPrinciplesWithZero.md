@@ -326,11 +326,11 @@ var_dump($typeList);
 class AddToCart
 {
     public function __construct(
-        private readonly ?int $price = null,
-        private readonly ?int $quantity = null
+        private int $price,
+        private ?int $quantity = null
     ) {
-        assert(is_int($price) && $price < 0, 'price cannot be negative.');
-        assert(is_int($quantity) && $quantity < 0, 'quantity cannot be negative.');
+        assert($price >= 0, 'price cannot be negative.');
+        assert(is_int($quantity) && $quantity > 0, 'quantity cannot be negative or zero.');
     }
 
     public function addAmount(int $quantity): self
@@ -347,30 +347,43 @@ class AddToCart
         return $this;
     }
 
+    public function discountPerItem(int $price): self
+    {
+        $result = $this->price - $price;
+        if ($result >= 0) {
+            $this->price = $result;
+        } else {
+            throw new Exception('price cannot be negative.');
+        }
+
+        return $this;
+    }
+
     public function totalPrice(): int
     {
     	if($this->canBuy()) {
             return $this->price * $this->quantity;	
     	} else {
-    		throw new Exception('cannot purchase it.');
+            throw new Exception('cannot purchase it.');
     	}
     }
     
     private function canBuy(): bool
     {
         return is_int($this->quantity) 
-        	&& $this->quantity > 0 
-        	&& is_int($this->price);
+        	&& $this->quantity > 0;
     }
 }
 
 var_dump((new AddToCart(price: 1000, quantity: 3))->totalPrice()); // 3000
-var_dump((new AddToCart(price: 1000, quantity: null))->totalPrice()); // Exception: not available for 0 quantity 
-var_dump((new AddToCart(price: 1000, quantity: 0))->totalPrice()); // Exception: not available for 0 quantity
-var_dump((new AddToCart(price: 1000, quantity: 3))->totalPrice()); // 3000
+var_dump((new AddToCart(price: 1000, quantity: 3))->discountPerItem(200)->totalPrice()); // 2400
+var_dump((new AddToCart(price: 0, quantity: 3))->totalPrice()); // 0
+var_dump((new AddToCart(price: 1000, quantity: 0))->totalPrice()); // Exception: cannot purchase it.
+var_dump((new AddToCart(price: 1000, quantity: 3))->addAmount(-3)->totalPrice()); // Exception: cannot purchase it.
 ```
+- 절차지향적인 코드를 만들 때 변수에 null을 초기값으로 넣는 것과 달리 객체의 생성자를 이용해 `$price`를 전달 받는 코드를 만들었다.
 - `$this->quantity`값을 사용하는 코드마다 `is_int($this->quantity) && $this->quantity > 0`과 같이 정수인지 확인하고 수량이 0이 아닌지 확인하는 코드가 들어간다. 애초에 수량 멤버가 정수 타입으로 선언되었다면 `$this->quantity > 0`의 코드만으로 충분했을 것이다.
-- `if($result === 0) { $this->quantity = null; }`는 수량의 수치가 0이 되었을때 유효한 수량이 아닌 경우를 0과 null 두 가지가 아닌 null으로 바꾸고 있다. 이렇게 null으로 바꾸면, `$this->quantity`는 일단 초기값 설정에서 음수가 되지 않도록 설정했으므로 null이 아니면 사용할 수 있는 값이란 것을 알 수 있다.
+- `if($result === 0) { $this->quantity = null; }`는 수량의 수치가 0이 되었을때 유효한 수량이 아닌 경우를 0과 null 두 가지가 아닌 null으로 바꾸고 있다. 이렇게 null으로 바꾸면, `$this->quantity`는 일단 초기값 설정에서 음수가 되지 않도록 설정했고, `addAmount` 메소드에서는 음수가 되지 않도록 설정했으므로 null이 아니면 사용할 수 있는 값이란 것을 알 수 있다. `is_int($this->quantity) && $this->quantity > 0`은 `!is_null($this->quantity)`만 확인하는 것으로도 충분해진다. 그러나 `if($result === 0) { $this->quantity = null; }`와 같은 직관적이지 않은 방식의 변경이 들어간다.
 
 #### 빈 값
 #### 空の値
@@ -380,6 +393,62 @@ var_dump((new AddToCart(price: 1000, quantity: 3))->totalPrice()); // 3000
 - 上記のように、nullを未割り当てとして使用する場合、購入数量が0になった場合、nullに変更するのは直感的ではないようです。然りとて、nullと0を併用すると、if文の条件が増える問題があり、またはemptyを使用して変数の型がわかりにくくなるという問題が生じます。
 - 비할당 값으로 빈 값을 사용하게 되면 null을 고려하지 않아도 되므로 빈 값인지 아닌지 확인하는 if 문이 하나만 확인하면 되므로 `if($var !== 0)`와 같이 간결해 진다. 또한 구매수량이 n이었다가 0이 되는 경우와 같은 할당 상태였다가 비할당 상태로 변환하는 부분에도 null으로 변환할 필요 없이 빈 값을 할당하면 되므로 직관적으로 만족스럽다.
 - 未割り当ての値として空の値を使用すると、nullを考慮する必要がなくなるため、空の値かどうかを確認するif文を一つだけ確認すれば良いので`if($var !== 0)`のように簡潔になります。また、購入数量が「n」であった場合から0になる場合など、割り当ての状態から未割り当ての状態に変換する部分でも、nullに変換する必要はなく、空の値を割り当てるだけで十分なので直感的に満足できます。
+```php
+class AddToCart
+{
+    public function __construct(
+        private int $price,
+        private int $quantity = 0
+    ) {
+        assert($price >= 0, 'price cannot be negative.');
+        assert($quantity >= 0, 'quantity cannot be negative.');
+    }
+
+    public function addAmount(int $quantity): self
+    {
+        $result = $this->quantity + $quantity;
+        if ($result >= 0) {
+            $this->quantity = $result;
+        } else {
+            throw new Exception('quantity cannot be negative.');
+        }
+        
+        return $this;
+    }
+
+    public function discountPerItem(int $price): self
+    {
+        $result = $this->price - $price;
+        if ($result >= 0) {
+            $this->price = $result;
+        } else {
+            throw new Exception('price cannot be negative.');
+        }
+
+        return $this;
+    }
+
+    public function totalPrice(): ?int
+    {
+    	if($this->canBuy()) {
+            return $this->price * $this->quantity;	
+    	} else {
+            throw new Exception('cannot purchase it.');
+    	}
+    }
+    
+    private function canBuy(): bool
+    {
+        return $this->quantity > 0 && is_int($this->price);
+    }
+}
+
+var_dump((new AddToCart(price: 1000, quantity: 3))->totalPrice()); // 3000
+var_dump((new AddToCart(price: 0, quantity: 3))->totalPrice()); // 0
+var_dump((new AddToCart(price: 1000, quantity: 0))->totalPrice()); // Exception: cannot purchase it.
+var_dump((new AddToCart(price: 1000, quantity: 3))->addAmount(-3)->totalPrice()); // Exception: cannot purchase it.
+```
+- 변수의 타입을 줄임으로써 로직을 훨씬 간결하게 표현할 수 있다.
 
 ### 정적 타입 언어와의 비교
 ### 静的型言語との比較
