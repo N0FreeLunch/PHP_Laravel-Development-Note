@@ -322,6 +322,55 @@ var_dump($typeList);
 - 購入していない状態で変数が持つことができる値が0とnullの2つの場合、`if(!is_null($var) && $var !== 0)`という条件式で変数が割り当てられた状態のみif文内部のコードが実行されるのは条件式が長くなります。長い条件式を避けたい場合は、emptyを使用しますが、emptyは変数の型を示さないため、個人的に好ましくないコーディングスタイルです。(phpは強い型付け言語ではないため、ほとんどの場合、IDEが変数の型を推論できないことがありのでコードに型情報を記述するコーディングスタイルが良いと思います。)
 - 따라서 null을 초기값으로 할당하는 경우에는 null이 가지는 의미와 빈 값이 가지는 의미가 중복되는 경우가 생기지 않도록 의미의 중복이 일어나는 경우에는 빈 값을 사용하지 않고 null만 사용하는 코딩스타일을 만드는 것이 좋다. 문제는 이로 인해서 코드의 길이가 늘어나는 것인데 예를 들어 구매 수량은 0이나 null이나 비할당의 의미를 가지므로 비할당을 하나의 값으로만 사용하기 위해 변수의 값이 0이 되었을 때 이 값을 null으로 바꿔야 한다. 이로 인해 로직의 분기가 추가된다.
 - したがって、nullを初期値として割り当てる場合、nullが持つ意味と空の値が持つ意味が重複しないようにするため、意味の重複が起こる場合は空の値を使用せず、nullのみを使用するコーディングスタイルを採用することが良いです。問題はこれによってコードの長さが増加することです。たとえば、購入数量は0またはnullまたは未割り当ての意味になるため、未割り当てを一つの値(null)として使用するために、変数の値が0になった場合、その値をnullに変更する必要があります。これにより、ロジックの分岐が追加されます。
+```php
+class AddToCart
+{
+    public function __construct(
+        private readonly ?int $price = null,
+        private readonly ?int $quantity = null
+    ) {
+        assert(is_int($price) && $price < 0, 'price cannot be negative.');
+        assert(is_int($quantity) && $quantity < 0, 'quantity cannot be negative.');
+    }
+
+    public function addAmount(int $quantity): self
+    {
+        $result = $this->quantity + $quantity;
+        if($result === 0) {
+            $this->quantity = null;
+        } elseif ($result > 0) {
+            $this->quantity = $result;
+        } else {
+            throw new Exception('quantity cannot be negative.');
+        }
+        
+        return $this;
+    }
+
+    public function totalPrice(): int
+    {
+    	if($this->canBuy()) {
+            return $this->price * $this->quantity;	
+    	} else {
+    		throw new Exception('cannot purchase it.');
+    	}
+    }
+    
+    private function canBuy(): bool
+    {
+        return is_int($this->quantity) 
+        	&& $this->quantity > 0 
+        	&& is_int($this->price);
+    }
+}
+
+var_dump((new AddToCart(price: 1000, quantity: 3))->totalPrice()); // 3000
+var_dump((new AddToCart(price: 1000, quantity: null))->totalPrice()); // Exception: not available for 0 quantity 
+var_dump((new AddToCart(price: 1000, quantity: 0))->totalPrice()); // Exception: not available for 0 quantity
+var_dump((new AddToCart(price: 1000, quantity: 3))->totalPrice()); // 3000
+```
+- `$this->quantity`값을 사용하는 코드마다 `is_int($this->quantity) && $this->quantity > 0`과 같이 정수인지 확인하고 수량이 0이 아닌지 확인하는 코드가 들어간다. 애초에 수량 멤버가 정수 타입으로 선언되었다면 `$this->quantity > 0`의 코드만으로 충분했을 것이다.
+- `if($result === 0) { $this->quantity = null; }`는 수량의 수치가 0이 되었을때 유효한 수량이 아닌 경우를 0과 null 두 가지가 아닌 null으로 바꾸고 있다. 이렇게 null으로 바꾸면, `$this->quantity`는 일단 초기값 설정에서 음수가 되지 않도록 설정했으므로 null이 아니면 사용할 수 있는 값이란 것을 알 수 있다.
 
 #### 빈 값
 #### 空の値
