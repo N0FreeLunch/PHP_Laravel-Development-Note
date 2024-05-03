@@ -370,8 +370,7 @@ class AddToCart
     
     private function canBuy(): bool
     {
-        return is_int($this->quantity) 
-        	&& $this->quantity > 0;
+        return is_int($this->quantity) && $this->quantity > 0;
     }
 }
 
