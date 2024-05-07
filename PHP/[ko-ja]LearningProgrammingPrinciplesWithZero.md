@@ -349,7 +349,7 @@ class AddToCart
 
     public function discountPerItem(int $price): self
     {
-        $result = (int) $this->price - $price;
+        $result = $this->price - $price;
         if ($result >= 0) {
             $this->price = $result;
         } else {
@@ -441,7 +441,7 @@ class AddToCart
     
     private function canBuy(): bool
     {
-        return $this->quantity > 0 && is_int($this->price);
+        return $this->quantity > 0;
     }
 }
 
