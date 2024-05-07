@@ -330,12 +330,12 @@ class AddToCart
         private ?int $quantity = null
     ) {
         assert($price >= 0, 'price cannot be negative.');
-        assert(is_int($quantity) && $quantity > 0, 'quantity cannot be negative or zero.');
+        assert(is_null($quantity) || is_int($quantity) && $quantity > 0, 'quantity cannot be negative or zero.');
     }
 
     public function addAmount(int $quantity): self
     {
-        $result = $this->quantity + $quantity;
+        $result = (int) $this->quantity + $quantity;
         if($result === 0) {
             $this->quantity = null;
         } elseif ($result > 0) {
@@ -349,7 +349,7 @@ class AddToCart
 
     public function discountPerItem(int $price): self
     {
-        $result = $this->price - $price;
+        $result = (int) $this->price - $price;
         if ($result >= 0) {
             $this->price = $result;
         } else {
@@ -362,7 +362,7 @@ class AddToCart
     public function totalPrice(): int
     {
     	if($this->canBuy()) {
-            return $this->price * $this->quantity;	
+            return $this->price * (int) $this->quantity;	
     	} else {
             throw new Exception('cannot purchase it.');
     	}
