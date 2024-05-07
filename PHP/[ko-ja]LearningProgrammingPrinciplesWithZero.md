@@ -198,7 +198,7 @@ $subject = "subject";
 if(is_null($search)) {
     echo $subject;
 } else {
-    echo str_replace($search, "*", $subject);
+    echo str_replace($search, "_", $subject);
 }
 ```
 - 만약 `$search`에 빈 값이 아닌 `null`을 할당했다면, 위와 같이 분기 처리가 늘어날 것이다.
