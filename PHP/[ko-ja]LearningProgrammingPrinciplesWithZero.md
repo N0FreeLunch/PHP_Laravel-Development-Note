@@ -330,7 +330,7 @@ class AddToCart
         private ?int $quantity = null
     ) {
         assert($price >= 0, 'price cannot be negative.');
-        assert(is_null($quantity) || is_int($quantity) && $quantity > 0, 'quantity cannot be negative or zero.');
+        assert(is_null($quantity) || (is_int($quantity) && $quantity > 0), 'quantity cannot be negative or zero.');
     }
 
     public function addAmount(int $quantity): self
