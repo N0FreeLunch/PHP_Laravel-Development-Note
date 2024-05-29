@@ -91,7 +91,7 @@ $fn = function (int $a, int $b, /* arr> */int $c, int $d /* <arr */) {
 - 위와 같이 주석을 사용하여, 배열이 전달되는 부분을 표기하는 방법이 존재한다. 다음과 같이 개행을 넣어 구분감을 주는 방법도 존재한다.
 ```php
 $fn = function (
-	int $a, int $b, #arg
+	int $a, int $b, #each
 	int $c, int $d, #arr
 	) {
         var_dump($a);
