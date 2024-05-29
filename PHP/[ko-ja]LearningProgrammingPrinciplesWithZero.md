@@ -24,7 +24,7 @@ var_dump((new DefaultMember)->variable); // Null
 ```php
 class CheckEntrance
 {
-    const restrictedMinAge = 5;
+    const ALLOWED_MIN_AGE = 5;
 
     public function __construct(
         private readonly null|int|string $age
@@ -34,8 +34,8 @@ class CheckEntrance
 
     public function canEnter(): bool
     {
-        if(is_string($this->age) && intval($this->age) >= self::restrictedMinAge) return true;
-        if(is_int($this->age) && $this->age >= self::restrictedMinAge) return true;
+        if(is_string($this->age) && intval($this->age) >= self::ALLOWED_MIN_AGE) return true;
+        if(is_int($this->age) && $this->age >= self::ALLOWED_MIN_AGE) return true;
         return false;
     }
 }
@@ -51,7 +51,7 @@ var_dump((new CheckEntrance(age: '4'))->canEnter()); // false
 ```php
 class CheckEntrance
 {
-    const restrictedMinAge = 5;
+    const ALLOWED_MIN_AGE = 5;
 
     public function __construct(
         private readonly int $age = 0
@@ -60,7 +60,7 @@ class CheckEntrance
 
     public function canEnter(): bool
     {
-        return $this->age >= self::restrictedMinAge;
+        return $this->age >= self::ALLOWED_MIN_AGE;
     }
 }
 
@@ -165,8 +165,8 @@ var_dump($varObj->var); // 10
 $var = "";
 echo "hello".$var;
 ```
-- `"hello".$var`을 하나의 함수로 바라보자. 그럼 `f("hello", $var) = "hello"` (`f(x, $var) = y`)의 꼴으로 `"hello"`가 고정값이 되기 위해서는 알고리즘 f의 `$var`가 빈 문자열이 되어야 한다.
-- `"hello".$var`を一つの関数と見なしましょう。すると、`f("hello", $var) = "hello"`（`f(x, $var) = y`）の形で、`"hello"`が不動点になるためにはアルゴリズムfの`$var`は空文字列になる必要があります。
+- `"hello".$var`을 하나의 함수로 바라보자. 그럼 `f("hello", $var) = "hello"` (`f(x, $var) = y`)의 꼴으로 `"hello"`가 고정값이 되기 위해서는 알고리즘 f의 `$var`가 빈 문자열이 되어야 한다.(`f(x, n) = x`이 되기 위한 함수 f를 만들기 위해서 'n'인 `$var`를 `''`로 한다.)
+- `"hello".$var`を一つの関数と見なしましょう。すると、`f("hello", $var) = "hello"`（`f(x, $var) = y`）の形で、`"hello"`が不動点になるためにはアルゴリズムfの`$var`は空文字列になる必要があります。(`f(x, n) = x`になる関数fになるために「n」である`$var`を`''`にします。)
 
 ```php
 $var = null;
@@ -190,8 +190,8 @@ echo str_replace($search, "_", $subject);
 - `str_replace`関数で、変数`$search`に対応する文字列を見つけて`_`に置き換えるコードを実行するとします。
 - `$search`가 빈 문자열인 경우 대체할 대상을 아무것도 찾지 않으므로 대체할 대상이 없어서 위의 결과는 `"subject"`가 그대로 나온다.
 - `$search`が空文字列の場合、置換対象を見つけることができないため、置換対象がなく、結果は`"subject"`のままです。
-- 위의 코드의 `str_replace($search, "_", $subject)` 부분은 `"_"`와 `$subject`가 정해진 값이기 때문에 `$search`에 대해서만 생각해 보자. `f("subject", $search) = "subject"` (`f(x, $search) = y`)의 꼴으로 표현할 수 있다. 이 방정식이 고정값을 가지기 위해서는 `$search`가 빈 문자열이 될 필요가 있다.
-- 上記のコードの `str_replace($search, "_", $subject)` 部分は、`"_"`と`$subject`が決められた値なので、`$search`について考えることができます。`f("subject", $search) = "subject"`（`f(x, $search) = y`）という形で表現できます。この方程式が不動点を持つためには`$search`が空文字列になる必要があります。
+- 위의 코드의 `str_replace($search, "_", $subject)` 부분은 `"_"`와 `$subject`가 정해진 값이기 때문에 `$search`에 대해서만 생각해 보자. `f("subject", $search) = "subject"` (`f(x, $search) = y`)의 꼴으로 표현할 수 있다. 이 방정식이 고정값을 가지기 위해서는 `$search`가 빈 문자열이 될 필요가 있다.(`f(x, n) = x`이 되기 위한 함수 f를 만들기 위해서 'n'인 `$search`를 `''`로 한다.)
+- 上記のコードの `str_replace($search, "_", $subject)` 部分は、`"_"`と`$subject`が決められた値なので、`$search`について考えることができます。`f("subject", $search) = "subject"`（`f(x, $search) = y`）という形で表現できます。この方程式が不動点を持つためには`$search`が空文字列になる必要があります。(`f(x, n) = x`になる関数fになるために「n」である`$search`を`''`にします。)
 ```php
 $search = null;
 $subject = "subject";
@@ -218,8 +218,9 @@ var_dump([10, 11, 12, ...$arr]);
 ```
 - 빈 배열을 스프레드 연산자로 배열에 포함하면, `[10, 11, 12]`으로 아무 원소도 추가되지 않은 결과가 나온다.
 - 空の配列をスプレッド演算子で配列に含めると、何も要素が追加されずに`[10, 11, 12]`の結果が得られます。
-- 위의 코드는 다음과 같은 의사코드로 바꿀 수 있다. `f([10, 11, 12], $arr) = [10, 11, 12]`(`f(x, $arr) = y`) 이 방정식이 고정값을 가지기 위해서는 `$arr`가 빈 배열이 될 필요가 있다.
-- 上記のコードは、次の擬似コードに置き換えることができます。`f([10, 11, 12], $arr) = [10, 11, 12]`（`f(x, $arr) = y`）この方程式が不動てんを持つためには`$arr`が空の配列になる必要があります。
+- 위의 코드는 다음과 같은 의사코드로 바꿀 수 있다. `f([10, 11, 12], $arr) = [10, 11, 12]`(`f(x, $arr) = y`) 이 방정식이 고정값을 가지기 위해서는 `$arr`가 빈 배열이 될 필요가 있다.(`f(x, n) = x`가 되는 함수 f를 만들기 위해 'n'인 `$arr`를 `[]`로 한다.)
+```php
+- 上記のコードは、次の擬似コードに置き換えることができます。`f([10, 11, 12], $arr) = [10, 11, 12]`（`f(x, $arr) = y`）この方程式が不動点を持つためには`$arr`が空の配列になる必要があります。(`f(x, n) = x`になる関数fになるために「n」である`$arr`を`[]`にします。)
 ```php
 $arr = null;
 if(is_null($arr)) {
@@ -249,8 +250,8 @@ var_dump($arr);
 ```
 - 이 함수는 반환값을 갖는 함수가 아니다. 원본 값 그 자체를 변화 시키거나 원본 값을 활용한 다른 값을 만드는 것인데, 주어진 배열이 빈 배열 `[]`인 경우 주어진 콜백함수를 실행하지 않는다. 곧 결과값이 원본 그대로이다. 따라서 빈 배열은 `[]`은 `array_walk` 내장 함수의 실행에 대해 실행해도 실행하지 않아도 결과값은 동일하다.
 - この関数は戻り値がない関数です。元の値そのものを変更したり、元の値を利用して他の値を生成するものであり、与えられた配列が空の配列 `[]` の場合、与えられたコールバック関数を実行しません。そのため、結果は元のままです。したがって、空の配列 `[]` は `array_walk` 組み込み関数の実行を行っても、行わなくても結果は同じです。
-- 위 코드는 다음과 같은 의사코드로 바꿀 수 있다. `f($arr) = []`(`f(x) = y`) 이를 만족하는 고정값은 `$arr`의 값이 `[]`이 될 경우이다.
-- 上記のコードは、次のような擬似コードに変換できます。`f($arr) = []`（`f(x) = y`）この方程式を満たす不動点は、`$arr`の値が`[]`になった場合です。
+- 위 코드는 다음과 같은 의사코드로 바꿀 수 있다. `f($arr) = []`(`f(x) = y`) 이를 만족하는 고정값은 `$arr`의 값이 `[]`이 될 경우이다.　(`f(x) = x`가 되는 변수 x의 값은 `$arr = []`가 될 때이다.)
+- 上記のコードは、次のような擬似コードに変換できます。`f($arr) = []`（`f(x) = y`）この方程式を満たす不動点は、`$arr`の値が`[]`になった場合です。(`f(x) = x`になる変数xの値は`$arr = []`になる際です。)
 ```php
 $arr = null;
 if(is_array($arr)) {
