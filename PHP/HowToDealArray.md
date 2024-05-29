@@ -81,7 +81,7 @@ $fn(1, 2)(...['c' => 3, 'd' => 4]);
 ```
 - 위와 같이 배열을 받을 대상과 그렇지 않을 대상을 구분하기 위해서 클로저를 사용해서 일반 값을 받을 대상과 배열 값을 받을 대상을 구분감 있게 분리하는 것도 방법이지만 문법이 너무 복잡해진다는 단점이 존재한다.
 ```php
-$fn = function (int $a, int $b, /* arr> */int $c, int $d /* <arr */) {
+$fn = function (int $a, int $b, /* < arr */int $c, int $d /* arr > */) {
     var_dump($a);
     var_dump($b);
     var_dump($c);
@@ -91,8 +91,8 @@ $fn = function (int $a, int $b, /* arr> */int $c, int $d /* <arr */) {
 - 위와 같이 주석을 사용하여, 배열이 전달되는 부분을 표기하는 방법이 존재한다. 다음과 같이 개행을 넣어 구분감을 주는 방법도 존재한다.
 ```php
 $fn = function (
-        int $a, int $b, #each
-        int $c, int $d, #arr
+        int $a, int $b, # each
+        int $c, int $d, # arr group
     ) {
         var_dump($a);
         var_dump($b);
@@ -103,3 +103,21 @@ $fn = function (
 - php에서 함수의 인자로 특수한 형태의 연관 배열을 전달하고 싶다면 함수의 파라메터로 배열 타입의 파라메터를 만들지 않고, 전달되는 배열을 구성하는 파라메터를 나열하는 방식으로 파라메터를 정의하도록 하자.
 
 ### phpdoc을 사용하기
+
+#### array shape
+- [array-shapes](https://phpstan.org/writing-php-code/phpdoc-types#array-shapes)의 문서는 phpstan이란 정적 분석을 사용할 때 정적분석에 의한 추론으로 올바른 값이 들어갔는지 확인할 수 있는 기능을 제공한다. [phpstorm IDE의 array-shape 지원](https://blog.jetbrains.com/phpstorm/2022/02/phpstorm-2022-1-eap-3/)으로 phpdoc의 array-shapes 구문을 사용할 때, 코드에서 지정한 값의 타입 및 접근 방식 등의 추론을 통한 자동완성이 강화되었다.
+```php
+/**
+ * @param $arr array{c: int, d: int}
+ */
+$fn = function (int $a, int $b, array $arr) {
+    var_dump($a);
+    var_dump($b);
+    var_dump($arr['c']);
+    var_dump($arr['d']);
+};
+```
+- 위와 같은 코드를 작성하게 되면, IDE에 의해서 `$arr[|]` (|는 문자열 입력 커서의 위치)정도만 입력해도 `$arr['c']`, `$arr['d']`에 대한 자동완성이 보여지게 된다. 이런 방식을 통해서 배열에 어떤 값이 들어가 있는지 알 수 있게 해 준다는 것이다.
+- 하지만 이러한 지원은 어디까지나 주석으로 코드의 변경에 따라 주석이 업데이트 되지 않는 경우가 많으므로 개인적으로 선호하는 스타일을 아니고, 배열의 구조를 표기하지 못하는 것이 마음에 들지 않기 때문에 어쩔 수 없이 쓰는 방편일 뿐이다.
+
+### DTO 사용하기
