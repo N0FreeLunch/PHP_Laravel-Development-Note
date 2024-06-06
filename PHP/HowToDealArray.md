@@ -186,15 +186,6 @@ $fn(1, 2, ['c', 'd']);
 - DTO란 Data Transfer Object의 약자이다. 데이터 전송 객체는 데이터를 전달할 때의 규격을 정한다.
 - php에서는 클래스를 통해서 타입을 만들 수 있다. 클래스를 하나 만들어 파라메터로 클래스 타입을 지정하고, 해당 클래스로 만든 오브젝트를 인자로 전달하는 것을 통해 전달 받는 인자의 스펙을 명확하게 할 수 있다.
 ```php
-class Dto
-{
-    public function __construct(
-        public int $c,
-        public int $d,
-    ) {
-    }
-}
-
 $fn = function($a, $b, Dto $cdObj) {
     var_dump($a);
     var_dump($b);
@@ -203,9 +194,51 @@ $fn = function($a, $b, Dto $cdObj) {
 };
 
 $fn(1, 2, new Dto(3, 4));
+
+class Dto
+{
+    public function __construct(
+        public int $c,
+        public int $d,
+    ) {
+    }
+}
 ```
 - 문제는 타입힌트를 사용하기 위해서 클래스를 사용해야 한다는 것인데, 함수에 인자를 전달하기 위해서 인자를 생성하는 부분에서 객체를 생성하기 위해서 클래스 코드가 존재해야 하며, 함수의 파라메터를 타입힌트로 쓰기 위해서 클래스 코드가 존재해야 한다. php에서 함수 또는 메소드를 여러 파일에서 네임스페이스를 통해서 사용하려고 한다면 인자를 전달 할 때 DTO 클래스를 통해서 객체를 만들어야 하므로 DTO 파일도 불러 쓸 수 있는 형태가 되어야 한다. 따라서 DTO 클래스를 별도의 파일로 분리해야 하므로 파일의 배치 폴더 구조 클래스 코드 네임스페이스 등 보일러 플레이트가 많아진다는 단점이 생긴다.
-- 하나의 파일에 여러 클래스를 사용하고, 하나의 파일에 있는 여러 클래스에 네임스페이스를 부여하는 방법이 존재한다. 하지만 하나의 파일에 여러 클래스를 정의하는 것은 PSR-12 (PHP Coding Style Guide)를 위반한다.
+- 하나의 파일에 여러 클래스를 사용하고, 하나의 파일에 있는 여러 클래스에 네임스페이스를 부여하는 방법이 존재한다. 하지만 주의해야 할 점이 있는데, 파일 이름과 일치하는 클래스가 존재해야 하고 이 클래스가 포함된 네임스페이스는 동일한 파일 내의 네임스페이스 중에서 가장 마지막에 위치해야 한다는 것이다. (PSR-4에 의해)
+```php
+// DefineClass.php
+
+namespace UseClass {
+
+    use DefineClass\Dto as AliasDto;
+
+    $fn = function($a, $b, AliasDto $cdObj) {
+        var_dump($a);
+        var_dump($b);
+        var_dump($cdObj->c);
+        var_dump($cdObj->d);
+    };
+
+    $fn(1, 2, new AliasDto(3, 4));
+}
+
+namespace DefineClass {
+
+    class Dto
+    {
+        public function __construct(
+            public int $c,
+            public int $d,
+        ) {
+        }
+    }
+}
+
+```
+
+### 캡슐화 이용하기
+- Dto를 이용하고 싶지 않다면 캡슐화를 이용하는 방법이 있다. 메소드를 통해서 특정한 유형의 값을 받고, 해당 값을 멤버에 저장하며, 값을 가져오고 싶을 때는 배열의 구조와 형태를 추측할 수 있는 메소드명을 호출하는 방식을 사용하는 것이다.
 
 ## Reference
 - https://www.php.net/manual/en/functions.arguments.php
