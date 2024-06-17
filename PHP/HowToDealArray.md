@@ -18,6 +18,35 @@
 - enum의 경우는 `enum Gender: string { case Man = 'man'; case Woman = 'woman'; }` `$canPregnant = function(Gender $gender): bool { ... }`의 예를 생각해 보자. 문자열 파라메터로 `'man'` `'woman'`을 전달하도록 만들면 `$canPregnant = function(string $gender): bool { ... }`의 `string $gender` 파라메터로 `'man'` `'woman'`을 전달해야 할지, `'m'` `'w'`을 전달해야 할지, `'male'` `'femail'`을 전달해야 할지, `'m'`, `'f'`를 전달해야 할지 함수의 내부 구현을 확인하지 않으면 알 수가 없다. 이에 반해 enum을 사용하면 함수가 어떤 파라메터를 사용하는지 명확한 스펙을 알 수 있다.
 - 또한 문자열이 너무 다양한 값을 가지기 때문에 어떤 기능의 스펙을 정하기 위해서 enum이나 커스텀 class를 만들어 타입힌트로 사용하는 것과 마찬가지로 배열 또한 단위 기능의 스펙상의 제약을 걸기 위해 타입힌트를 사용하는 방법을 생각하는 편이 좋다.
 
+#### 커스텀 타입의 예시
+```php
+class YearMonth
+{
+    private string $yyyymm;
+
+    public function __construct(string $yyyymm) {
+        $year = intval(substr($yyyymm, 0, 4));
+        $month = intval(substr($yyyymm, 4, 2));
+        if(checkdate($month, 1, $year)) $this->yyyymm = $yyyymm;
+    	else throw new Error('invalid Ym');
+    }
+    
+    public function __invoke(): string
+    {
+    	return $this->yyyymm;
+    }
+}
+
+$fn = function (YearMonth $yearMonth) {
+	echo 'result: '.$yearMonth().PHP_EOL;
+};
+
+$fn(new YearMonth('202406')); // result: 202406
+$fn(new YearMonth('2024-06')); // Uncaught Error: invalid Ym
+```
+- 위의 코드는 YYYYMM 형식의 문자열인지 확인하는 클래스를 만들어 함수 `$fn`의 매개변수 타입힌트로 사용하였다.
+- 타입힌트를 통하여 특수한 문자열만을 받을 수 있는 커스터마이징 타입을 만들어 전달되는 값의 유형을 제한할 수 있다.
+
 ### 일반적인 배열 처리
 - php의 배열도 문자열과 마찬가지 문제를 갖는다. 배열로 가질 수 있는 구조가 다양하기 때문에 어떤 구조의 배열을 전달해야 할지 알 수 없다는 문제가 있다. 문자열이 식별자로 사용될 경우 어떤 문자열이 기능 내부의 특별한 처리 케이스를 갖는지 확인해야 하듯이 배열도 어떤 구조의 배열을 전달해야 사용하려는 기능에서 원하는 결과를 얻을 수 있는지는 내부 구현을 확인하지 않고는 알 수 없는 문제가 발생한다.
 - 배열을 매개변수로 사용하는 기능이 있다면 배열의 구조에 관계 없이, 모든 배열의 구성에 대해 동작하는 스펙을 만드는 것이 좋다. 특정 배열의 구조에 의존하는 것이 아닌 배열의 모든 데이터를 순회하는 방식의 처리를 하는 기능으로 만든다. 또한 특정한 키에 의존하는 기능 또는 특정한 키에 대한 특수한 처리를 한다면 어떤 키에 어떤 처리를 하는지 알 수 없기 때문에 내부의 코드 동작의 특수 처리를 하는 부분을 확인하지 않는 이상 기능의 동작의 결과를 추측하기 어렵게 된다.
