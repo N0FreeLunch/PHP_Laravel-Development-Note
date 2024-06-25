@@ -53,14 +53,44 @@ $fn(new YearMonth('2024-06')); // Uncaught Error: invalid Ym
 - 만약 배열의 특정한 키나 특정한 값에 대한 처리를 하는 것이라면 특정한 키를 지정하여 처리할 수 있도록 `$needle`과 같은 매개 변수를 갖는 함수를 만들어 처리하도록 하며, 기능의 스펙(함수의 이름, 파라메터, 반환값 등)으로 내부의 특수한 처리를 언급할 수 없는 처리는 만들지 않는 편이 좋다.
 
 ```php
-$fn = function (array $arr): array {
-    return array_map(function (int $v, string $key) => {
-        if($key === 'b') return $v + 20;
-        else return $v +10;
-    }, $arr);
+$add10 = function (array $arr): array {
+    array_walk($arr, function (int $value, string $key) use (&$arr) {
+        $arr[$key] = $arr[$key] + 10;
+    });
+    return $arr;
 };
 
-$fn([1, 2, 3, 4]);
+var_dump($add10(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4]));
+```
+- 배열의 모든 원소에 10을 더하는 위와 같은 함수가 있다고 하자. 그런데 어떤 요구사항이 추가가 되어 b 키에는 20을 더해야 하는 상황이 생겼다.
+
+```php
+$add10 = function (array $arr): array {
+    array_walk($arr, function (int $value, string $key) use (&$arr) {
+        if($key === 'b') $arr[$key] = $arr[$key] + 20;
+        else $arr[$key] = $arr[$key] + 10;
+    });
+    return $arr;
+};
+
+var_dump($add10(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4]));
+```
+- 위와 같이 기존의 함수에다가 특별한 추가 처리를 하게 되면 `$add10`이란 함수명은 잘못된 것이 된다. 이런 경우, 함수의 기존의 의미를 최대한 유지하는 방식으로 코딩하든가, 함수명을 바꾸는 작업을 해 줘야 한다.
+- 함수명을 바꾸면 add10But20WhenB 이라는 이상한 명칭의 함수가 된다. 함수명이 바뀌는 것은 기능이 바뀌는 것이다. 하나의 함수가 여러 코드에서 사용되고 있는 경우 함수의 기능이 바뀌는 것은 의존하고 있는 다른 코드의 동작에 영향을 줄 수 있다. 따라서 함수명을 변경하는 방법도 있지만, 함수를 하나 더 만드는 방식으로 해결하는 것도 방법이다.
+```php
+$add10 = function (array $arr): array {
+    array_walk($arr, function (int $value, string $key) use (&$arr) {
+        $arr[$key] = $arr[$key] + 10;
+    });
+    return $arr;
+};
+
+$add20ToLowerBKey = function (array $arr) {
+    if (array_key_exists('b', $arr)) $arr['b'] = 20;
+    return $arr;
+};
+
+var_dump($add20ToLowerBKey($add10(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4])));
 ```
 
 ### 특수한 배열 형태의 의존하는 경우
