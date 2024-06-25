@@ -52,6 +52,17 @@ $fn(new YearMonth('2024-06')); // Uncaught Error: invalid Ym
 - 배열을 매개변수로 사용하는 기능이 있다면 배열의 구조에 관계 없이, 모든 배열의 구성에 대해 동작하는 스펙을 만드는 것이 좋다. 특정 배열의 구조에 의존하는 것이 아닌 배열의 모든 데이터를 순회하는 방식의 처리를 하는 기능으로 만든다. 또한 특정한 키에 의존하는 기능 또는 특정한 키에 대한 특수한 처리를 한다면 어떤 키에 어떤 처리를 하는지 알 수 없기 때문에 내부의 코드 동작의 특수 처리를 하는 부분을 확인하지 않는 이상 기능의 동작의 결과를 추측하기 어렵게 된다.
 - 만약 배열의 특정한 키나 특정한 값에 대한 처리를 하는 것이라면 특정한 키를 지정하여 처리할 수 있도록 `$needle`과 같은 매개 변수를 갖는 함수를 만들어 처리하도록 하며, 기능의 스펙(함수의 이름, 파라메터, 반환값 등)으로 내부의 특수한 처리를 언급할 수 없는 처리는 만들지 않는 편이 좋다.
 
+```php
+$fn = function (array $arr): array {
+    return array_map(function (int $v, string $key) => {
+        if($key === 'b') return $v + 20;
+        else return $v +10;
+    }, $arr);
+};
+
+$fn([1, 2, 3, 4]);
+```
+
 ### 특수한 배열 형태의 의존하는 경우
 
 #### 자바스크립트에서 특수한 배열 형태를 처리하는 방법
@@ -246,23 +257,25 @@ class Dto
 $controllData = new class {
     private array $arr = [];
 
-    public function setValues(int $a, int $b, int $c, int $d)
+    public function setValues(int $a, int $b, int $c, int $d): self
     {
         $this->arr['a'] = $a;
         $this->arr['b'] = $b;
         $this->arr['c'] = $c;
         $this->arr['d'] = $d;
+        return $this;
     }
 
-    public function changeValue(string $key, int $value)
+    public function changeValue(string $key, int $value): self
     {
         $this->arr[$key] = $value;
+        return $this;
     }
 
-   public getArr(): arr
-   {
-       return $this->arr;
-   }
+    public getArr(): array
+    {
+        return $this->arr;
+    }
 };
 
 $controllData->setValues(1, 2, 3, 4);
