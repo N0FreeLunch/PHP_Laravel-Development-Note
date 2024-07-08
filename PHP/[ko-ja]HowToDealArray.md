@@ -431,7 +431,7 @@ $fn(1, ...[3, 4, 5], ...['b' => 2]);
 - phpdoc에는 array shape라는 기능이 있다. 이는 주석을 통해서 배열의 형태를 나타내는 것으로, 파라메터로 배열을 사용할 때 어떤 형태의 배열을 받는지 알 수 있게 해 준다.
 - phpdocには「array shape」という機能があります。これはコメントを通じて配列の形を示すもので、パラメーターとして配列を使用する際にどのような形の配列を受け取るかを示すことができます。
 
-### array shape
+#### array shape
 - [array-shapes](https://phpstan.org/writing-php-code/phpdoc-types#array-shapes)의 문서는 phpstan이란 정적 분석을 사용할 때 정적분석에 의한 추론으로 올바른 값이 들어갔는지 확인할 수 있는 기능을 제공한다. [phpstorm IDE의 array-shape 지원](https://blog.jetbrains.com/phpstorm/2022/02/phpstorm-2022-1-eap-3/)으로 phpdoc의 array-shapes 구문을 사용할 때, 코드에서 지정한 값의 타입 및 접근 방식 등의 추론을 통한 자동 완성이 강화되었다.
 - [array-shapes](https://phpstan.org/writing-php-code/phpdoc-types#array-shapes)のドキュメントは、phpstanという静的解析ツールを使用する際に、静的解析による推論で正しい値が入っているかを確認できる機能を提供します。[phpstorm IDEのarray-shapeサポート](https://blog.jetbrains.com/phpstorm/2022/02/phpstorm-2022-1-eap-3/)により、phpdocのarray-shapes構文を使用する際、コードで指定した値の型やアクセス方式などの推論による自動補完が強化されました。
 ```php
