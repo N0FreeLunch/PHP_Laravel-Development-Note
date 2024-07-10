@@ -60,10 +60,10 @@ class StrYmType
     public function __construct(string $yyyymm) {
         $year = intval(substr($yyyymm, 0, 4));
         $month = intval(substr($yyyymm, 4, 2));
-        if(checkdate($month, 1, $year)) {
+
+        if (checkdate($month, 1, $year)) {
             $this->yyyymm = $yyyymm;
-        }
-    	else {
+        } else {
             throw new Error('invalid Ym');
         }
     }
@@ -552,6 +552,50 @@ class Dto
 - 上記の例を見ると、Dtoというクラスを関数`$fn`のパラメータのタイプヒントとして指定しています。`$fn`関数は、値を受け取る際に`new Dto(3, 4)`でオブジェクト化されたパラメータを受け取ります。配列であれば`['c' => 3, 'd' => 4]`の値が渡されることになります。DTOはパブリックメンバーで定義したデータのみを受け取り、取り出すことができます。上記の例ではDtoクラスはcとdという値を受け取り、cとdの値を取り出せるように制限されています。配列をタイプヒントにした場合、関数`$fn`はどのような形式の配列を受け取るべきか明確ではないため、内部の実装を確認する必要がありますが、DTOはデータの構造が決まっているため、どの値を使用するのかが分かります。
 - 문제는 타입힌트를 사용하기 위해서 클래스를 만들어야 한다는 것인데, 함수에 인자를 전달하기 위해서 인자를 생성할 때 DTO 객체를 생성하기 위해서 클래스 코드가 존재해야 하며, 함수의 파라메터를 타입힌트로 쓰기 위해서 클래스 코드가 존재해야 한다. php에서는 일반적으로 하나의 php 파일에는 하나의 클래스를 정의하는 것이 일반적이다. 하나의 파일에 정의된 클래스를 다른 파일에서 사용하기 위해서는 네임스페이스를 정의해 줘야 하고, 네임스페이스를 통해서 클래스를 import 해야 DTO 클래스를 타입힌트로 사용할 수 있다. 단순히 함수의 파라메터에 배열을 사용하는 것을 피하기 위해 DTO 클래스를 별도의 파일로 분리해야 하므로 파일의 배치, 폴더 구조, 네임스페이스 정의 등 보일러 플레이트가 많아진다는 단점이 생긴다. 일반적으로 DTO 클래스는 별도의 DTO를 모아둔 폴더에 정의한다. 이를 위해서 DTO를 분류하기 위한 폴더를 정의해야 하고, DTO 클래스의 php 파일을 생성하는 수고가 든다.
 - 問題は、タイプヒントを使用するためにクラスを作成しなければならないことです。関数に引数を渡すために、引数を生成する際DTOオブジェクトを生成するためには、クラスコードが存在する必要があります。また、関数のパラメータをタイプヒントとして使用するためには、クラスコードが存在する必要があります。phpでは通常、一つのphpファイルには一つのクラスを定義するのが一般的です。一つのファイルに定義されたクラスを他のファイルで使用するためには、名前空間を定義する必要があり、名前空間を通じてクラスをインポートしなければ、DTOクラスをタイプヒントとして使用することができません。単に関数のパラメータに配列を使用するのを避けるためにDTOクラスを別ファイルに分けなければならないため、ファイルの配置、フォルダ構造、名前空間の定義などボイラープレートが増えるという欠点があります。一般的にDTOクラスは別のDTOを集めたフォルダに定義します。これにより、DTOを分類するためのフォルダを定義し、DTOクラスのphpファイルを生成する手間がかかります。
+- DTO는 일반적으로 getter와 setter를 갖는다. 하지만 위의 예에서는 getter와 setter를 사용하지 않는 것으로 보일러 플레이트를 상당히 줄였다. getter와 setter를 사용하면 int, string 등과 같은 일반적인 타입보다 더 작은 범위, 예를 들어 자연수 범위라든가 날짜 형식의 문자열이라든가 좀 더 구체적인 값을 받을 수 있다. 앞서 커스텀 타입에 대해 설명하였다. getter setter 없는 DTO 대신에 커스텀 타입 클래스를 멤버 변수의 타입 힌트로 붙여주는 것을 통해서 getter, setter가 없이도 유사한 역할을 하는 단순화된 DTO 클래스를 만들 수 있다.
+- DTOは通常、getterとsetterが定義されています。しかし、上記の例ではgetterとsetterを使用しないことでボイラープレートを大幅に削減させました。getterとsetterを使用すると、intやstringなどの一般的な型よりも、例えば自然数の範囲や日付形式の文字列など、より具体的な値を受け取ることができます。前述のカスタムタイプについて説明しました。getterやsetterのないDTOの代わりに、カスタムタイプクラスをメンバ変数のタイプヒントとして付けることで、getterやsetterなしでも同様の役割を果たす簡略化されたDTOクラスを作成することができます。
+```php
+$fn = function($a, $b, Dto $cdObj) {
+    var_dump($a);
+    var_dump($b);
+    var_dump($cdObj->c);
+    var_dump(($cdObj->yyyymm)());
+    var_dump($cdObj->yyyymm->__invoke());
+    var_dump(call_user_func($cdObj->yyyymm));
+};
+
+$fn(1, 2, new Dto(3, new StrYmType('202407')));
+
+class Dto
+{
+    public function __construct(
+        public int $c,
+        public StrYmType $yyyymm,
+    ) {
+    }
+}
+
+class StrYmType
+{
+    public function __construct(private string $yyyymm) {
+        $year = intval(substr($yyyymm, 0, 4));
+        $month = intval(substr($yyyymm, 4, 2));
+
+        if (checkdate($month, 1, $year)) {
+            $this->yyyymm = $yyyymm;
+        } else {
+            throw new Error('invalid Ym');
+        }
+    }
+    
+    public function __invoke(): string
+    {
+    	return $this->yyyymm;
+    }
+}
+```
+- `StrYmType` 클래스가 `__invoke` 함수를 사용했기 때문에 `Dto` 클래스를 주형으로 한 오브젝트의 멤버 `$cdObj->yyyymm`에 접근할 때 `$cdObj->yyyymm()`으로 접근하면 `StrYmType` 인스턴스의 메소드를 접근하는 문법이 되므로 멤버가 없다는 에러가 발생한다. 따라서 멤버 변수로 접근을 한 후에 해당 값을 함수로 실행하는 방식의 코드 `($cdObj->yyyymm)()`, `$cdObj->yyyymm->__invoke()`, `call_user_func($cdObj->yyyymm)`를 적어 주었다.
+- `StrYmType`クラスが`__invoke`関数を使用したため、`Dto`クラスを型とするオブジェクトのメンバー`$cdObj->yyyymm`にアクセスする際に`$cdObj->yyyymm()`とアクセスすると`StrYmType`インスタンスのメソッドを呼び出す文法となるのでメンバーがないというエラーが発生します。そのため、メンバー変数にアクセスした後にその値を関数として実行する方式のコード`($cdObj->yyyymm)()`, `$cdObj->yyyymm->__invoke()`, `call_user_func($cdObj->yyyymm)`を記述しました。
 
 #### DTO 클래스의 보일러 플레이트 줄이기
 #### DTOクラスのボイラープレート減らす
@@ -590,7 +634,7 @@ $cdStoreObj = new class {
     }
 };
 
-$controllData->setC(3)->setD(4);
+$cdStoreObj->setC(3)->setD(4);
 
 $fn = function($a, $b, object $cdObj) {
     $cdArr = $cdObj->getArr();
