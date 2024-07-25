@@ -300,21 +300,16 @@ $fn(1, 2, ...['_c' => 3, '_d' => 4]);
 $fn = function (int $a, int $b, int ...$c) {
     var_dump($a);
     var_dump($b);
-    foreach($c as $key => $value) {
-    	echo 'key: ';
-        var_dump($key);
-        echo 'value: ';
-        var_dump($value);
-    }
+    var_dump($c);
 };
 
-$fn(1, 2, 3); // int(1) int(2) key: int(0) value: int(3)
+$fn(1, 2, 3); // int(1) int(2) array(1) { [0]=> int(3) }
 echo "=========================================".PHP_EOL;
-$fn(1, 2, 3, 4, 5); // int(1) int(2) key: int(0) value: int(3) key: int(1) value: int(4) key: int(2) value: int(5)
+$fn(1, 2, 3, 4, 5); // int(1) int(2) array(3) { [0]=> int(3) [1]=> int(4) [2]=> int(5) }
 echo "=========================================".PHP_EOL;
-$fn(1, 2, 3, 4, 5, 6, 7); // int(1) int(2) key: int(0) value: int(3) key: int(1) value: int(4) key: int(2) value: int(5) key: int(3) value: int(6) key: int(4) value: int(7)
+$fn(1, 2, 3, 4, 5, 6, 7); // int(1) int(2) array(5) { [0]=> int(3) [1]=> int(4) [2]=> int(5) [3]=> int(6) [4]=> int(7) }
 echo "=========================================".PHP_EOL;
-$fn(1, 2, ...[3,4,5]); // int(1) int(2) key: int(0) value: int(3) key: int(1) value: int(4) key: int(2) value: int(5)
+$fn(1, 2, ...[3,4,5]); // int(1) int(2) array(3) { [0]=> int(3) [1]=> int(4) [2]=> int(5) }
 ```
 - 파라메터를 `...$c`으로 설정한 것 덕분에 `$fn(1, 2, 3)`, `$fn(1, 2, 3, 4, 5)`, `$fn(1, 2, 3, 4, 5, 6, 7)`으로 인자의 갯수를 늘려도 계속 인자를 받을 수 있다.
 - パラメータを`...$c`として設定することで、`$fn(1, 2, 3)`, `$fn(1, 2, 3, 4, 5)`, `$fn(1, 2, 3, 4, 5, 6, 7)`と引数の数を増やしても、引数を受け取ることができます。
@@ -332,12 +327,7 @@ $fn(1, 2, ...[3,4,5]); // int(1) int(2) key: int(0) value: int(3) key: int(1) va
 $fn = function($a, ...$b, $c) {
     var_dump($a);
     var_dump($b);
-    foreach($c as $key => $value) {
-    	echo 'key: ';
-        var_dump($key);
-        echo 'value: ';
-        var_dump($value);
-    }
+    var_dump($c);
 };
 
 $fn(1, ...[2, 3, 4], 5); // Fatal error: Only the last parameter can be variadic
@@ -349,36 +339,31 @@ $fn(1, ...[2, 3, 4], 5); // Fatal error: Only the last parameter can be variadic
 $fn = function (int $a, int $b, int ...$c) {
     var_dump($a);
     var_dump($b);
-    foreach($c as $key => $value) {
-    	echo 'key: ';
-        var_dump($key);
-        echo 'value: ';
-        var_dump($value);
-    }
+    var_dump($c);
 };
 
 $fn(1, 2, 3);
-// int(1) int(2) key: int(0) value: int(3)
+// int(1) int(2) array(1) { [0]=> int(3) }
 echo "=========================================".PHP_EOL;
 $fn(1, 2, 3, 4, 5);
-// int(1) int(2) key: int(0) value: int(3) key: int(1) value: int(4) key: int(2) value: int(5)
+// int(1) int(2) array(3) { [0]=> int(3) [1]=> int(4) [2]=> int(5)
 echo "=========================================".PHP_EOL;
 $fn(1, 2, 3, 4, 5, 6, 7);
-// int(1) int(2) key: int(0) value: int(3) key: int(1) value: int(4) key: int(2) value: int(5) key: int(3) value: int(6) key: int(4) value: int(7)
+// int(1) int(2) array(5) { [0]=> int(3) [1]=> int(4) [2]=> int(5) [3]=> int(6) [4]=> int(7) }
 echo "=========================================".PHP_EOL;
 $fn(1, 2, ...[3,4,5]);
-// int(1) int(2) key: int(0) value: int(3) key: int(1) value: int(4) key: int(2) value: int(5)
+// int(1) int(2) array(3) { [0]=> int(3) [1]=> int(4) [2]=> int(5) }
 echo "=========================================".PHP_EOL;
 $fn(1, 2, ...['c' => 3]);
-// int(1) int(2) key: string(1) "c" value: int(3)
+// int(1 int(2) array(1) { ["c"]=> int(3) }
 echo "=========================================".PHP_EOL;
 $fn(1, 2, ...['c' => [3, 4, 5]]);
 // Argument #3 must be of type int, array given
 echo "=========================================".PHP_EOL;
-$fn(1, 2, c: ...[3, 4, 5]);
+// $fn(1, 2, c: ...[3, 4, 5]);
 // Parse error: syntax error, unexpected token "..."
 echo "=========================================".PHP_EOL;
-$fn(a: 1, b: 2, ...[3, 4, 5]);
+// $fn(a: 1, b: 2, ...[3, 4, 5]);
 // Cannot use argument unpacking after named arguments
 ```
 - 가변 파라메터는 인자의 수를 제한하지 않는다는 의미를 기본적으로 갖지만, 가변 파라메터에 배열을 스프레드 문법 `...`을 사용해서 `$fn(1, 2, ...[3,4,5])`와 같이 할당하는 방법을 통해서 인덱싱 된 배열을 받는다는 의미를 부여할 수 있다. 또 `$fn(1,2,3)`, `$fn(1,2,3,4)`, `$fn(1,2,3,4,5)`처럼 가변 파라메터는 인자를 여럿 받을 수 있다. 곧, 함수에 가변 파라메터를 사용했다면 인자를 여럿 받을 수 있다는 것과 스프레드 문법을 사용해서 배열을 받을 수 있다는 두 가지 의미로 해석될 수 있다.
@@ -398,28 +383,23 @@ $fn(a: 1, b: 2, ...[3, 4, 5]);
 $fn = function (int $a, int $b, int ...$c) {
     var_dump($a);
     var_dump($b);
-    foreach($c as $key => $value) {
-    	echo 'key: ';
-        var_dump($key);
-        echo 'value: ';
-        var_dump($value);
-    }
+    var_dump($c);
 };
 
 $fn(1, 2, ...[3, 4, 5]);
-// int(1) int(2) key: int(0) value: int(3) key: int(1) value: int(4) key: int(2) value: int(5)
+// int(1) int(2) array(3) { [0]=> int(3) [1]=> int(4) [2]=> int(5) }
 echo "=========================================".PHP_EOL;
 $fn(1, ...['b' => 2], ...[3, 4, 5]);
-// int(1) int(2) key: int(0) value: int(3) key: int(1) value: int(4) key: int(2) value: int(5)
+// int(1) int(2) array(3) { [0]=> int(3) [1]=> int(4) [2]=> int(5) }
 echo "=========================================".PHP_EOL;
 $fn(...['a' => 1, 'b' => 2], ...[3, 4, 5]);
-// int(1) int(2) key: int(0) value: int(3) key: int(1) value: int(4) key: int(2) value: int(5)
+// int(1) int(2) array(3) { [0]=> int(3) [1]=> int(4) [2]=> int(5) }
 echo "=========================================".PHP_EOL;
 $fn(...['a' => 1], ...['b' => 2], ...[3, 4, 5]);
-// int(1) int(2) key: int(0) value: int(3) key: int(1) value: int(4) key: int(2) value: int(5)
+// int(1) int(2) array(3) { [0]=> int(3) [1]=> int(4) [2]=> int(5) }
 echo "=========================================".PHP_EOL;
 $fn(...['a' => 1], ...[3, 4, 5], ...['b' => 2]);
-// int(1) int(2) key: int(0) value: int(3) key: int(1) value: int(4) key: int(2) value: int(5)
+// int(1) int(2) array(3) { [0]=> int(3) [1]=> int(4) [2]=> int(5) }
 echo "=========================================".PHP_EOL;
 $fn(...[3, 4, 5], ...['b' => 2], ...['a' => 1]);
 // Uncaught Error: Named parameter $b overwrites previous argument
