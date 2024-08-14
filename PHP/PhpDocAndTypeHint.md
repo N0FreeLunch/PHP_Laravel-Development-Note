@@ -22,34 +22,34 @@
 ```php
 class A
 {
-	public string $a;
+    public string $a;
 }
 
 class B
 {
-	public string $b;
+    public string $b;
 }
 
 $fn = function (A|B $arg) {
-	if(property_exists($arg, 'a')) echo $arg->a;
+    if(property_exists($arg, 'a')) echo $arg->a;
 };
 ```
 - 위의 에제에서 $arg가 항상 타입 A라고 하더라도 유니온 타입 `A|B`으로 정의되어 있기 때문에 `if(property_exists($arg, 'a'))`의 조건하에서 `$arg->a`으로 접근하는 코드가 아니라면 정적 분석에서 에러가 발생한다. 왜냐하면 B 타입에는 a 프로퍼티가 없기 때문이다. 하지만 실제로 전달되는 값은 A 타입만을 사용하므로 `$arg->a`으로도 문제가 없지만, 정적 분석은 B에 대한 처리를 하지 않는 것을 문제점으로 지적한다. phpstan에서는 php 코드는 원본 타입으로 정확히 하고, phpdoc을 사용해서 유니온 타입을 기술하는 경우 `if(property_exists($arg, 'a'))`의 조건이 없더라도 문제가 없으므로, phpdoc으로 유니온 타입을 사용해서 실제 타입으로는 접근할 수 없는 다른 타입의 프로퍼티를 IDE의 자동 완성을 얻는 방법을 사용할 수 있다.
 ```php
 class A
 {
-	public string $a;
+    public string $a;
 }
 
 class B
 {
-	public string $b;
+    public string $b;
 }
 
 /**
  * @param A|B $arg
  */
 $fn = function (A $arg) {
-	echo $arg->a;
+    echo $arg->a;
 };
 ```
