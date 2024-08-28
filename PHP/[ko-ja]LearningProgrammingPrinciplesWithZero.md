@@ -470,6 +470,70 @@ var_dump((new AddToCart(price: 1000, quantity: 3))->addAmount(-3)->totalPrice())
 - 다양한 타입을 변수에 허용하는 동적 타입 언어와 달리 정적 타입의 언어에서는 하나의 변수는 하나의 타입을 사용하는 언어가 많다. php와 달리 정적 언어에서는 null은 타입이 아니라 참조 값이 갖는 특수한 상태로 참조할 대상이 없는 상태이다. 원시 타입은 참조 값이 아니므로 null이 아니라 빈 값으로 할당과 비할당을 구분하며, 해당 변수에서 사용하지 않거나 사용 빈도가 적은 특정한 값(sentinel value)을 이용해서 할당과 비할당을 구분한다. (php는 원시 타입과 null을 한 변수에 할당할 수 있다. 원시 타입인 경우에는 사용 빈도가 적은 특정한 값 보다는 null을 사용하는 편이 나으므로 타 언어와 비교했을 때도 null을 쓰는 편이 좋다.) 참조 타입에서는 null 확인을 해야 하는 타입과 그렇지 않은 타입을 구분하기 위해서 nullable 타입을 사용하는 언어도 있다. null을 구분해야 할 변수와 그렇지 않은 변수를 구분하여 null을 가지지 않는 타입은 null 체크를 염두에 두지 않고 사용할 수 있도록 한다. php에서도 다른 언어와의 유사성을 고려하여 비할당 값을 null 보다는 빈 값으로 사용하고 필요한 경우에만 null 타입을 추가해서 사용하도록 하자.
 - さまざまなタイプを変数に許容する動的タイプ言語とは異なり、静的タイプの言語では一つの変数は一つのタイプを使用するケースが多いです。phpとは異なり、静的言語ではnullはタイプではなく、参照値の特殊な状態で、参照する対象がない状態です。プリミティブタイプは参照値ではないため、nullではなく空の値で割り当てと未割り当てを区別し、その変数で使用しないまたは使用頻度がほとんどいない特定の値（sentinel value）を利用して割り当てと未割り当てを区別します。(phpはプリミティブ型とnullを1つの変数に割り当てることができます。プリミティブ型の場合、使用頻度が低い特定の値よりもnullを使用する方が良いため、他の言語と比較してもnullを使う方が良いです。）参照タイプでは、null確認が必要なタイプとnull確認が要らないタイプを区別するために、nullableタイプを使用する言語もあります。nullを区別する必要がある変数とそうでない変数を区別し、nullを持たないタイプはnullチェックを考慮しなく使用できるようにします。phpでも他の言語との類似性を考慮して、未割り当て値をnullより、空の値として使用し、必要な場合にのみnullタイプを追加して使用しましょう。
 
+#### 센티널 값을 이용한 코드의 예시
+#### センチネル値を利用したコードの例
+```php
+class AddToCart
+{
+    private const NOT_VALID_TOTAL_PRICE_MAX_VALUE = -1;
+    private const NOT_VALID_QUANTITY_MAX_VALUE = 0;
+
+    public function __construct(
+        private int $price,
+        private int $quantity = self::NOT_VALID_QUANTITY_MAX_VALUE
+    ) {
+        assert($price >= 0, 'price cannot be negative.');
+        assert($quantity >= 0, 'quantity cannot be negative.');
+    }
+
+    public function addAmount(int $quantity): self
+    {
+        $result = $this->quantity + $quantity;
+        if ($result >= self::NOT_VALID_TOTAL_PRICE_MAX_VALUE) {
+            $this->quantity = $result;
+        } else {
+            throw new Exception('quantity cannot be negative.');
+        }
+        
+        return $this;
+    }
+
+    public function discountPerItem(int $price): self
+    {
+        $result = $this->price - $price;
+        if ($result >= self::NOT_VALID_TOTAL_PRICE_MAX_VALUE) {
+            $this->price = $result;
+        } else {
+            throw new Exception('price cannot be negative.');
+        }
+
+        return $this;
+    }
+
+    public function totalPrice(): ?int
+    {
+    	if($this->canBuy()) {
+            return $this->price * $this->quantity;	
+    	} else {
+            throw new Exception('cannot purchase it.');
+    	}
+    }
+    
+    private function canBuy(): bool
+    {
+        return $this->quantity > self::NOT_VALID_QUANTITY_MAX_VALUE;
+    }
+}
+
+var_dump((new AddToCart(price: 1000, quantity: 3))->totalPrice()); // 3000
+var_dump((new AddToCart(price: 1000, quantity: 3))->discountPerItem(200)->totalPrice()); // 2400
+var_dump((new AddToCart(price: 0, quantity: 3))->totalPrice()); // 0
+var_dump((new AddToCart(price: 1000, quantity: 0))->totalPrice()); // Exception: cannot purchase it.
+var_dump((new AddToCart(price: 1000, quantity: 3))->addAmount(-3)->totalPrice()); // Exception: cannot purchase it.
+```
+- 많은 정적 타입의 언어가 하나의 타입만을 가지기 때문에 `$quantity` 멤버의 센티널 값으로 `private const NOT_VALID_QUANTITY_MAX_VALUE = 0`을 적어 주었다. 이 값 이하가 되는 경우 유효하지 않은 값임을 알 수 있다. 하지만 php는 여러 타입의 값을 가질 수 있고, null을 병용하면 nullable 연산자를 활용해서 코드를 간략히 나타낼 수도 있다. 또한 코드를 개발할 때 할당된 타입과 다른 null값을 통해서 타입에러를 통한 비할당을 확인할 수도 있다. 이런 여러가지 이점 때문에 센티널 값 보다는 null을 사용해서 비할당을 나타내는 편이 여러 측면에서 좋다.
+- 多くの静的型付け言語は単一の型しか持たないため、`$quantity`メンバーのセンチネル値(sentinel value)として`private const NOT_VALID_QUANTITY_MAX_VALUE = 0`を設定しました。この値以下の場合、無効な値であることがわかります。しかし、phpは複数の型を持つことができ、nullを使用することで、nullable演算子(??, ??=)を活用してコードを簡潔に表現できます。また、開発時に割り当てられた型と異なるnull値を通じて、型エラーによる未割り当てを確認することも可能です。このような多くの利点から、センチネル値よりもnullを使用して未割り当てを示す方が、さまざまな観点から良いです。
+
 ### 내장 함수의 null 인자 제한
 ### 組み込み関数のnull因子の制限
 - '내장 함수의 null 비허용 인자에 null을 전달하는 것을 권장하지 않음' [Deprecate passing null to non-nullable arguments of internal functions](https://wiki.php.net/rfc/deprecate_null_to_scalar_internal_arg)라는 RFC를 보면 내장함수의 인자에 null 타입을 명시적으로 전달하는 사양이 아니라면 null 값을 인자로 사용할 수 없게 바뀐다고 한다.
