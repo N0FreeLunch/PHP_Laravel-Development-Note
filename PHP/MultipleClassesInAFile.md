@@ -1,13 +1,41 @@
+## CGI로 발생하는 PHP의 문제
+
+PHP는 기본적으로 CGI 환경에서 실행된다. CGI 방식은 리퀘스트가 요청 되었을 때 PHP 파서 프로세스를 실행하여 코드를 실행하는 것을 의미한다. 요청당 프로세스의 실행이기 때문에 한 번에 많은 PHP 코드를 실행하게 되면 코드를 메모리에 올리는 과정에 시간이 들기 때문에 느려지게 된다. PHP의 속도를 빠르게 하기 위해서는 하나의 프로세스가 여러 리퀘스트를 처리하게 CGI 방식을 사용하지 않는 방식을 쓰거나, CGI를 사용할 때는 PHP 코드를 가능한 적게 실행되도록 만들 필요가 있다. 하지만 PHP는 속도 보다는 빠르게 비즈니스 문제를 해결하기 위한 용도로 사용하는 언어이다. 속도도 중요하지만, 이해하기 쉽고, 관심사가 잘 분리 되어 있어서 변경하기 쉬운 코드가 되어야 한다. 따라서 코드를 적게 쓰기 보다는 코드양이 늘어나더라도 여러 파일에 잘 나눠진 코드를 쓰는 편이 낫다. 그런데 이렇게 되면 하나의 리퀘스트에 너무 많은 코드를 실행한다는 문제점이 존재한다. 그래서 코드의 실행을 최소화 하기 위해서 처리에 필요한 파일만을 로딩하는 방식을 사용한다.
+
+## 파일 가져오기는 컴파일 타임에 실행된다.
+
+> Importing is performed at compile-time, and so does not affect dynamic class, function or constant names. <sup>[doc](https://www.php.net/manual/en/language.namespaces.importing.php#example-300)</sup>
+
+파일에 대한 가져오기가 컴파일 타임에 이뤄진다는 것은, 네임스페이스로 연결된 모든 파일을 컴파일 타임에 사전 로딩한다는 것을 의미한다. 하지만 코드의 실행은 런타임에 이뤄지기 때문에 소스코드를 사전 컴파일한다고 해서 소스 코드를 실행하는 것은 아니다. 네임스페이스가 정의된 모든 파일을 사전 컴파일 하지만, 실제 코드의 실행은 런타임에 이뤄지고 런타임에 실행되지 않으면 컴파일 타임에 파일 데이터를 불러왔더라도 해당 파일의 소스코드를 런타임 동작으로 실행하지는 않는다는 의미를 가진다.
+
+## PSR-1
+
+### 사이드 이펙트
+
+> Files SHOULD either declare symbols (classes, functions, constants, etc.) or cause side-effects (e.g. generate output, change .ini settings, etc.) but SHOULD NOT do both.
+
+'파일들은 심볼을 선언하거나 사이드이펙트를 발생시키는 것 둘 중 하나여야 한다.'라는 부분이 있다. 어떤 함수나 클래스를 하나의 마일에 선언하고 이를 사용한 코드를 많은 예제에서 다루지만, 프로덕션에서 사용하는 프로젝트에서는 테스트 코드를 작성하는 것과 같은 특별한 경우를 제외하고는 하나의 파일에 정의 및 사용을 하지 않고, 별도의 파일로 분리해서 사용하는 것이 표준적인 방법이다.
+
+> A file SHOULD declare new symbols (classes, functions, constants, etc.) and cause no other side effects, or it SHOULD execute logic with side effects, but SHOULD NOT do both.
+
+> The phrase "side effects" means execution of logic not directly related to declaring classes, functions, constants, etc., merely from including the file.
+
+> "Side effects" include but are not limited to: generating output, explicit use of require or include, connecting to external services, modifying ini settings, emitting errors or exceptions, modifying global or static variables, reading from or writing to a file, and so on.
+
+> The following is an example of a file with both declarations and side effects; i.e, an example of what to avoid:
+
 ## 네임스페이스
 - PHP는 네임스페이스를 사용하여 클래스, 인터페이스, 함수 및 상수를 네임스페이스로 그룹화할 수 있다. PHP 오토로드 함수(spl_autoload_register)를 사용하면, 네임스페이스와 경로가 매핑되어 파일들을 자동으로 로드할 수 있다.
 - PSR-4 표준에 따르면, 네임스페이스와 파일 시스템 경로는 일치해야 하며, 각 클래스는 해당 네임스페이스와 경로에 맞는 파일에 정의되어야 한다.
 - 하나의 파일에는 하나의 클래스를 정의하는 것이 일반적이며, 파일 이름은 클래스 이름과 일치해야 한다. 클래스 정의는 파일 내 어디에나 위치할 수 있다. 그러나 파일 구조를 깔끔하게 유지하는 것이 권장된다.
 
 ## 한 파일안에 여러 클래스
-- 네임스페이스를 사용하지 않는 php 파일의 경우 한 파일에 여러 클래스를 쓰는 것은 일반적이다. 네임스페이스를 쓰게 되면 다른 파일에서 네임스페이스로 부를 수 있는 클래스는 하나이다. 따라서 네임스페이스를 쓰는 php 파일 안에 여러 클래스가 들어 있는 경우는 다른 파일에서 네임스페이스로 불러오는 대상이 되는 클래스 내부에서 사용할 클래스를 추가할 때 사용한다.
+
+네임스페이스를 사용하지 않는 php 파일의 경우 한 파일에 여러 클래스를 쓰는 것은 일반적이다. 네임스페이스를 쓰게 되면 다른 파일에서 네임스페이스로 부를 수 있는 클래스는 하나이다. 따라서 네임스페이스를 쓰는 php 파일 안에 여러 클래스가 들어 있는 경우는 다른 파일에서 네임스페이스로 불러오는 대상이 되는 클래스 내부에서 사용할 클래스를 추가할 때 사용한다.
 
 ## php 문법의 한계
-- php는 클래스의 단위로 상수(`const`), `final`, 멤버 변수의 타입 설정(typed memeber variable), 접근 제어자(access modifier) 등을 사용할 수 있지만, 다른 코컬 스코프에서 이들 키워드를 사용할 수 없다. 전역 상수로 `const`는 지원하지만 함수, 메소드 등과 같은 로컬 스코프에서는 사용할 수 없다는 단점이 있다.
+
+php는 클래스의 단위로 상수(`const`), `final`, 멤버 변수의 타입 설정(typed memeber variable), 접근 제어자(access modifier) 등을 사용할 수 있지만, 다른 로컬 스코프에서 이들 키워드를 사용할 수 없다. 전역 상수로 `const`는 지원하지만 함수, 메소드 등과 같은 로컬 스코프에서는 사용할 수 없다는 단점이 있다.
 
 ## PSR 살펴보기
 - PSR-1의 `Namespaces and classes MUST follow an "autoloading" PSR: [PSR-0, PSR-4].`라는 설명에 따라 클래스와 네임스페이스는 반드시 `PSR: [PSR-0, PSR-4]`를 따라 오토로딩 될 수 있어야 한다.
