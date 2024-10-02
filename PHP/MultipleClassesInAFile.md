@@ -8,21 +8,52 @@ PHP는 기본적으로 CGI 환경에서 실행된다. CGI 방식은 리퀘스트
 
 파일에 대한 가져오기가 컴파일 타임에 이뤄진다는 것은, 네임스페이스로 연결된 모든 파일을 컴파일 타임에 사전 로딩한다는 것을 의미한다. 하지만 코드의 실행은 런타임에 이뤄지기 때문에 소스코드를 사전 컴파일한다고 해서 소스 코드를 실행하는 것은 아니다. 네임스페이스가 정의된 모든 파일을 사전 컴파일 하지만, 실제 코드의 실행은 런타임에 이뤄지고 런타임에 실행되지 않으면 컴파일 타임에 파일 데이터를 불러왔더라도 해당 파일의 소스코드를 런타임 동작으로 실행하지는 않는다는 의미를 가진다.
 
-## PSR-1
+## 하나의 파일에는 하나의 심볼만 갖는 이유
 
-### 사이드 이펙트
+심볼이란 함수, 클래스, 추상클래스, 인터페이스, 이넘 등의 한 단위의 문법을 뜻한다. 대부분의 언어에서 하나의 파일에 하나의 심볼을 가지는 코딩 스타일을 좋은 것으로 여긴다. php에서는 PSR-4에서 엄격하게 하나의 파일은 하나의 심볼을 가진다고 명시해 두었다. 이런 이유가 있는데, 만약 하나의 파일에서 여러 심볼이 export 된다고 하자. 여러개의 export 중에서 하나의 심볼만을 이용하고 싶은데, CGI 환경에서 실행되는 php는 하나의 심볼을 가져오기 위해서 해당 심볼이 들어 있는 파일 전체를 읽어야 한다. 곧, 사용하지 않을 코드가 들어 있는 부분을 사용할 코드와 같은 파일에 있다는 이유로 읽어야 하는 것이다. 이는 php의 실행속도를 느리게 하므로 export 되는 php의 경우 하나의 심볼만을 가지도록 코딩 표준으로 정한 것이다.
+
+## PSR 살펴보기
+
+### PSR-1
+
+#### 사이드 이펙트
 
 > Files SHOULD either declare symbols (classes, functions, constants, etc.) or cause side-effects (e.g. generate output, change .ini settings, etc.) but SHOULD NOT do both.
 
-'파일들은 심볼을 선언하거나 사이드이펙트를 발생시키는 것 둘 중 하나여야 한다.'라는 부분이 있다. 어떤 함수나 클래스를 하나의 마일에 선언하고 이를 사용한 코드를 많은 예제에서 다루지만, 프로덕션에서 사용하는 프로젝트에서는 테스트 코드를 작성하는 것과 같은 특별한 경우를 제외하고는 하나의 파일에 정의 및 사용을 하지 않고, 별도의 파일로 분리해서 사용하는 것이 표준적인 방법이다.
+'파일들은 심볼을 선언하거나 사이드이펙트를 발생시키는 것 둘 중 하나여야 한다.'라는 부분이 있다. 어떤 함수나 클래스를 하나의 파일에 선언하고 이를 사용한 코드를 많은 예제에서 다루지만, 프로덕션에서 사용하는 프로젝트에서는 테스트 코드를 작성하는 것과 같은 특별한 경우를 제외하고는 하나의 파일에 정의 및 사용을 하지 않고, 별도의 파일로 분리해서 사용하는 것이 표준적인 방법이다.
 
 > A file SHOULD declare new symbols (classes, functions, constants, etc.) and cause no other side effects, or it SHOULD execute logic with side effects, but SHOULD NOT do both.
 
+하나의 파일에는 심볼들만 있고 사이드 이펙트는 존재하지 않아야 하며 또는 사이드 이펙트가 있는 로직을 실행해야 한다. 둘 모두를 사용해서는 안 된다.
+
 > The phrase "side effects" means execution of logic not directly related to declaring classes, functions, constants, etc., merely from including the file.
+
+사이드 이펙트라는 것은 클래스, 함수, 상수 등을 선언하는 것과 직접적으로 연관되지 않은 것으로 그저 파일에 포함되어 있는 것이다.
 
 > "Side effects" include but are not limited to: generating output, explicit use of require or include, connecting to external services, modifying ini settings, emitting errors or exceptions, modifying global or static variables, reading from or writing to a file, and so on.
 
+사이드 이펙트는 다음을 포함하지만 제한되지 않는다. 결과를 생성하는 것, 명시적인 require 또는 include의 사용, 외부 서비스 연결, ini 설정 변경, 오류 또는 예외 발생, 전역 변수 또는 정적 변수 변경, 파일의 읽기 또는 쓰기 등이 있다.
+
 > The following is an example of a file with both declarations and side effects; i.e, an example of what to avoid:
+
+다음 예제는 하나의 파일에 선언과 사이드이펙트 모두를 가진 예제이다. 이 예는 피해야 할 대상이다.
+
+```php
+// side effect: change ini settings
+ini_set('error_reporting', E_ALL);
+
+// side effect: loads a file
+include "file.php";
+
+// side effect: generates output
+echo "<html>\n";
+
+// declaration
+function foo()
+{
+    // function body
+}
+```
 
 ## 네임스페이스
 - PHP는 네임스페이스를 사용하여 클래스, 인터페이스, 함수 및 상수를 네임스페이스로 그룹화할 수 있다. PHP 오토로드 함수(spl_autoload_register)를 사용하면, 네임스페이스와 경로가 매핑되어 파일들을 자동으로 로드할 수 있다.
