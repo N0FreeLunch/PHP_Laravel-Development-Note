@@ -545,7 +545,4 @@ UTF-8やSJISなどのマルチバイトエンコーディングの文字列が�
 悟りのある者の心は知識を得、知恵のある者の耳は知識を求める。
 
 ## References
-- https://www.php.net/manual/en/function.fopen.php
-- https://stackoverflow.com/questions/5249279/file-get-contents-php-fatal-error-allowed-memory-exhausted
 - https://en.wikipedia.org/wiki/Byte
-- https://www.php.net/manual/en/xml.encoding.php
