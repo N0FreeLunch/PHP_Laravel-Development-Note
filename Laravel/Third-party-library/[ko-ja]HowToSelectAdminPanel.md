@@ -27,7 +27,7 @@
 - https://voyager.devdojo.com/
 - https://backpackforlaravel.com/
 - https://adminlte.io/
-- https://laravel-admin.org/docs/en/
+- https://craftable.pro/
 
 ## 본론
 ## 本論
