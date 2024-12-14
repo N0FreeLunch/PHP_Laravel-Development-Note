@@ -32,13 +32,28 @@
 - 언어의 기능은 정적 분석을 사용할 수 없는 또는 사용하지 않는 정적 분석 툴을 다루는 수준이 아닌 사람들도 충분히 다룰 수 있어야 하므로 언어 차원에서 변수 안에 든 문자열이 신뢰할 수 있는 것인지 없는 것인지 판단할 수 있는 기능을 제공하는 것이 옳다고 주장하고 있다.
 
 ### 독선적인 코딩 스타일의 정적 분석
+
 #### [Readonly properties should be assignable outside the constructor](https://github.com/phpstan/phpstan/issues/6562)
-- phpstan은 readonly 속성에 대해서 생성자에서만 초기화하도록 강제하고 있다. 하지만, php 언어의 사양으로는 생성자에서의 초기화 뿐만 아니라 setter를 통한 외부에서의 초기화도 허용 가능한 사양으로 되어 있다.
-- 예를 들어 프레임워크에 의한 생성자 주입을 하게 되면, 생성자에 대한 권한을 프레임워크에 빼앗기게 되어 객체 내부의 readonly 속성을 생성자에서 초기화할 수 없는 문제가 있을 수 있다. 이를 위해서 setter를 사용한 readonly 속성 초기화를 사용하는 경우가 있을 수 있다.
-- 위 issue의 내용을 보면 readonly 속성에 값을 할당하는 것은 생성자에서만 초기화 하지 않는 다양한 코딩 방식을 생각할 수 있음에도 불구하고, phpstan의 작성자는 생성자를 사용한 초기화가 아닌 경우에는 정적 분석의 오류로 보고하는 것을 기본적으로 설정하는 것이 대체로 올바른 코딩스타일이라고 판단하고 있다. 만약 예외를 허용하려고 한다면, 주석을 통해 phpstan의 감지를 무시하거나, phpstan의 설정을 통해 오해당 오류 메시지를 무시하는 ignore 필터를 작성하라고 조언하며 정적 분석 툴의 공식적인 오류 보고의 제외 사항으로는 생각하고 있지 않은 것을 알 수 있다.
-- php에는 다양한 코딩 스타일이 존재할 수 있지만, 정적 분석은 php의 다양한 코딩 스타일을 일부 제약하는 역할을 하기도 한다. 그리고 해당 제약이 대체로 옳다고 생각되는 방향일 수는 있지만 절대적으로 옳은 방향이 아닐 수도 있다.
+
+phpstan은 readonly 속성에 대해서 생성자에서만 초기화하도록 강제하고 있다. 하지만, php 언어의 사양으로는 생성자에서의 초기화 뿐만 아니라 setter를 통한 외부에서의 초기화도 허용 가능한 사양으로 되어 있다.
+
+실제로 php의 readonly는 처음에 write-once의 속성으로 논의 되었다. [to allow the initialization of object properties after object construction. ... As soon as initialization is done, any other attempt to assign a value to “write-once” properties results in an exception.](https://wiki.php.net/rfc/write_once_properties)으로 객체 생성이후에 프로퍼티를 초기화 할 수 있도록 하며, 한 번 프로퍼티가 할당이 된 이후에는 더 이상 할당할 수 없게 만드는 목적을 가지고 만들어졌다. 그리고 이 속성에 대한 제안이 이뤄진 후 후에 readonly로 키워드명이 바뀌었다.
+
+phpstan의 위의 issue의 내용을 보면 readonly 속성에 값을 할당하는 것은 생성자에서만 초기화 하지 않는 방식의 코딩 스타일을 생각할 수 있음에도 불구하고, phpstan의 작성자는 생성자를 사용한 초기화가 아닌 경우에는 정적 분석의 오류로 보고하는 것을 기본적으로 설정하는 것이 대체로 올바른 코딩스타일이라고 판단하고 있다. 이는 C#의 readonly가 생성자에서만 초기화 할 수 있는 속성이라는 특성에 기인하는 것으로 보인다. 하지만 동일한 이름의 키워드라도 php에서의 도입 의도와 C#의 도입 의도가 다르기 때문에 C#을 기준으로 판단하는 것은 적절하지 않다고 본다. 
+
+php와 C#의 readonly의 차이에 대한 설명으로 php에서 xdebug를 만든 [Derick Rethans의 인터뷰](https://derickrethans.nl/phpinternalsnews-44.html)는 다음과 같이 말한다.
+> Write Once Properties can only be initialised, but not modified afterwards. So you can either define a default value for them, or assign them a value, but you can't modify them later. So any other attempts to modify, unset, increment, or decrements them, would cause an exception to be thrown. Basically, this RFC would bring Java's final properties, or C#'s, read only properties to PHP. However, contrary how these languages work, this RFC would allow lazy initialization. It means that these properties don't necessarily have to be initialised until the object construction ends, so you can do that later in the object's life cycle.
+
+객체가 생성된 이후 프로퍼티를 초기화 하는 것을 지연 초기화라고 하는데, php의 readonly는 프로퍼티의 지연 초기화를 지원하지만, C#의 readonly는 프로퍼티의 지연 초기화를 지원하지 않는다.
+
+정적 분석 툴을 통해서 클래스를 객체로 사용할 때, 프로퍼티의 값을 할당하지 않았다면, 프로퍼티에 접근하는 코드를 사용할 수 없도록 만드는 것이 불가능하지는 않을텐데 이렇게 만들어 놓은 것은 올바른 readonly의 사용에 대한 논쟁을 초래할 수 있고 [issue](https://github.com/phpstan/phpstan/issues/6562)에서 주장하고 있다. 이에 대한 phpstan의 개발자는 만약 예외를 허용하려고 한다면, 주석을 통해 phpstan의 감지를 무시하거나, phpstan의 설정을 통해 오해당 오류 메시지를 무시하는 ignore 필터를 작성하라고 조언하며 정적 분석 툴의 공식적인 오류 보고의 제외 사항으로는 생각하고 있지 않은 것을 알 수 있다.
+
+readonly의 지연 초기화를 정적 분석에서 지원하지 않는 것이 문제가 되는 이유는 다양한 프레임워크와 라이브러리가 지연 초기화를 활용하고 있기 때문이며, 지연 초기화를 사용하는 것이 때때로 유리할 수 있기 때문이다. 객체 생성 이후에 프로퍼티를 할당하고 readonly 속성을 통해 할당한 프로퍼티를 바꿀 수 없도록 하여, 이미 할당이 되었은데, 이를 감지하지 못하고 다시 할당하는 실수를 할 수 있다. readonly 프로퍼티로 지연 초기화를 하면 이런 실수를 줄일 수 있기 때문에 유용하다.
+
+php에는 다양한 코딩 스타일이 존재할 수 있지만, 정적 분석은 php의 다양한 코딩 스타일의 일부를 제약하는 역할을 하기도 한다. 그리고 해당 제약이 대체로 옳다고 생각되는 방향일 수는 있지만 절대적으로 옳은 방향은 아닐 수도 있다.
 
 #### 런타임에서만 알 수 있는 지식을 알지못한다.
+
 - https://phpstan.org/writing-php-code/solving-undefined-variables
 ```php
 function getUserStatusColor(User $user): srting
@@ -82,5 +97,3 @@ function getUserStatusColor(User $user): srting
 
 ### 정적 분석의 코드 스타일에 맞춰야 하는가?
 - 정적 분석 도구의 장점은 직접 실행하지 않고도 버그 또는 에러가 발생할 수 있어 보이는 코드를 탐지한다는 것이다. 이런 탐지를 위해서 php 코딩으로 가능한 표현 방식의 일부를 제한한다. 대체로 정적 분석이 알려주는 코딩 스타일을 지키는 것은 좋지만, 프레임워크, 아키텍처, 각 프로젝트의 코딩 스타일의 제약사항으로 인해 항상 정적 분석이 제시하는 방식을 따를 수 있는 것은 아니다.
-
-
