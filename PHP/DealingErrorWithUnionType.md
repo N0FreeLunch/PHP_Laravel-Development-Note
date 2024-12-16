@@ -42,3 +42,4 @@ public function someFunction(): void
 
 ## References
 - https://www.reddit.com/r/PHP/comments/1dhxz9o/is_exceptionbased_control_flow_considered_bad
+- https://www.reddit.com/r/PHP/comments/1he599f/php8s_union_types_a_great_way_to_communicate/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
