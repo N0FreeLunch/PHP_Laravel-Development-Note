@@ -1,9 +1,11 @@
-## 스코프란?
-- 스코프란 변수가 동작하는 유효 범위를 의미한다.
+# 스코프란?
 
-### php에서 스코프
-- php에서 스코프는 함수 내부를 스코프로 한다.
-- `function () { }`에서 중괄호 안이 스코프의 범위이다.
+스코프란 변수가 동작하는 유효 범위를 의미한다.
+
+## php에서 스코프
+
+php에서 스코프는 함수 내부를 스코프로 한다. `function () { }`에서 중괄호 안이 스코프의 범위이다.
+
 ```php
 function () {
     echo "no variable";
@@ -11,20 +13,52 @@ function () {
     echo "variable has $variable";
 }
 ```
-- 위의 코드에서 `$variable`이란 변수의 스코프는 변수가 초기화 된 위치 `$variable = "value";` 부터 함수가 끝나는 `}`까지이다.
-- 코드의 실행에 따라 변수가 살아 있는 범위를 스코프라고 한다. 하지만 일반적으로 어떤 변수를 선언할 수 있고, 선언된 변수가 사라지는 코드 실행 지점까지인 함수의 괄호 `{}`를 스코프라고 부른다.
 
-### 상위 스코프의 변수 차단
-- 많은 언어에서 함수의 스코프는 상위 스코프의 변수를 차단한다.
+위의 코드에서 `$variable`이란 변수의 스코프는 변수가 초기화 된 위치 `$variable = "value";` 부터 함수가 끝나는 `}`까지이다. `{}` 안에서 선언된 `$variable` 변수는 `{}` 밖에서는 존재하지 않는 변수가 된다. 변수가 선언된 부분에서 중괄호가 닫히는 부분까지가 변수의 유효범위이고 이 범위가 스코프에 해당한다.
+
+코드의 실행에 따라 변수가 살아 있는 범위를 스코프라고 한다. 하지만 일반적으로 어떤 변수를 선언할 수 있고, 선언된 변수가 사라지는 코드 실행 지점까지인 함수의 괄호 `{}`를 스코프라고 부른다.
+
+## 상위 스코프의 변수 차단
+
+많은 언어에서 함수의 스코프는 상위 스코프의 변수를 차단한다.
+
 ```php
 $outerVariable = 'outer variable';
 $writeOuterVariable = function () {
     echo "out of scope variable : ".$outerVariable;
 };
-$writeOuterVariable();
+$writeOuterVariable(); // Warning: Undefined variable $outerVariable
 ```
-- 위의 코드에서 함수 내에서는 함수 스코프 바깥의 변수에 접근을 할 수 없다.
-- 하지만 자바스크립트의 경우 상위 스코프의 변수를 하위 스코프에서 그대로 이용할 수 있다.
+
+위의 코드에서 함수 내에서는 함수 스코프 바깥의 변수에 접근을 할 수 없다. php8에서는 경고가 반환되고 echo 키워드에 의해 `$outerVariable`가 빈 문자열이 되어 `out of scope variable : `라는 출력이 된다. php9 부터는 정의되지 않은 변수의 경우 에러가 발생하고 echo 부분의 코드는 결과를 내지 못한채 종료된다.
+
+### 클로저
+
+php에서 함수의 타입으로 Closure를 사용할 수 있는데, 주로 함수를 매개 변수로 받거나 함수의 반환 값으로 함수를 반환할 때 타입힌트로 사용된다.
+
+```php
+$phpClosure = function(Closure $fnParam): Closure {
+	return function () use ($fnParam) {
+		$fnParam();
+	};
+};
+
+$returnedClosure = $phpClosure(function () {
+	echo "hello";
+});
+
+var_dump($returnedClosure); //
+
+$returnedClosure();
+```
+
+Closure 타입으로 선언된 파라메터에 `function () { echo "hello"; }` 함수가 전달된다.
+
+Closure 타입으로 선언된 반환 타입에 `function () use ($fnParam) { $fnParam(); }` 함수가 반환된다.
+
+반환된 클로저를 var_dump로 `var_dump($returnedClosure)` 부분에서 확인해 보면 `object(Closure)#3 (1) { ["static"]=> array(1) { ["fnParam"] => object(Closure)#2 (0) { } } }`가 된다. 함수는 Closure 타입을 주형으로 한 오브젝트를 반환하고, `use` 키워드로 캡쳐한 함수를 함수 내부에 스테틱 멤버로 저장을 하고 있는 것을 알 수 있다.
+
+하지만 자바스크립트의 경우 상위 스코프의 변수를 하위 스코프에서 그대로 이용할 수 있다.
 ```js
 const outerVariable = 'outer variable';
 const writeOuterVariable = function () {
