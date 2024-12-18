@@ -30,21 +30,50 @@ $writeOuterVariable = function () {
 $writeOuterVariable(); // Warning: Undefined variable $outerVariable
 ```
 
-위의 코드에서 함수 내에서는 함수 스코프 바깥의 변수에 접근을 할 수 없다. php8에서는 경고가 반환되고 echo 키워드에 의해 `$outerVariable`가 빈 문자열이 되어 `out of scope variable : `라는 출력이 된다. php9 부터는 정의되지 않은 변수의 경우 에러가 발생하고 echo 부분의 코드는 결과를 내지 못한채 종료된다.
+위의 코드에서 함수 내에서는 함수 스코프 바깥의 변수에 접근을 할 수 없다. php8에서는 경고가 반환되고 echo 키워드에 의해 `$outerVariable`가 빈 문자열이 되어 `out of scope variable : `라는 출력이 된다. php9 부터는 정의되지 않은 변수의 경우 에러가 발생하고 `echo` 부분의 코드는 결과를 내지 못한채 종료된다.
 
-### 클로저
+### 상위 스코프의 변수 사용하기
+
+php에서 스코프 밖의 변수를 사용하기 위해서는 `use`을 사용한다.
+
+```php
+$outerVariable = 'outer variable';
+$writeOuterVariable = function () use ($outerVariable) {
+    echo "out of scope variable : ".$outerVariable;
+};
+$writeOuterVariable();
+```
+
+`use`로 함수 스코프 밖의 변수 중에서 함수 스코프 안에서 사용할 변수를 지정하면 함수 내에서 사용할 수 있다.
+
+php에서 상위 스코프의 변수를 함수에서 사용하기 위해서는 **익명함수**로 만들어 줘야한다. 기명함수는 `use` 키워드를 사용할 수 없기 때문에 상위 스코프의 변수를 사용할 수 없다.
+
+```php
+$outerVariable = 'outer variable';
+function writeOuterVariable() use ($outerVariable) {
+    echo "out of scope variable : ".$outerVariable;
+};
+
+writeOuterVariable();
+```
+
+`writeOuterVariable`는 위에서 기명함수이다. 기명함수에 `use` 키워드로 외부 변수를 캡쳐하는 것은 에러를 반환한다.
+
+## 클로저
+
+### php에서 클로저
 
 php에서 함수의 타입으로 Closure를 사용할 수 있는데, 주로 함수를 매개 변수로 받거나 함수의 반환 값으로 함수를 반환할 때 타입힌트로 사용된다.
 
 ```php
 $phpClosure = function(Closure $fnParam): Closure {
-	return function () use ($fnParam) {
-		$fnParam();
-	};
+    return function () use ($fnParam) {
+        $fnParam();
+    };
 };
 
 $returnedClosure = $phpClosure(function () {
-	echo "hello";
+    echo "hello";
 });
 
 var_dump($returnedClosure); //
@@ -58,7 +87,24 @@ Closure 타입으로 선언된 반환 타입에 `function () use ($fnParam) { $f
 
 반환된 클로저를 var_dump로 `var_dump($returnedClosure)` 부분에서 확인해 보면 `object(Closure)#3 (1) { ["static"]=> array(1) { ["fnParam"] => object(Closure)#2 (0) { } } }`가 된다. 함수는 Closure 타입을 주형으로 한 오브젝트를 반환하고, `use` 키워드로 캡쳐한 함수를 함수 내부에 스테틱 멤버로 저장을 하고 있는 것을 알 수 있다.
 
-하지만 자바스크립트의 경우 상위 스코프의 변수를 하위 스코프에서 그대로 이용할 수 있다.
+### 일반적인 의미에서의 클로저
+
+일반적으로 다른 언어에서 클로저(closure)라고 하는 것은 함수가 외부의 변수를 캡쳐 하는 것이다. php에서 함수에 `use` 키워드로 외부 변수를 내부에서 이용할 수 있도록 하는 것이 클로저이다.
+
+```php
+$phpClosure = function(Closure $fnParam): Closure {
+    return function () use ($fnParam) {
+        $fnParam();
+    };
+};
+```
+
+반환 함수 내부에서 사용하기 위해서 외부의 변수를 가져오는 것을 캡쳐라고 한다. 위 예에서 `$fnParam` 변수는 반환 함수에 캡쳐된다. 이를 다른 언어에서 클로저라고 부르는 것이다.
+
+### 자바스크립트에서 클로저
+
+php에서 함수에 `use` 키워드로 함수 밖의 변수를 캡쳐해야 함수 내부에서 외부 변수를 사용할 수 있는 것에 반해 자바스크립트의 경우 마치 자동으로 캡쳐링되는 것 처럼 상위 스코프의 변수를 하위 스코프에서 그대로 이용할 수 있다는 특징이 있다.
+
 ```js
 const outerVariable = 'outer variable';
 const writeOuterVariable = function () {
@@ -67,17 +113,7 @@ const writeOuterVariable = function () {
 writeOuterVariable();
 ```
 
-### 상위 스코프의 변수 사용하기
-- php에서 스코프 밖의 변수를 사용하기 위해서는 `use`을 사용한다.
-```php
-$outerVariable = 'outer variable';
-$writeOuterVariable = function () use ($outerVariable) {
-    echo "out of scope variable : ".$outerVariable;
-};
-$writeOuterVariable();
-```
-- `use`로 함수 스코프 밖의 변수 중에서 함수 스코프 안에서 사용할 변수를 지정하면 함수 내에서 사용할 수 있다.
-- php에서 상위 스코프의 변수를 함수에서 사용하기 위해서는 **익명함수**로 만들어 줘야한다. 기명함수는 `use` 키워드를 사용할 수 없기 때문에 상위 스코프의 변수를 사용할 수 없다.
+`writeOuterVariable` 변수에 저장된 익명 함수 내부의 `outerVariable`는 특별히 외부의 변수를 캡쳐하지 않았지만, 외부의 변수에 접근 가능하다.
 
 ### 익명함수와 기명함수
 - php에는 익명 함수와 기명함수가 있다. 익명 함수는 `function() {}`의 형태를 갖고 있으며, 기명함수는 `function name() {}`의 형태를 갖고 있다.
