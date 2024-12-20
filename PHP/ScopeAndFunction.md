@@ -177,6 +177,26 @@ namedFn();
 
 기명 함수명을 키워드로 하여 기명함수를 호출할 수도 있지만, 문자열에 `()`를 붙여주는 것을 통해서 기명함수를 호출할 수 있다.
 
+#### 기명함수의 타입힌트
+
+```php
+function namedFn() {
+    echo "hello";
+};
+
+function callFn(Callable $fn) {
+	var_dump($fn);
+    $fn();
+}
+
+callFn('namedFn');
+callFn('undefinedNamedFn'); // Fatal error: Uncaught TypeError: callFn(): Argument #1 ($fn) must be of type callable, string given
+```
+
+`Callable` 타입힌트를 통해서 기명함수를 전달 받을 수 있다. 기명함수는 호출 가능한 객체인 `Closure`가 아니므로 `Closure` 타입으로 받을 수 없다. `Callable` 타입에는 기명함수 이름을 문자열로 전달하는데, 만약 존재하지 않는 기명함수라면 `must be of type callable, string given`라는 에러가 발생하며, 전달된 문자열을 문자열로 판별한다. 하지만 존재하는 기명함수라면 `Callable` 타입으로 전달이 되며, 전달된 후의 매개변수를 확인하면 문자열 타입이지만, 존재하는 기명함수 이름이므로 해당 문자열에 `()`를 붙여 기명 함수를 호출할 수 있다.
+
+`Callable`타입의 하위 타입이 `Closure` 타입이므로 `Callable` 타입은 기명함수, 익명함수 모두 받을 수 있지만, 하위 타입인 `Closure`는 좀 더 좁은 익명함수만 받을 수 있다.
+
 ### 익명 함수를 함수의 인자로 전달하기
 
 ```php
@@ -185,7 +205,7 @@ $anonymousFn = function () {
 };
 
 function callFn($fn) {
-    fn();
+    $fn();
 }
 
 callFn($anonymousFn);
