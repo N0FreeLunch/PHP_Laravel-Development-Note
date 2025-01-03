@@ -418,3 +418,32 @@ var_dump($result);
 ```
 
 `array_map`이라는 내장 함수는 `callable`이다. 이를 `Closure::fromCallable()`에 전달하여 `$map`이라는 익명함수를 얻는다.
+
+### `__invoke`가 있는 객체를 익명함수로 만들기
+
+```php
+$numbers = [1,2,3,4,5];
+
+class Map
+{
+    public function __invoke(array $array, Closure $closure)
+    {
+        return array_map($closure, $array);
+    }
+}
+
+$map = Closure::fromCallable(new Map);
+
+$result = $map($numbers, fn($v) => $v+3);
+
+var_dump($result);
+```
+
+클래스에 `__invoke` 메소드가 정의되어 있으면 인스턴스화 된 객체는 호출가능하다. 호출 가능한 객체의 타입은 주형 클래스를 따르며 Closure 객체의 상속은 불가능하므로 Closure 타입에 전달할 수 없다. 이를 Closure 타입에 전달하기 위해서는 Closure 타입으로 만들어 줘야한다. `Closure::fromCallable()`을 통해서 호출할 수 있는 객체를 Closure로 바꿀 수 있다. 앞서 생성된 Map을 Closure으로 바꾸면 Closure 타입이 된다는 것을 알 수 있다.
+
+```php
+var_dump($map instanceof Map); // false
+var_dump($map instanceof Closure); // true
+var_dump(is_a($map, 'Map')); // false
+var_dump(is_a($map, 'Closure')); // true
+```
