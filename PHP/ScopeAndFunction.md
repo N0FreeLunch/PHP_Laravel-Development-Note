@@ -78,7 +78,7 @@ $returnedClosure = $phpClosure(function () {
     echo "hello";
 });
 
-var_dump($returnedClosure); //
+var_dump($returnedClosure);
 
 $returnedClosure();
 ```
@@ -379,3 +379,42 @@ echo (fn($var) => "$hello $var")('world');
 
 `function() use () {}` 대신에 `fn() {}`을 사용하여 자바스크립트처럼 외부 스코프의 변수를 자동으로 캡쳐하는 기능을 제공하자는 [RFC](https://wiki.php.net/rfc/auto-capture-closure)
 가 제안 되었다. 투표로 다수의 동의는 얻었으나 아직 구현 예정이라는 소식은 없다. 간단히는 `fn` 키워드는 외부 변수를 자동으로 캡쳐링하는 기능을 제공한다고 보면 된다. [참고](https://stitcher.io/blog/why-we-need-multi-line-short-closures-in-php)
+
+## [Closure 클래스](https://www.php.net/manual/en/class.closure.php)
+
+php의 클로저 클래스에 대해 좀 더 이해해 보자.
+
+```php
+final class Closure {
+    /* Methods */
+    private __construct()
+    public static bind(Closure $closure, ?object $newThis, object|string|null $newScope = "static"): ?Closure
+    public bindTo(?object $newThis, object|string|null $newScope = "static"): ?Closure
+    public call(object $newThis, mixed ...$args): mixed
+    public static fromCallable(callable $callback): Closure
+}
+```
+
+클로저 클래스는 final 키워드로 정의되어 있으므로 상속을 할 수 없다. 곧, 사용자 정의 클래스로 익명함수를 만들 수 없다는 것을 의미한다. 또한 생성자의 접근 제한이 `private`이므로 `new` 키워드를 사용한 인스턴스화도 할 수 없다.
+
+앞서 익명함수를 `var_dump`로 확인해 보면 `object(Closure)#3 (1) { ["static"]=> array(1) { ["fnParam"] => object(Closure)#2 (0) { } } }`로 되어 있지만, 캡쳐한 대상을 클래스의 정적 멤버에 추가하는 등의 방식은 사용할 수 없다.
+
+클래스에 `__invoke` 메소드를 정의해서 인스턴스화 된 객체를 함수로 사용할 수는 있지만 이는 클로저 객체를 상속한 것이 아니고 상속할 방법이 있는 것도 아니므로 익명함수로 만들 수는 없다.
+
+### 콜러블을 익명함수로 바꾸기
+
+php의 내장함수 또는 기명함수는 호출할 수 있는 대상 callable으로 분류된다. 하지만 Closure 클래스 기반의 익명함수는 아니다. 타입 관계로는 Callable 클래스의 하위 타입이 Closure에 해당한다. 곧, callable 타입힌트에 Closure 타입의 값을 전달할 수 있다.
+
+Closure가 아닌 callable인 php의 내장함수 또는 기명함수를 익명함수로 바꿀 수 있는데 다음을 보자.
+
+```php
+$numbers = [1,2,3,4,5];
+
+$map = Closure::fromCallable('array_map');
+
+$result = $map(fn($v) => $v+5, $numbers);
+
+var_dump($result);
+```
+
+`array_map`이라는 내장 함수는 `callable`이다. 이를 `Closure::fromCallable()`에 전달하여 `$map`이라는 익명함수를 얻는다.
