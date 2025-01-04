@@ -298,16 +298,34 @@ php에서는 타입힌트로 사용하고자 하는 타입의 내부 타입을 �
 
 여러 타입을 갖는 변수에서 일부의 타입만을 사용하는 경우 `assert`를 통해서 타입의 범위를 좁힐 수 있다.
 
-```
+```php
+declare(strict_types = 1);
+
 class TypeNarrowing
 {
-    public static int|string $numeric;
+    public int|string $numeric;
 }
 
+function addOne(int $value): int {
+    return $value + 1;
+}
+
+$list = [100, '100'];
+
 $obj = (new TypeNarrowing);
-$obj->numeric = 100;
+$obj->numeric = $list[rand(0,1)];
+
+// assert(is_int($obj->numeric));
+
+$result = addOne($obj->numeric);
+var_dump($result);
 ```
 
+`TypeNarrowing`의 멤버 변수 `$numeric`는 int 또는 string 타입을 가진다. `$obj->numeric` 코드에서 위의 코드만 보고서는 `100`이 할당될지, `'100'`이 할당될지 알 수 없다. `addOne` 함수는 `int` 타입만을 받는데 문자열 타입이 전달되면 에러가 발생한다. 이 때문에 IDE에 의한 정적 분석 또는 정적 분석 툴에 의해 `addOne($obj->numeric)`부분에 `int` 뿐만 아닌 `string`을 전달할 수 있는데 `addOne`은 `int` 타입만을 받기 때문에 정적 분석의 에러가 발생한다.
+
+php에서 IDE에 의한 정적 분석 또는 정적 분석 툴에 의한 타입 체크를 하고 있다면, `$obj->numeric`에는 여러 타입을 가질 수 있더라도 현재의 코드 맥락에서는 특정 타입만을 사용한다고 `assert`로 정적 분석 도구에 사용할 타입을 알려주는 것을 통해서 정적 분석 도구에 의해 에러가 발생하는 부분을 방지할 수 있다. 이는 타입스크립트의 Type narrowing 키워드인 `as`와 비슷한 역할을 한다.
+
+위의 코드에서 `assert(is_int($obj->numeric))` 부분의 주석을 해제하면 `$obj->numeric`의 타입은 `int|string`이지만 `int`로 인식되기 때문에 정적 분석에 의한 에러가 나지 않게 만들 수 있다.
 
 ### 정적 분석과 assert
 
