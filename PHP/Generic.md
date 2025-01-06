@@ -339,7 +339,7 @@ $list = [100, '100'];
 $obj = (new TypeNarrowing);
 $obj->numeric = $list[rand(0,1)];
 
-// assert(is_int($obj->numeric));
+assert(is_int($obj->numeric));
 
 $result = addOne($obj->numeric);
 var_dump($result);
@@ -354,6 +354,8 @@ php에서 IDE에 의한 정적 분석 또는 정적 분석 툴에 의한 타입 
 위의 코드에서 `assert(is_int($obj->numeric))` 부분의 주석을 해제하면 `$obj->numeric`의 타입은 `int|string`이지만 `int`로 인식되기 때문에 정적 분석에 의한 지적을 피할 수 있다.
 
 ### 정적 분석과 assert
+
+php에 제네릭이 없어 유니온 타입이나 mixed를 사용하는 경우, 값을 전달하거나 뽑아 쓸 때 유니온 타입이나 mixed 타입에 대한 처리를 할 수 있는 모든 코드를 작성하는 것은 적절하지 않다. 그렇다고 해서 유니온 타입이나 mixed 타입으로 전달받은 결과 값이 가질 수 있는 타입 중에서 일부 타입에 대해서만 성립하는 코드를 짜게 되면 정적 분석에 의한 지적이 생긴다. 이 때 `assert`로 타입을 사용할 타입을 좁혀서 정적 분석에 의한 지적을 막을 수 있다.
 
 ```php
 declare(strict_types = 1);
@@ -402,7 +404,7 @@ array_walk($numberList, function ($v) use ($lifoString) {
 
 for($i=0; $i < count($numberList) ; $i++) {
     $output = $lifoString->pop();
-    // assert(is_int($output));
+    assert(is_int($output));
     echo $output;
 }
 ```
@@ -411,7 +413,11 @@ for($i=0; $i < count($numberList) ; $i++) {
 
 `assert(is_array($stringList))`, `assert(is_array($numberList))`는 알수 없는 타입의 값의 타입이 배열이라는 전제를 설정하여 정적 분석 도구로 하여금 `array_walk`에 의한 순회를 가능하게 한다.
 
-위의 코드에서 `echo $output;`의 코드를 사용할 때 값은 문자열로 형변환 되어 출력 된다. 값에 따라 문자열로 변환 될 수 있는 것이 있고 없는 것이 존재한다. phpstan의 정적 분석기로 위 코드를 실행해 보면 `$lifoString->pop();`의 반환 타입이 Mixed가 되어 있기 때문에 문자열로 변환 할 수 없는 값이 나올 수 있어 타입 에러가 발생한다. 그러나 `assert(is_int($output))`, `assert(is_string($output))`으로 타입의 전제조건을 설정하는 거슬 통해서 정적 분석에 의한 에러를 방지한다.
+배열 내부의 원소의 타입을 알 수는 없지만, `->push($v)` 전의 `assert(is_int($v))`, `assert(is_string($v))`를 통해서 사용하려는 타입과 다른 타입의 배열의 원소가 전달되는 경우를 제한할 수 있다.
+
+위의 코드에서 `echo $output;`의 코드를 사용할 때 값은 문자열로 형변환 되어 출력 된다. 값에 따라 문자열로 변환 될 수 있는 것이 있고 없는 것이 존재한다. phpstan의 정적 분석기로 위 코드를 실행해 보면 `$lifoString->pop();`의 반환 타입이 Mixed가 되어 있기 때문에 문자열로 변환 할 수 없는 값이 나올 수 있어 타입 에러가 발생한다. 그러나 `assert(is_int($output))`, `assert(is_string($output))`으로 `echo`로 출력할 수 있는 타입의 전제 조건을 설정하는 거슬 통해서 정적 분석에 의한 에러를 방지한다.
+
+이렇게 제네릭이 없어도 assert를 통한 타입을 좁히기로 제네릭 없이도 정적 분석을 만족하는 코드를 만들 수 있다.
 
 ### foreach문이 권장되지 않는 이유
 - php에서 foreach문을 사용할 때는 리스트에 든 각각의 값에 대해 타입 검증을 하지 않고 사용하는 경우가 많다. `is_타입` 또는 `instanceof`로 타입 검증을 할 수 있지만, 이러한 것으로 검증을 했을 때, IDE에 의한 자동완성이 되지 않는 경우가 있을 수 있으며 조건문으로 확인을 한다는 것이 문법적으로 맘에 드는 방법은 아니다. 그래서 코딩의 스타일을 `foreach`를 쓰는 것 보다는 콜백함수를 가능한 사용하는 방식으로 하여 타입힌트로 값을 검증하는 것이 좀 더 괜찮은 코딩 스타일이다.
