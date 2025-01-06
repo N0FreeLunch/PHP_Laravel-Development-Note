@@ -374,34 +374,44 @@ class Lifo
     }
 }
 
-$stringData = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+$stringList = json_decode(json_encode(range('a', 'i')) ?: '[]');
+
+assert(is_array($stringList));
 
 $lifoString = (new Lifo);
-array_walk($stringData, function (string $v) use ($lifoString) {
+array_walk($stringList, function ($v) use ($lifoString) {
+    assert(is_string($v));
     $lifoString->push($v);
 });
 
-for($i=0; $i < count($stringData) ; $i++) {
+for($i=0; $i < count($stringList) ; $i++) {
     $output = $lifoString->pop();
-    // assert(is_string($output));
+    assert(is_string($output));
     echo $output;
 }
 
-$numberData = [1,2,3,4,5,6,7,8,9,10];
+$numberList = json_decode(json_encode(range(1, 10)) ?: '[]');
+
+assert(is_array($numberList));
 
 $lifoInteger = (new Lifo);
-array_walk($numberData, function (int $v) use ($lifoString) {
+array_walk($numberList, function ($v) use ($lifoString) {
+    assert(is_int($v));
     $lifoString->push($v);
 });
 
-for($i=0; $i < count($stringData) ; $i++) {
+for($i=0; $i < count($numberList) ; $i++) {
     $output = $lifoString->pop();
     // assert(is_int($output));
     echo $output;
 }
 ```
 
-위의 코드에서 `echo $output;`의 코드를 사용할 때 값은 문자열로 형변환 되어 출력 된다. 값에 따라 문자열로 변환 될 수 있는 것이 있고 없는 것이 존재한다. phpstan의 정적 분석기로 위 코드를 실행해 보면 `$lifoString->pop();`의 반환 타입이 Mixed가 되어 있기 때문에 문자열로 변환 할 수 없는 값이 나올 수 있어 타입 에러가 발생한다. 그러나 `// assert(is_int($output));`의 주석을 풀어 assert로 반환 타입이 항상 특정한 타입이란 것을 알려 주면 타입 에러가 더 이상 발생하지 않는다.
+`json_decode(json_encode(range('a', 'i')) ?: '[]')`, `json_decode(json_encode(range(1, 10)) ?: '[]')`의 코드를 사용한 이유는 결과 값의 타입을 정적 분석 도구가 알 수 없게 하기 위해서이다.
+
+`assert(is_array($stringList))`, `assert(is_array($numberList))`는 알수 없는 타입의 값의 타입이 배열이라는 전제를 설정하여 정적 분석 도구로 하여금 `array_walk`에 의한 순회를 가능하게 한다.
+
+위의 코드에서 `echo $output;`의 코드를 사용할 때 값은 문자열로 형변환 되어 출력 된다. 값에 따라 문자열로 변환 될 수 있는 것이 있고 없는 것이 존재한다. phpstan의 정적 분석기로 위 코드를 실행해 보면 `$lifoString->pop();`의 반환 타입이 Mixed가 되어 있기 때문에 문자열로 변환 할 수 없는 값이 나올 수 있어 타입 에러가 발생한다. 그러나 `assert(is_int($output))`, `assert(is_string($output))`으로 타입의 전제조건을 설정하는 거슬 통해서 정적 분석에 의한 에러를 방지한다.
 
 ### foreach문이 권장되지 않는 이유
 - php에서 foreach문을 사용할 때는 리스트에 든 각각의 값에 대해 타입 검증을 하지 않고 사용하는 경우가 많다. `is_타입` 또는 `instanceof`로 타입 검증을 할 수 있지만, 이러한 것으로 검증을 했을 때, IDE에 의한 자동완성이 되지 않는 경우가 있을 수 있으며 조건문으로 확인을 한다는 것이 문법적으로 맘에 드는 방법은 아니다. 그래서 코딩의 스타일을 `foreach`를 쓰는 것 보다는 콜백함수를 가능한 사용하는 방식으로 하여 타입힌트로 값을 검증하는 것이 좀 더 괜찮은 코딩 스타일이다.
