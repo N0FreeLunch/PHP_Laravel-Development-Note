@@ -249,11 +249,45 @@ php에는 외부 파일의 경로를 지정해서 파일을 실행할 수 있는
 
 www-data 또는 nginx 유저에 쓰기 권한이 없어야 한다면, 이들은 소스 코드에 대한 소유자 그룹 권한을 부여하는 것이 적절하고 로그인을 할 수 있는 유저에게 쓰기 권한을 부여하도록 한다. 로그인 할 수 있는 유저를 앞으로 appuser라고 하자. 파일 및 폴더의 소유자를 appuser 소유자 그룹을 www-data로 만들도록 한다. 애플리케이션에 접근해야 하는 리눅스 유저가 여럿인 경우에는 소유 그룹을 appusers로 설정하는 방식도 고려될 수 있다.
 
+### 유저 생성 명령어
+
+```bash
+useradd -m --no-user-group -g www-data -u 1000 appuser
+```
+
 ### 프로젝트 환경 구성 권한
 
-php의 패키지 매니저인 composer를 실행할 때 root 권한으로 실행하면 'Do not run composer install as root super user!'라는 메시지가 나온다. 단순히 패키지를 다운로드해서 vendor 폴더에 넣는 것 뿐만 아니라, 패키지를 use 키워드로 import 할 수 있는 설정 및 패키지 별로 실행하는 추가 설정 등이 있는 경우가 있고 이를 위해 php 코드가 실행된다. 패키지에는 다양한 php 코드가 섞여 있고, 불순한 목적의 코드가 담긴 패키지가 포함되어 있을 수 있다. root 권한으로 composer를 실행하면 패키지가 설치될 때 시스템에 어떤 영향을 끼치는지 알 수 없게 되기 때문에 프로젝트 폴더 내부에서만 영향력을 가질 수 있도록 제한된 유저 권한으로 패키지를 설치 해 주어야 한다.
+php의 패키지 매니저인 composer를 실행할 때 root 권한으로 실행하면 'Do not run composer install as root super user!'라는 메시지가 나온다. 단순히 패키지를 다운로드해서 vendor 폴더에 넣는 것 뿐만 아니라, 패키지를 use 키워드로 import 할 수 있는 설정 및 패키지 별로 실행하는 추가 설정 등이 있는 경우가 있고 이를 위해 php 코드가 실행된다. 패키지에는 다양한 php 코드가 섞여 있고, 불순한 목적의 코드가 담긴 패키지가 포함되어 있을 수 있다. root 권한으로 composer를 실행하면 패키지가 설치될 때 php 코드를 실행할 수 있기 때문에 악의적인 코드가 실행되는 경우도 있어 시스템에 치명적인 영향을 줄 수 있다. 프로젝트 폴더 내부에서만 영향력을 가질 수 있도록 파일 및 폴더 권한을 제한된 유저 권한으로 설정하여 패키지를 설치 해 주어야 하며, 악의적인 코드가 프로젝트 폴더를 벗어난 파일 및 폴더를 건드릴 수 없도록 한다. composer로 설치할 때는 프로젝트 폴더에 대한 영향력은 가져야 라이브러리를 설치 및 각종 구성을 완료할 수 있기 때문에 프로젝트 폴더 내부의 파일 및 폴더 권한 제한은 걸지 않는다.
 
-php의 패키지 매니저 뿐만 아니라, NodeJS 툴의 빌드 등 다양한 설정이 이뤄진다. 이 권한을 통신을 하는데 쓰이는 www-data 또는 nginx 권한으로 실행할 필요는 없다. 별도로 만든 유저 권한(appuser)을 통해서 애플리케이션 초기 구성에 필요한 설치를 하도록 하자.
+php의 패키지 매니저 뿐만 아니라, NodeJS의 패키지 설치 및 빌드 등도 통신을 하는데 쓰이는 www-data 또는 nginx 권한으로 실행할 필요는 없다. 별도로 만든 유저 권한(appuser)을 통해서 애플리케이션 초기 구성에 필요한 설치를 하도록 하자.
+
+### 리눅스 권한 부여 쉘 명령어
+
+```bash
+useradd -m --no-user-group -g www-data -u 1000 appuser
+
+# laravel project file and folder setting
+
+# install composer package
+
+# install NodeJS package
+
+find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
+
+chown appuser:www-data -R ${PROJECT_PATH}
+
+mkdir -p ${PROJECT_PATH}/storage
+
+chown appuser:www-data -R ${PROJECT_PATH}/storage
+
+su appuser -c "chmod 740 -R ${PROJECT_PATH}/storage"
+
+chown appuser:www-data ${PROJECT_PATH}/bootstrap/cache/pagkages.php ${PROJECT_PATH}/bootstrap/cache/services.php
+
+chmod ug+rwx -R ${PROJECT_PATH}/storage ${PROJECT_PATH}/bootstrap/cache
+
+su appuser -c "chmod 770 -R ${PROJECT_PATH}/bootstrap/cache"
+```
 
 ## References
 - https://stackoverflow.com/questions/30639174/how-to-set-up-file-permissions-for-laravel
