@@ -259,7 +259,7 @@ useradd -m --no-user-group -g www-data -u 1000 appuser
 
 유저 아이디는 1000을 부여하는데, 로그인 가능한 일반 계정을 만들기 위해서이다. 일반 계정은 1000번 이상의 번호를 부여하는 것이 관례이다.
 
-`-m`은 사용자 계정에 부여되는 홈 디렉토리를 생성한다. www-data 및 nginx 에서는 접근하지 못하지만, 생성한 유저 계정으로는 접근할 수 있는 파일 및 폴더를 생성할 때 필요하다.
+`-m`은 사용자 계정에 부여되는 홈 디렉토리를 생성한다. www-data 및 nginx 에서는 접근하지 못하지만, 생성한 유저 계정으로는 접근할 수 있는 파일을 저장해서 사용할 필요가 있을 때 사용한다. 이 옵션의 사용은 NodeJS를 설치할 때 [NVM](https://github.com/nvm-sh/nvm) 설치를 위해서 `-m`을 사용하였다.
 
 ### 프로젝트 환경 구성 권한
 
@@ -271,7 +271,57 @@ composer로 설치되는 패키지가 설치될 때 실행되는 php 코드가 �
 
 composer로 설치할 때는 프로젝트 폴더에 대한 영향력은 가져야 라이브러리를 설치 및 각종 구성을 완료할 수 있기 때문에 프로젝트 폴더 내부의 파일 및 폴더 권한 제한은 걸지 않는다.
 
+웹 통신에 사용되는 www-data나 nginx 권한은 실행만 가능하게 하고 파일 및 폴더를 추가할 수 없도록 만드는 것이 좋은데, 패키지를 설치하는 composer 명령은 웹 통신으로 실행될 여지를 원천 차단하고, 웹 엑세스가 아닌 다른 유저(appuser) 권한으로 composer를 실행하도록 한다.
+
 php의 패키지 매니저 뿐만 아니라, NodeJS의 패키지 설치 및 빌드 등도 통신을 하는데 쓰이는 www-data 또는 nginx 권한으로 실행할 필요는 없다. 별도로 만든 유저 권한(appuser)을 통해서 애플리케이션 초기 구성에 필요한 설치를 하도록 하자.
+
+### 파일 및 폴더 권한 부여
+
+라라벨 프로젝트의 폴더 구조를 예를 들어 설명한다. 이 예제 코드는 root 권한으로 쉘 커멘드를 실행하는 경우의 예이다. `chmod`, `chown`의 -R은 지정한 폴더 하위의 모든 파일 및 폴더에 적용한다는 의미를 갖고 있다.
+
+```
+find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
+```
+
+지정한 프로젝트 폴더 내의 모든 파일에 대해 파일 및 폴더의 소유자 권한에 쓰기와 실행 권한 6(`010 | 100 = 110`)을, 소유자 그룹에 실행 권한 4(`100`)를 부여한다.
+
+```
+chown appuser:www-data -R ${PROJECT_PATH}
+```
+
+프로젝트 폴더의 권한은 기본적으로 `root:root` 으로 되어 있을 수 있다. 이들 파일의 소유 권한을 소유자 `appuser` 소유권한 `www-data`으로 만든다.
+
+```
+mkdir -p ${PROJECT_PATH}/storage
+```
+
+라라벨의 경우 애플리케이션이 실행할 때 `storage` 폴더에 캐시나 로그 파일 등을 저장한다. 파일이 생성되고 변경되므로 쓰기 권한이 필요하다. 경우에 따라 `storage` 폴더가 없을 수 있기 때문에 폴더가 없다면 `-p` 옵션을 추가한다.
+
+```
+chown appuser:www-data -R ${PROJECT_PATH}/storage
+```
+
+폴더가 새로 만들어졌다면 폴더의 소유 권한이 제대로 부여되지 않을 수 있기 때문에 `appuser:www-data`으로 소유 권한을 설정한다.
+
+```
+chmod 770 -R ${PROJECT_PATH}/storage
+```
+
+웹의 네트워크 통신을 통해서 www-data나 nginx 유저 권한으로 실행되므로 이들 권한에 의한 변경이 이뤄질 수 있도록 7(`100 | 010 | 001 = 111`)의 권한을 부여한다.
+
+```
+chown appuser:www-data -R ${PROJECT_PATH}/bootstrap/cache
+```
+
+storage 뿐만 아니라 bootstrap 폴더에도 애플리케이션의 빠른 기동을 위한 캐시 파일을 저장하고 이를 읽어서 사용하기 때문에 쓰기, 읽기, 실행 권한을 부여해 주어야 한다.
+
+기본적으로는 `${PROJECT_PATH}/bootstrap/cache/pagkages.php` 파일과 `${PROJECT_PATH}/bootstrap/cache/services.php` 파일이 생성되고 애플리케이션의 실행에 따라 캐시될 필요가 있는 파일이 추가 된다.
+
+```
+chmod 770 -R ${PROJECT_PATH}/bootstrap/cache
+```
+
+
 
 ### 전체 쉘 명령어
 
@@ -292,13 +342,11 @@ mkdir -p ${PROJECT_PATH}/storage
 
 chown appuser:www-data -R ${PROJECT_PATH}/storage
 
-su appuser -c "chmod 740 -R ${PROJECT_PATH}/storage"
+chmod 740 -R ${PROJECT_PATH}/storage
 
-chown appuser:www-data ${PROJECT_PATH}/bootstrap/cache/pagkages.php ${PROJECT_PATH}/bootstrap/cache/services.php
+chown appuser:www-data ${PROJECT_PATH}/bootstrap/cache
 
-chmod ug+rwx -R ${PROJECT_PATH}/storage ${PROJECT_PATH}/bootstrap/cache
-
-su appuser -c "chmod 770 -R ${PROJECT_PATH}/bootstrap/cache"
+chmod 770 -R ${PROJECT_PATH}/bootstrap/cache
 ```
 
 ## References
