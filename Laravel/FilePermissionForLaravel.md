@@ -4,47 +4,47 @@
 
 인터프리터 언어에서 파일 업로드를 할 때 일반적으로 S3와 같은 외부 저장소를 사용하지만, 웹 애플리케이션이 동작하고 있는 서버에 직접 저장을 할 때도 있다. 애플리케이션 서버에 업로드한 파일을 저장을 할 때는 파일에 대한 처리를 임시적으로 하고 처리가 완료된 파일을 외부 저장소로 옮기기 전의 작업에 사용하는데, 이 때, 유저가 업로드한 파일을 통해서 파일 인젝션 공격이 이뤄질 수 있다. 리눅스의 파일 및 폴더 설정을 적절히 하는 것을 통해서 파일 인젝션을 막을 수 있는데 이 보안 설정의 기본을 알기 위한 기초 지식을 습득해 보자.
 
-## 파일 권한
+## 사전 지식
+
+### 파일 권한
 
 리눅스의 파일에 대한 권한은, 읽기(r), 쓰기(w), 실행(x) 3가지의 권한으로 나뉘어 있다.
 
-### 읽기 (r)
+#### 읽기 (r)
 
 파일의 데이터를 읽을 수 있는 권한이다. 파일에 담겨 있는 이진 데이터를 바이트 단위로 취득하기 위해 사용한다.
 
-### 쓰기 (w)
+#### 쓰기 (w)
 
 파일에 담긴 데이터를 추가, 변경, 삭제하기 위한 권한이다.
 
-### 실행 (x)
+#### 실행 (x)
 
 파일에 담긴 데이터를 프로그램으로 실행을 하기 위한 권한이다.
 
-## 폴더 권한
+### 폴더 권한
 
-### 읽기 (r)
+#### 읽기 (r)
 
 폴더 내의 파일 및 폴더 이름이나 메타 정보를 확인할 수 있는 권한이다.
 
 터미널에서 `ls`라는 명령어로 폴더 안의 파일 및 폴더의 리스트를 확인하는 명령어가 일기 권한의 영향을 받는다.
 
-### 쓰기 (w)
+#### 쓰기 (w)
 
 폴더 내의 파일을 생성하거나 삭제하며, 파일 이름을 변경할 수 있는 권한이다. 읽기 권한이 없다면 파일 내부에 어떤 파일이 있는지 확인할 수 없지만, 파일 경로를 지정해서 생성, 삭제, 이름 변경을 할 수 있다.
 
 터미널에서 `mv` 명령어로 파일을 옮기거나 `rm` 명령어로 파일을 삭제하거나  `touch` 명령어로 빈 파일을 생성하는 명령어가 쓰기 권한의 영향을 받는다.
 
-### 실행 (x)
+#### 실행 (x)
 
 폴더에 엑세스하는 권한이다. 파일을 프로그램으로 실행하는 권한에 영향을 주지는 않는다.
 
 `cd` 라는 명령어로 폴더 안으로 접근하는 명령어가 실행 권한의 영향을 받는다.
 
-## 유저 및 소유자
+### 유저
 
 리눅스에는 루트(Root), 시스템(System), 일반(Regular)의 사용자 유형이 존재한다. 
-
-### 유저
 
 #### Root user
 
@@ -280,16 +280,16 @@ php의 패키지 매니저 뿐만 아니라, NodeJS의 패키지 설치 및 빌�
 라라벨 프로젝트의 폴더 구조를 예를 들어 설명한다. 이 예제 코드는 root 권한으로 쉘 커멘드를 실행하는 경우의 예이다. `chmod`, `chown`의 -R은 지정한 폴더 하위의 모든 파일 및 폴더에 적용한다는 의미를 갖고 있다.
 
 ```
+chown appuser:www-data -R ${PROJECT_PATH}
+```
+
+프로젝트의 파일 및 폴더의 권한이 `root:root` 으로 되어 있을 수 있다. `root` 권한의 파일에 권한 부여를 시도할 때  이들 파일의 소유 권한을 소유자 `appuser` 소유권한 `www-data`으로 만든다.
+
+```
 find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
 ```
 
 지정한 프로젝트 폴더 내의 모든 파일에 대해 파일 및 폴더의 소유자 권한에 쓰기와 실행 권한 6(`010 | 100 = 110`)을, 소유자 그룹에 실행 권한 4(`100`)를 부여한다.
-
-```
-chown appuser:www-data -R ${PROJECT_PATH}
-```
-
-프로젝트 폴더의 권한은 기본적으로 `root:root` 으로 되어 있을 수 있다. 이들 파일의 소유 권한을 소유자 `appuser` 소유권한 `www-data`으로 만든다.
 
 ```
 mkdir -p ${PROJECT_PATH}/storage
@@ -315,18 +315,18 @@ chown appuser:www-data -R ${PROJECT_PATH}/bootstrap/cache
 
 storage 뿐만 아니라 bootstrap 폴더에도 애플리케이션의 빠른 기동을 위한 캐시 파일을 저장하고 이를 읽어서 사용하기 때문에 쓰기, 읽기, 실행 권한을 부여해 주어야 한다.
 
-기본적으로는 `${PROJECT_PATH}/bootstrap/cache/pagkages.php` 파일과 `${PROJECT_PATH}/bootstrap/cache/services.php` 파일이 생성되고 애플리케이션의 실행에 따라 캐시될 필요가 있는 파일이 추가 된다.
+기본적으로는 `${PROJECT_PATH}/bootstrap/cache/pagkages.php` 파일과 `${PROJECT_PATH}/bootstrap/cache/services.php` 파일이 생성되고 애플리케이션의 실행에 따라 캐시될 필요가 있는 파일이 추가 되며, 라라벨의 각종 설정 및 코드 실행에 따라 파일 및 폴더가 생성된다.
 
 ```
 chmod 770 -R ${PROJECT_PATH}/bootstrap/cache
 ```
 
-
+`php artisan` 명령 또는 `composer` 명령 등에 의해 캐시가 생성되는 경우가 있고, 웹 엑세스로도 캐시가 생성될 수 있기 때문에 `www-data`와 `nginx` 권한과 `appuser` 권한 모두 7(100 | 010 | 001 = 111)의 권한을 부여한다.
 
 ### 전체 쉘 명령어
 
 ```bash
-useradd -m --no-user-group -g www-data -u 1000 appuser
+useradd -m --no-user-group -g www-data -u 1000 appuser -s /usr/sbin/nologin
 
 # laravel project file and folder setting
 
@@ -334,20 +334,47 @@ useradd -m --no-user-group -g www-data -u 1000 appuser
 
 # install NodeJS package
 
-find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
-
 chown appuser:www-data -R ${PROJECT_PATH}
+
+find ${PROJECT_PATH} -type d -exec chmod 750 {} \;
+find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
 
 mkdir -p ${PROJECT_PATH}/storage
 
 chown appuser:www-data -R ${PROJECT_PATH}/storage
-
 chmod 740 -R ${PROJECT_PATH}/storage
+find ${PROJECT_PATH}/storage -type d -exec chmod 770 {} \;
 
 chown appuser:www-data ${PROJECT_PATH}/bootstrap/cache
-
 chmod 770 -R ${PROJECT_PATH}/bootstrap/cache
+find ${PROJECT_PATH}/bootstrap/cache -type d -exec chmod 770 {} \;
 ```
+
+중복되는 절차를 좀 더 줄이기 위해서 명령어를 조정해 보면
+
+```bash
+useradd -m --no-user-group -g www-data -u 1000 appuser -s /usr/sbin/nologin
+
+# laravel project file and folder setting
+
+# install composer package
+
+# install NodeJS package
+
+mkdir -p ${PROJECT_PATH}/storage
+
+chown appuser:www-data -R ${PROJECT_PATH}
+
+find ${PROJECT_PATH} -type d -exec chmod 750 {} \;
+find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
+
+find ${PROJECT_PATH}/storage -mindepth 2 -type d -exec chmod 770 {} \;
+find ${PROJECT_PATH}/bootstrap/cache -mindepth 2 -type d -exec chmod 770 {} \;
+```
+
+storage 폴더가 없는 경우 미리 storage 폴더를 만든다. storage 폴더와 함께 만들어 storage 폴더의 권한을 중복으로 부여하는 절차를 간소화한다.
+
+권한 부여 쉘 명령어는 모든 파일 및 폴더가 위치한 이후 `bootstrap/cache` 폴더도 프로젝트 폴더를 만든다.
 
 ## References
 - https://stackoverflow.com/questions/30639174/how-to-set-up-file-permissions-for-laravel
