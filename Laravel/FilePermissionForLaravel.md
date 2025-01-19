@@ -299,8 +299,6 @@ find ${PROJECT_PATH} -type f -exec chmod 740 {} \;
 
 chmod -R 770 ${PROJECT_PATH}/storage ${PROJECT_PATH}/bootstrap/cache
 
-find ${PROJECT_PATH}/storage -type d -exec chmod 550 {} \;
-find ${PROJECT_PATH}/bootstrap/cache -type d -exec chmod 550 {} \;
 ```
 
 ### 각각 명령어의 해설
@@ -354,6 +352,12 @@ chmod 770 -R ${PROJECT_PATH}/bootstrap/cache
 ```
 
 `php artisan` 명령 또는 `composer` 명령 등에 의해 캐시가 생성되는 경우가 있고, 웹 엑세스로도 캐시가 생성될 수 있기 때문에 `www-data`와 `nginx` 권한과 `appuser` 권한 모두 7(`100 | 010 | 001 = 111`)의 권한을 부여한다.
+
+## 도커와 파일 및 폴더 권한
+
+도커 시스템을 구성할 때 호스트와 컨테이너 내부의 환경이 나눠져 있다. 이 때, 호스트 환경의 파일 및 폴더의 권한과 컨테이너 환경의 파일 및 폴더의 권한이 일치하지 않으면 'permission denied'가 발생할 수 있다. 도커 환경의 파일 및 폴더 권한을 설정했다면 그에 맞게 호스트 환경의 볼륨을 공유하는 프로젝트의 파일 및 폴더 권한을 부여할 필요가 있다.
+
+---
 
 ## References
 - https://stackoverflow.com/questions/30639174/how-to-set-up-file-permissions-for-laravel
