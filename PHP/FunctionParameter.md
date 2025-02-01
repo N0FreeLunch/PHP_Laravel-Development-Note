@@ -120,7 +120,7 @@ function checkStringIntParamStringReturn(Closure $fn): bool {
 
 $repeat = fn(string $word, int $terationNumber, Storage $store) => $word * $terationNumber;
 
-assert(checkStringIntParamStringReturn($repeat));
+assert(checkStringIntParamStringReturn($repeat));
 
 class Storage
 {
