@@ -124,7 +124,7 @@ $repeat = fn(string $word, int $terationNumber, Storage $store) => $word * $tera
 
 class Storage
 {
-	public readonly string $value;
+    public readonly string $value;
 }
 ```
 
@@ -133,6 +133,8 @@ class Storage
 `$params = $ref->getParameters();`: 각각의 파라메터 정보를 인덱싱된 배열로 반환한다.
 
 `if (count($params) !== 3) return false;`: 파라메터가 3개인지 확인한다. `$ref->getNumberOfParameters()`를 사용할 수도 있다.
+
+리플랙션 클래스의 인스턴스의 `getType()`를 사용하면 [ReflectionType](https://www.php.net/manual/en/class.reflectiontype.php) 클래스의 객체를 반환한다. `getName` 메소드로 타입의 이름을 확인할 수 있다.
 
 `if ($params[0]->getType()->getName() !== 'string') return false;`: 첫 번째 파라메터가 문자열 타입인지 확인한다.
 
