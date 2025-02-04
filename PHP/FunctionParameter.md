@@ -115,6 +115,7 @@ function checkStringIntParamStringReturn(Closure $fn): bool {
      if ($params[0]->getType()->getName() !== 'string') return false;
      if ($params[1]->getType()->getName() !== 'int') return false;
      if ($params[2]->getType()->getName() !== Storage::class) return false;
+     if ($ref->getReturnType()->getName() !== 'string') return false; 
      return true;
 }
 
@@ -160,6 +161,8 @@ php에서 함수 파라메터의 함수가 갖는 매개변수와 반환 값의 
 
 ## 재사용할 수 있는 코드로 만들기
 
+파라메터 하나씩 검증할 수 있는 기능을 만들면 재사용할 수 있다.
+
 ```php
 function checkClosureParam(Closure $fn, string $type, string $name): bool {
     $ref = new ReflectionFunction($fn);
@@ -173,7 +176,7 @@ function checkClosureParam(Closure $fn, string $type, string $name): bool {
 }
 
 function checkClosureReturn(Closure $fn, string $type): bool {
-	$ref = new ReflectionFunction($fn);
+    $ref = new ReflectionFunction($fn);
     $return = $ref->getReturnType();
     return $return?->getName() === $type;
 }
@@ -187,6 +190,8 @@ assert(checkClosureReturn($repeat, 'string'));
 
 class Store
 {
-	public readonly string $value;
+    public readonly string $value;
 }
 ```
+
+런타임 확인을 위한 리플렉션은 리소스가 드는 작업이므로 프로덕션 환경에서는 동작하지 않는 `assert` 함수로 로컬 또는 테스트 환경에서의 실행을 확인할 때 사용하도록 하자.
