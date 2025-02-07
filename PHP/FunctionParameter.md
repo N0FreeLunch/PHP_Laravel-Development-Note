@@ -159,34 +159,33 @@ var_dump(is_subclass_of(ChildClass::class, ParentClass::class));
 파라메터 하나씩 검증할 수 있는 기능을 만들면 재사용할 수 있다.
 
 ```php
-function checkClosureParam(Closure $fn, string $type, string $name): bool {
+function checkClosureParam(Closure $fn, string $name, string $type): bool {
     $ref = new ReflectionFunction($fn);
     $params = $ref->getParameters();
     $targetParam = array_find($params, function ($param) use ($name){
         return $param->getName() === $name;
     });
     if (is_null($targetParam)) return false;
-    if ($targetParam->getType()->getName() !== $type || ) return false;
-    return true;
+    $paramTypeName = $targetParam->getType()->getName();
+    return $paramTypeName === $type || is_subclass_of($paramTypeName, $type);
 }
 
 function checkClosureReturn(Closure $fn, string $type): bool {
     $ref = new ReflectionFunction($fn);
-    $return = $ref->getReturnType();
-    return $return?->getName() === $type;
+    $returnTypeObj = $ref->getReturnType();
+    $returnTypeName = $returnTypeObj->getName();
+    return $returnTypeName === $type || is_subclass_of($returnTypeName, $type);
 }
 
-$repeat = fn(string $word, int $terationNumber, Store $store): string => $word * $terationNumber;
+$repeat = fn(string $word, int $terationNumber, ChildClass $store): string => $word * $terationNumber;
 
-assert(checkClosureParam($repeat, 'string', 'word'));
-assert(checkClosureParam($repeat, 'int', 'terationNumber'));
-assert(checkClosureParam($repeat, Store::class, 'store'));
+assert(checkClosureParam($repeat, 'word', 'string'));
+assert(checkClosureParam($repeat, 'terationNumber', 'int'));
+assert(checkClosureParam($repeat, 'store', ParentClass::class));
 assert(checkClosureReturn($repeat, 'string'));
 
-class Store
-{
-    public readonly string $value;
-}
+class ParentClass {}
+class ChildClass extends ParentClass {}
 ```
 
 런타임 확인을 위한 리플렉션은 리소스가 드는 작업이므로 프로덕션 환경에서는 동작하지 않는 `assert` 함수로 로컬 또는 테스트 환경에서의 실행을 확인할 때 사용하도록 하자.
