@@ -109,14 +109,15 @@ phpdoc으로 함수의 파라메터로 함수를 받을 때 함수의 타입 정
 
 ```php
 function checkStringIntParamStringReturn(Closure $fn): bool {
-     $ref = new ReflectionFunction($fn);
-     $params = $ref->getParameters();
-     if (count($params) !== 3) return false;
-     if ($params[0]->getType()->getName() !== 'string') return false;
-     if ($params[1]->getType()->getName() !== 'int') return false;
-     if ($params[2]->getType()->getName() !== Storage::class) return false;
-     if ($ref->getReturnType()->getName() !== 'string') return false; 
-     return true;
+    $ref = new ReflectionFunction($fn);
+    $params = $ref->getParameters();
+    if (count($params) !== 3) return false;
+    if ($params[0]->getType()->getName() !== 'string') return false;
+    if ($params[1]->getType()->getName() !== 'int') return false;
+    $param2TypeName = $params[2]->getType()->getName();
+    if ($param2TypeName !== Storage::class || is_subclass_of($param2TypeName, Storage::class)) return false;
+    if ($ref->getReturnType()->getName() !== 'string') return false; 
+    return true;
 }
 
 $repeat = fn(string $word, int $terationNumber, Storage $store) => $word * $terationNumber;
@@ -141,7 +142,15 @@ class Storage
 
 `if ($params[1]->getType()->getName() !== 'int') return false;`: 두 번째 파라메터가 정수 타입인지 확인한다.
 
-`if ($params[2]->getType()->getName() !== Storage::class) return false;`: 세 번째 파라메터가 Storage 클래스인지 확인한다.
+`if ($param2TypeName !== Storage::class || is_subclass_of($param2TypeName, Storage::class)) return false;`: 세 번째 파라메터가 Storage 클래스인지 확인한다. 타입 체크를 할 때는 서브 타입인 경우도 허용되는 타입으로 고려해야 하므로 전달된 대상의 타입이 서브타입인지도 확인한다.
+
+참고 : 서브타입 체크 방식
+
+```php
+class ParentClass {}
+class ChildClass extends ParentClass {}
+var_dump(is_subclass_of(ChildClass::class, ParentClass::class));
+```
 
 `assert(checkStringIntParamStringReturn($repeat));`로 런타임 타입 검사에 활용한다.
 
@@ -157,7 +166,7 @@ function checkClosureParam(Closure $fn, string $type, string $name): bool {
         return $param->getName() === $name;
     });
     if (is_null($targetParam)) return false;
-    if ($targetParam->getType()->getName() !== $type) return false;
+    if ($targetParam->getType()->getName() !== $type || ) return false;
     return true;
 }
 
