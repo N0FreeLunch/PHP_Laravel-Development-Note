@@ -573,7 +573,7 @@ $fn(1, 2, ['c' => 3, 'd' => 4]);
 ```
 ```php
 /**
- * @param $arr array<int, int>
+ * @param $arr array<int, string>
  */
 $fn = function (int $a, int $b, array $arr) {
     assert(array_reduce(array_keys($arr), fn($acc, $v) => $acc && is_int($v), true), 'All array keys must be integers.');
