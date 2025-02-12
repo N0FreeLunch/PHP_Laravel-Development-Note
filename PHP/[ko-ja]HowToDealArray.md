@@ -52,6 +52,7 @@
 
 #### 커스텀 타입의 예시
 #### カスタムタイプ例
+
 ```php
 class StrYmType
 {
@@ -61,7 +62,7 @@ class StrYmType
         $year = intval(substr($yyyymm, 0, 4));
         $month = intval(substr($yyyymm, 4, 2));
 
-        if (checkdate($month, 1, $year)) {
+        if (strlen($yyyymm) === 6 && checkdate($month, 1, $year)) {
             $this->yyyymm = $yyyymm;
         } else {
             throw new Error('invalid Ym');
@@ -87,6 +88,42 @@ $fn(new StrYmType('2024-06')); // Uncaught Error: invalid Ym
 - タイプヒントを通じて、特定の文字列のみを受け取ることができるカスタムタイプを作成し、渡される値の種類を制限することができます。
 - 입력 값의 유형과 반환 값의 유형이 다르기 때문에 정확히는 타입이라 부를 수 없고, 타입 어셜션을 위한 타입정도로 부를 수 있을 것 같다.
 - 入力値の型と戻り値の型が異なるため、厳密には型と呼べなく、型アサーションのための型と呼べると思います。
+
+```php
+class StrYmType
+{
+    private function __construct(private readonly string $yyyymm) {}
+
+    public static function new(string $yyyymm): self
+    {
+        $year = intval(substr($yyyymm, 0, 4));
+        $month = intval(substr($yyyymm, 4, 2));
+
+        if (strlen($yyyymm) === 6 && checkdate($month, 1, $year)) {
+            $new = new self($year.$month);
+        } else {
+            throw new Error('invalid Ym');
+        }
+        
+        return $new;
+    }
+    
+    public function get(): string
+    {
+    	return $this->yyyymm;
+    }
+}
+
+$fn = function (StrYmType $yearMonth) {
+    echo 'result: '.$yearMonth->get().PHP_EOL;
+};
+
+$fn(StrYmType::new('202406')); // result: 202406
+$fn(StrYmType::new('2024-06')); // Uncaught Error: invalid Ym
+```
+
+- `__invoke` 또는 `new StrYmType` 등의 코드 사용에 거부감을 느낀다면 위와 같은 느낌의 코드를 만들 수도 있다.
+- `__invoke`や`new StrYmType`といったコードの使用に違和感を覚える場合は、上記のようなコードを作成することもできます。
 
 ### 일반적인 배열 처리
 ### 一般的な配列処理
@@ -489,8 +526,8 @@ $fn = function (int $a, int $b, array $arr) {
 
 $fn(1, 2, ['c' => 3, 'd' => 4]);
 ```
-- 위와 같은 코드를 작성하게 되면, IDE에 의해서 `$arr[|]` (|는 문자열 입력 커서의 포인터)정도만 입력해도 `$arr['c']`, `$arr['d']`에 대한 자동완성이 보여지게 된다. 이런 방식을 통해서 배열에 어떤 값이 들어가 있는지 알 수 있게 해 준다는 것이다.
-- 上記のようなコードを書くと、IDEによって `$arr[|]`（|はカーソルのポインター）を入力するだけで`$arr['c']`、`$arr['d']`の自動補完が表示されます。このような方式で、配列にどのような値が入っているかを知ることができます。
+- 위와 같은 코드를 작성하게 되면, IDE에 의해서 `$arr[|]` (|는 문자열 입력 커서의 포인터)정도만 입력해도 `$arr['c']`, `$arr['d']`에 대한 자동완성이 보여지게 된다. 만약 자동완성 리스트가 나오지 않는다면 `['.']`으로 dot(.)을 사용해 보자. 이런 방식을 통해서 배열에 존재하는 키를 알 수 있다.
+- 上記のようなコードを書くと、IDEによって `$arr[|]`（|はカーソルのポインター）を入力するだけで`$arr['c']`、`$arr['d']`の自動補完が表示されます。もし補完リストが表示されない場合は、`['.']` のようにドット（.）を試してみましょう。この方法を使えば、配列に存在するキーを確認できるます。
 - 하지만 이러한 지원은 어디까지나 주석으로 코드의 변경에 따라 주석이 업데이트 되지 않는 경우가 생길 수 있으므로 개인적으는 php 문법적인 제약이 이뤄졌으면 바람이 있으며, 배열의 구조를 표기하지 못하는 것이 마음에 들지 않기 때문에 어쩔 수 없이 쓰는 방편일 뿐이다.
 - ただし、このようなサポートはあくまでコメントによるものであり、コードの変更に伴ってコメントが更新されない場合があります。そのため、個人ではphp文法による制約が実現されることを望んでいます。単に配列の構造を記述できないのが不満なので仕方なく使う一つの手段に過ぎません。
 
