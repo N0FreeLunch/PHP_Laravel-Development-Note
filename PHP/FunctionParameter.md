@@ -97,7 +97,7 @@ $result = calculate(fn($x, $y) => $x + $y, 3, 5);
 echo $result; // 8
 ```
 
-위와 같이 파라메터로 전달되는 함수의 타입을 지정해서 정적 분석으로 잘못된 타입을 지정할 수 있다. 하지만 실제 실행할 때, 잘못되었는지 알려주지 않는 문제가 있으므로 전달 받은 함수의 파라메터 타입과 인자의 수가 의도한 형태의 함수인지 확인하는 코드를 추가하는 편이 좋다.
+위와 같이 파라메터로 전달되는 함수의 타입을 지정해서 정적 분석으로 잘못된 타입을 지정할 수 있다. 하지만 강력한 정적검사 툴에 의해서는 타입 불일치가 지적이 되지만, phpstorm의 IDE 등에 의해서는 지적되지 않는 문제점이 있다. 또한 실제 실행할 때, 잘못되었는지 알려주지 않는 문제가 있으므로 전달 받은 함수의 파라메터 타입과 인자의 수가 의도한 형태의 함수인지 확인하는 코드를 추가하는 편이 좋다.
 
 ## 런타임 타입 확인
 
@@ -159,29 +159,37 @@ var_dump(is_subclass_of(ChildClass::class, ParentClass::class));
 파라메터 하나씩 검증할 수 있는 기능을 만들면 재사용할 수 있다.
 
 ```php
-function checkClosureParam(Closure $fn, string $name, string $type): bool {
+function checkClosureParam(Closure $fn, string|int $keyName, string ...$types): bool {
     $ref = new ReflectionFunction($fn);
     $params = $ref->getParameters();
-    $targetParam = array_find($params, function ($param) use ($name){
-        return $param->getName() === $name;
-    });
+    if (is_numeric($keyName)) {
+    	$paramIdx = $keyName;
+    } else {
+        $paramIdx = array_search($keyName, array_map(fn($e) => $e->getName(), $params));
+    }
+    $targetParam = $params[$paramIdx] ?? null;
     if (is_null($targetParam)) return false;
-    $paramTypeName = $targetParam->getType()->getName();
-    return $paramTypeName === $type || is_subclass_of($paramTypeName, $type);
+    $paramTypeName = $targetParam->getType()?->getName() ?? '';
+    return in_array($paramTypeName, $types, true) || (array_reduce($types, fn($acc, $type) => $acc || is_subclass_of($paramTypeName, $type), false));
 }
 
-function checkClosureReturn(Closure $fn, string $type): bool {
+function checkClosureReturn(Closure $fn, string ...$types): bool {
     $ref = new ReflectionFunction($fn);
     $returnTypeObj = $ref->getReturnType();
-    $returnTypeName = $returnTypeObj->getName();
-    return $returnTypeName === $type || is_subclass_of($returnTypeName, $type);
+    $returnTypeName = $returnTypeObj->getName() ?? '';
+    return in_array($returnTypeName, $types, true) || (array_reduce($types, fn($acc, $type) => $acc || is_subclass_of($returnTypeName, $type), false));
 }
 
-$repeat = fn(string $word, int $terationNumber, ChildClass $store): string => $word * $terationNumber;
+$repeat = fn(string $word, int $terationNumber, ChildClass $store, $option): string => $word * $terationNumber;
 
 assert(checkClosureParam($repeat, 'word', 'string'));
+assert(checkClosureParam($repeat, 0, 'string'));
 assert(checkClosureParam($repeat, 'terationNumber', 'int'));
+assert(checkClosureParam($repeat, 1, 'int'));
 assert(checkClosureParam($repeat, 'store', ParentClass::class));
+assert(checkClosureParam($repeat, 2, ParentClass::class));
+assert(checkClosureParam($repeat, 'option', ''));
+assert(checkClosureParam($repeat, 3, ''));
 assert(checkClosureReturn($repeat, 'string'));
 
 class ParentClass {}
