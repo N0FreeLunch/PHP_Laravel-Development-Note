@@ -124,8 +124,8 @@ php 문법으로는 타입 추론을 할 수 없는 함수의 사양 때문에, 
 /**
  * @param Closure(int, int): int $operation
  */
-function calculate(Closure $operation, int $a, int $b): int {
-    return $operation($a, $b);
+function calculate(Closure $operation, int $trasArg1, int $transArg2): int {
+    return $operation($trasArg1, $transArg2);
 }
 
 $result = calculate(fn($x, $y) => $x + $y, 3, 5);
@@ -231,7 +231,9 @@ class ParentClass {}
 class ChildClass extends ParentClass {}
 ```
 
-런타임 확인을 위한 리플렉션은 리소스가 드는 작업이므로 프로덕션 환경에서는 동작하지 않는 `assert` 함수로 로컬 또는 테스트 환경에서의 실행을 확인할 때 사용하도록 하자.
+런타임 타입 검사를 위해 `checkClosureParam`라는 파라메터의 타입을 검사하는 기능과 `checkClosureReturn`라는 리턴 타입을 검사하는 기능을 만들었다. 유니온 타입을 체크할 수 있도록 가변 파라메터로 복수의 타입을 지정할 수 있도록 만들어 주었다. 또한 타입힌트가 없는 경우도 허용할지 말지를 정할 수 있도록 빈 문자열('')로 타입힌트가 없는 경우 통과할 수 있도록 만들었다. 또한 리스코프 치환이 가능하도록 `is_subclass_of`으로 타입 체크를 하였다. `use function checkClosureParam`, `use function checkClosureReturn`으로 불러와서 클로저의 타입을 확인하자.
+
+런타임 확인을 위한 리플렉션은 리소스가 드는 작업이므로 프로덕션 환경에서는 동작하지 않는 `assert` 함수로 로컬 또는 테스트 환경에서의 실행을 확인할 때 사용하면 적절하다.
 
 ### 익명함수를 피하자
 
