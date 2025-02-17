@@ -81,15 +81,50 @@ php에서 Clousure는 언어에 내장된 클래스이다. 만약 이 클래스�
 
 하지만 php에서 Clousure 클래스는 final 클래스이므로 상속해서 별도의 클래스명을 부여할 수 없기 때문에 시그니처로 사용하기에 문제가 있다.
 
+## 클로저의 타입을 확인하지 못하여 발생하는 문제
+
+```php
+declare(strict_types=1);
+
+function calculate(Closure $operation, $trasArg1, $transArg2): int {
+    echo 'debug';
+    return $operation($trasArg1, $transArg2); // Fatal error: Uncaught TypeError: {closure}(): Argument #2 ($y) must be of type int, string given
+}
+
+$result = calculate(fn(int $x, int $y) => $x + $y, 3, '5');
+echo $result; // 8
+```
+
+`$operation` 함수는 두 인자 `$x`, `$y`를 받아서 연산한 결과를 반환하는 함수이다. 그런데 `calculate` 함수에 전달할 때 `$operation` 함수에 인자가 전달되는 것이 아니라, `calculate`에 모든 인자가 전달된 이후 `$operation($trasArg1, $transArg2)` 코드가 실행이 될 때, `$operation($trasArg1, $transArg2)` 부분에서 `$operation` 함수에 인자가 전달된다. `echo 'debug';` 부분이 잘 출력 된다는 것은 여기까지는 에러가 발생하지 않았다는 의미이다. 그런데 인자로 int 타입과 string 타입의 값이 전달되어야 하는데, int 타입이 전달되어 버리므로 타입 불일치로 인한 에러가 발생한다.
+
+문제는 `Closure $operation` 파라메터에 인자가 전달될 때 타입 검증이 되지 않는다는 점이다. 전달된 클로저의 실행 타이밍에 타입에러가 발생하기 때문에 클로저에 잘못된 타입이 전달되었는지 빠르게 파악하지 못한다는 점이다. 함수의 로직이 길어지면 클로저의 타입 문제인지 모르고 아닌 다른 원인을 찾느라 시간을 허비할 수도 있고, 함수가 정상적으로 동작하기 위한 클로저의 스펙을 알지 못하여 함수 내부의 코드를 확인하고서야 어떤 사양의 클로저가 전달되어야 하는지 알 수 있기 때문에 재사용하기 어려운 함수가 되는 문제가 생긴다.
+
+`calculate` 함수에 클로저를 전달할 때, `$operation` 클로저는 함수는 인자를 2개를 받아야 하고 각각의 인자는 int 타입이며, `calculate`의 2번째, 3번째 인자가 `$operation`의 인자로 전달된다는 것을 알아야 하는데, 클로저 파라메터의 사양에 아무것도 없기 때문에 아무것도 예측할 수 없다.
+
+이러한 해결하기 위해 클로저를 사용한다면 클로저의 시그니처를 표시해 주어야 한다. 하지만, php가 제공하는 문법으로는 클로저의 사양을 표기할 수 없기 때문에 phpdoc을 이용한 표기나, 런타임 리플렉션을 통한 타입체커 기능을 사용할 수 밖에 없다.
+
+보통은 위와 같은 `calculate` 함수와 같은 역할을 함수형 프로그래밍에서는 `apply`라는 이름의 함수로 구현을 하는데, 함수형 프로그래밍에서 사용하는 일반적인 함수 이름을 사용하여 함수를 정의할 줄 아는 사람도, 그 일반적인 이름을 통해서 함수의 역할과 사용법을 알아낼 수 있는 사람도 드물기 때문에 클로저의 사용법을 통해 함수 사용의 정보를 최대한 제공하는 스펙을 만들 필요가 있다.
+
+```php
+declare(strict_types=1);
+
+function apply(Closure $operation, mixed ...$transArgs): int {
+    return $operation(...$transArgs);
+}
+
+$result = apply(fn(int $x, int $y) => $x + $y, 3, 5);
+echo $result; // 8
+```
+
 ## 정적 분석을 통한 타입 확인
 
 php 문법으로는 타입 추론을 할 수 없는 함수의 사양 때문에, phpdoc으로 호출가능한 함수의 타입을 지정할 수 있다.
 
 ```php
 /**
- * @param callable(int, int): int $operation 두 개의 정수를 받아 정수를 반환하는 콜백
+ * @param Closure(int, int): int $operation
  */
-function calculate(callable $operation, int $a, int $b): int {
+function calculate(Closure $operation, int $a, int $b): int {
     return $operation($a, $b);
 }
 
@@ -97,7 +132,7 @@ $result = calculate(fn($x, $y) => $x + $y, 3, 5);
 echo $result; // 8
 ```
 
-위와 같이 파라메터로 전달되는 함수의 타입을 지정해서 정적 분석으로 잘못된 타입을 지정할 수 있다. 하지만 강력한 정적검사 툴에 의해서는 타입 불일치가 지적이 되지만, phpstorm의 IDE 등에 의해서는 지적되지 않는 문제점이 있다. 또한 실제 실행할 때, 잘못되었는지 알려주지 않는 문제가 있으므로 전달 받은 함수의 파라메터 타입과 인자의 수가 의도한 형태의 함수인지 확인하는 코드를 추가하는 편이 좋다.
+위와 같이 파라메터로 전달되는 함수의 타입을 지정해서 정적 분석으로 잘못된 타입을 지정할 수 있다. 이는 강력한 정적검사 툴에 의해서는 타입 불일치가 지적이 되지만, phpstorm의 IDE 등에 의해서는 지적되지 않는 문제점이 있다. 또한 실제 실행할 때, 잘못되었는지 알려주지 않는 문제가 있으므로 전달 받은 함수의 파라메터 타입과 인자의 수가 의도한 형태의 함수인지 확인하는 코드를 추가하는 편이 좋다.
 
 ## 런타임 타입 확인
 
