@@ -332,9 +332,9 @@ mkdir -p ${PROJECT_PATH}/storage
 
 chown appuser:www-data -R ${PROJECT_PATH}
 
-find ${PROJECT_PATH} -mindepth 1 -type d -exec chmod 750 {} \;
-find ${PHP_FPM_SOCK_FOLDER_PATH} -type d -exec chmod 751 {} \;
+find ${PROJECT_PATH} -mindepth 1 -type d -exec chmod 751 {} \;
 find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
+find ${PROJECT_PATH}/public -type f -exec chmod 644 {} \;
 
 chmod -R 770 ${PROJECT_PATH}/storage ${PROJECT_PATH}/bootstrap/cache
 
@@ -357,20 +357,26 @@ chown appuser:www-data -R ${PROJECT_PATH}
 프로젝트의 파일 및 폴더의 권한이 `root:root` 으로 되어 있을 수 있다. `root` 권한의 파일에 권한 부여를 시도할 때 이들 파일의 소유 권한을 소유자 `appuser` 소유권한 `www-data`으로 만든다.
 
 ```
-find ${PROJECT_PATH} -mindepth 1 -type d -exec chmod 750 {} \;
+find ${PROJECT_PATH} -mindepth 1 -type d -exec chmod 751 {} \;
 ```
 
-지정한 프로젝트 폴더 하위의 모든 폴더의 소유자 권한에 읽기, 쓰기, 실행 권한 7(`100 | 010 | 001 = 111`)을, 소유자 그룹에 읽기, 실행 권한 5(`100 | 001 = 101`)를 부여한다.
+지정한 프로젝트 폴더 하위의 모든 폴더의 소유자 권한에 읽기, 쓰기, 실행 권한 7(`100 | 010 | 001 = 111`)을, 소유자 그룹에 읽기, 실행 권한 5(`100 | 001 = 101`)을, 그 외 다른 유저들에게는 읽기 권한 1(`001`)을 부여한다.
 
 프로젝트 폴더는 root 권한을 갖거나 소유자도 수정할 수 없도록 만드는 경우도 있기 때문에 지정한 폴더는 포함하지 않고 하위 폴더만 적용될 수 있도록 `-mindepth 1` 옵션을 부여해 준다.
 
-소유자 권한은 기본적으로는 개발 환경을 고려하여 쓰기 권한이 들어간 7을 세팅하지만, 실제 디플로이 되었을 때의 쓰기를 허용하지 않는 구성을 만들 수 있기 때문에 5를 세팅할 수도 있다.
+소유자 권한은 기본적으로는 개발 환경을 고려하여 쓰기 권한이 들어간 7을 세팅하지만, 실제 디플로이 되었을 때의 쓰기를 허용하지 않는 환경을 위해 5를 세팅할 수도 있다.
 
 ```
 find ${PHP_FPM_SOCK_FOLDER_PATH} -type d -exec chmod 751 {} \;
 ```
 
 nginx 또는 apache를 사용할 때 php-fpm의 소켓을 연결해서 동작을 구성하는 경우 소유자 이외의 권한으로 폴더 경로에 엑세스 할 수 있도록 폴더의 실행 권한 `001`을 부여할 필요가 있다. 만약 php-fpm 쪽에서 'permission denied'가 발생하는 경우 폴더 실행 권한 1을 설정한다.
+
+```
+find ${PROJECT_PATH}/public -type d -exec chmod 751 {} \;
+```
+
+apache나 nginx를 사용하는 php는 url의 path에 맞는 폴더 경로의 파일을 매칭한다. 라라벨의 경우 url이 `domain/sub_folder/file.js`으로 전달 되었을 때, public 폴더를 기준으로 `sub_folder` 폴더의 `file.js`를 매칭한다. 이 때 경로는 nginx나 apache 유저 권한이 아닌 퍼블릭 엑세스가 되기 때문에 소유자 소유그룹 이외의 폴더에 실행권한(1)을 준다.
 
 ```
 find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
