@@ -10,7 +10,27 @@
 
 객체를 생성할 때 `new self`는 해당 코드가 정의된 클래스를 주형으로 객체를 만들고, `new static`은 해당 코드가 정의된 클래스를 주형으로 객체를 만든다. 
 
-c#과 자바와 같은 다른 객체 지향 언어에서는 실행하고 있는 클래스를 주형으로 한 객체를 만들기 위해서는 객체를 생성하는 코드가 포함된 메소드를 오버라이딩하여 실행하고 있는 클래스가 정의된 클래스가 되도록 만들어야 하지만, php는 객체를 생성하는 코드가 정의된 클래스를 바인딩 할 클래스로 할 것인지 (self를 사용), 객체를 생성하는 코드가 실행된 클래스를 바인딩 할 클래스로 할 것인지 (static을 사용) 정할 수 있다.
+```php
+class A
+{
+    public function newSelf(): self
+    {
+        return new self;
+    }
+
+    public function newStatic(): static
+    {
+        return new static;
+    }
+}
+
+var_dump((new class extends A {})->newSelf()); // object(A)#2 (0) {}
+var_dump((new class extends A {})->newStatic()); // object(A@anonymous)#1 (0) {}
+```
+
+위의 예제에서 self는 해당 키워드가 사용된 클래스인 A 클래스의 오브젝트가 되지만, static은 해당 키워드가 실행되었을 때의 클래스인 익명함수 클래스의 오브젝트가 된다.
+
+C#과 자바와 같은 다른 객체 지향 언어에서는 실행하고 있는 클래스를 주형으로 한 객체를 만들기 위해서는 객체를 생성하는 코드가 포함된 메소드를 오버라이딩하여 실행하고 있는 클래스가 정의된 클래스가 되도록 만들어야 하지만, php는 객체를 생성하는 코드가 정의된 클래스를 바인딩 할 클래스로 할 것인지 (self를 사용), 객체를 생성하는 코드가 실행된 클래스를 바인딩 할 클래스로 할 것인지 (static을 사용) 정할 수 있다.
 
 ## static 보다 self인 이유
 
@@ -18,4 +38,5 @@ static을 사용하면 정확히 어떤 타입을 사용하는지 static 부분�
 
 ## References
 
+- https://www.php.net/manual/en/language.oop5.late-static-bindings.php
 - https://learn.microsoft.com/ko-kr/previous-versions/office/troubleshoot/office-developer/binding-type-available-to-automation-clients
