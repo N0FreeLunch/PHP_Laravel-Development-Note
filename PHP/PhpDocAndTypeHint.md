@@ -69,7 +69,7 @@ var_dump($a->bProperty); // B value
 
 위의 방식에서 주의할 점은 `@phpstan-ignore-next-line`는 docblock의 맨 아랫줄에 위치해야 `@phpstan-ignore-next-line` 위쪽의 `@var B $a`는 적용이 되고, `@phpstan-ignore-next-line`의 아랫줄인 docblock의 선언과 코드의 불일치를 체크하는 부분은 무시되어 실제 코드의 타입은 무시되고 phpdoc으로 선언한 타입이 적용된다는 점이다.
 
-위 코드의 문제는 
+위 코드의 문제는 강제로 B 타입으로 인식하도록 만들었기 때문에 $a가 A 타입으로 사용될 때 정적 분석에 의한 에러가 발생한다는 점이다.
 
 ### 주석의 문제
 
