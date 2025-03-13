@@ -24,6 +24,7 @@ class B {
 }
 
 class A {
+    public string $aProperty = "A value";
     private B $otherClassObject;
 
     public function __construct(B $otherClassObject) {
@@ -69,7 +70,20 @@ var_dump($a->bProperty); // B value
 
 위의 방식에서 주의할 점은 `@phpstan-ignore-next-line`는 docblock의 맨 아랫줄에 위치해야 `@phpstan-ignore-next-line` 위쪽의 `@var B $a`는 적용이 되고, `@phpstan-ignore-next-line`의 아랫줄인 docblock의 선언과 코드의 불일치를 체크하는 부분은 무시되어 실제 코드의 타입은 무시되고 phpdoc으로 선언한 타입이 적용된다는 점이다.
 
-위 코드의 문제는 강제로 B 타입으로 인식하도록 만들었기 때문에 $a가 A 타입으로 사용될 때 정적 분석에 의한 에러가 발생한다는 점이다.
+위 코드의 문제는 강제로 B 타입으로 인식하도록 만들었기 때문에 $a가 A 타입으로 사용될 때 정적 분석에 의한 에러가 발생한다는 점이다. 이 문제를 해결하기 위해서는 변수를 2개 만드는 것을 추천한다. `__get`을 통한 프로퍼티 바인딩을 할 때 바인딩된 `$b`에 따라 `$a`의 접근 가능한 대상이 달라질 경우를 생각해 볼 수 있지만 이런 경우는 드물기 때문에 일단은 해당 케이스는 고려하지 않도록 한다.
+
+```php
+$b = new B();
+/**
+ * @var B $a
+ * @phpstan-ignore-next-line
+ */
+$aTb = new A($b);
+$aTa = new A($b);
+
+var_dump($aTb->bProperty); // B value
+var_dump($aTa->aProperty); // A value
+```
 
 ### 주석의 문제
 
