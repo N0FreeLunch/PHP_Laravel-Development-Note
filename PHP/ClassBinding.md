@@ -116,6 +116,7 @@ var_dump((new class extends A {})->newStatic());
 class StaticTest
 {
     private string $selfProperty = 'self property';
+
     final public function __construct() {}
 	
     public function accessStaticProperty(): void
@@ -124,6 +125,8 @@ class StaticTest
         var_dump($static->selfProperty);
     }
 }
+
+(new StaticTest)->accessStaticProperty();
 ```
 
 static은 self타입의 서브타입이다. 따라서 self의 프로퍼티에 static으로 인스턴스화된 객체가 접근할 수 있다.
@@ -135,21 +138,27 @@ static을 사용하면 정확히 어떤 타입을 사용하는지 static 부분�
 ```php
 class StaticTest
 {
+    private string $selfProperty = 'self property';
+
     final public function __construct() {}
 	
     public function accessStaticProperty(): void
     {
         $static = new static;
-        $static->staticProperty;
+        var_dump($static->staticProperty);
     }
 }
+
+(new StaticTest)->accessStaticProperty();
 ```
 
-기본적으로 StaticTest 클래스에는 staticProperty가 존재하지 않는다. 상속된 어떤 클래스에서는 staticProperty를 가질 수 있지만, 해당 프로퍼티가 정의되지 않은 클래스도 존재할 수 있기 때문에 코드 정의단계에서 타입을 특정할 수 없는 단계에서 `$static->staticProperty`라는 코드는 에러를 발생시킨다. 다음 코드와 같이 대상 프로퍼티의 존재를 확인하는 코드로 정적 분석의 지적을 해소할 수 있다.
+기본적으로 StaticTest 클래스에는 staticProperty가 존재하지 않는다. 상속된 어떤 클래스에서는 staticProperty를 가질 수 있지만, 해당 프로퍼티가 정의되지 않은 클래스도 존재할 수 있기 때문에 코드 정의단계에서 타입을 특정할 수 없는 단계에서 `$static->staticProperty`라는 코드는 정적 분석에 지적을 당한다. 다음 코드와 같이 대상 프로퍼티의 존재를 확인하는 코드로 정적 분석의 지적을 해소할 수 있다.
 
 ```php
 class StaticTest
 {
+    private string $selfProperty = 'self property';
+
     final public function __construct() {}
 	
     public function accessStaticProperty(): void
@@ -160,6 +169,8 @@ class StaticTest
 	}
     }
 }
+
+(new StaticTest)->accessStaticProperty();
 ```
 
 런타임 프로퍼티 확인은 IDE에 의해 프로퍼티가 정의된 곳으로 이동할 수 없고 프로퍼티명이 변경 되었을 때, 프포러티명이 문자열으로 되어 있어 파악하기 어렵다는 문제 때문에 권장되는 코딩스타일은 아니다. IDE 등에 의한 프로퍼티 추론을 하기 위해서는 실행 시점에서 선택되는 타입이 무엇인지 `assert($objFromStatic instanceof ExecutionClass)`등과 같은 코드로 타입을 체크해서 IDE에 알려 주어야 IDE의 코드 간 이동을 수행할 수 있다.
@@ -168,7 +179,9 @@ static을 사용했다면, static의 대상이 되는 클래스가 무엇인지 
 
 ## self vs static
 
-self도 static도 self의 프로퍼티에 접근할 수 있다. 정적 추론이 가능한 코드를 만들 때 둘은 슈퍼 타입과 서브 타입인 것을 빼고는 동일하다. 기본적으로 static을 사용한 코드는 self 프로퍼티에 접근할 수 있지만, 서브타입인 경우 어떤 타입인지 IDE가 모를 수도 있다. 어떤 클래스에서 반환된 static인지에 따라 static의 클래스 타입을 알 수 있으므로 대부분의 경우 IDE는 어떤 클래스 타입인지 판단할 수 있다. type narrowing을 해 주어야 IDE에서 정확히 어떤 프로퍼티에 접근할 수 있는지 알 수 있는 코드는 드물다. 그럼 static은 self가 할 수 있는 모든 것을 할 수 있는데 self를 사용할 필요가 있을까?
+self도 static도 self의 프로퍼티에 접근할 수 있다. 정적 추론이 가능한 코드를 만들 때 둘은 슈퍼 타입과 서브 타입인 것을 빼고는 동일하다. 기본적으로 static을 사용한 코드는 self 프로퍼티에 접근할 수 있지만, 서브타입인 경우 어떤 타입인지 IDE가 모를 수도 있다. 어떤 클래스에서 반환된 static인지에 따라 static의 클래스 타입을 알 수 있으므로 대부분의 경우 IDE는 어떤 클래스 타입인지 판단할 수 있다. type narrowing을 해 주어야 IDE에서 정확히 어떤 프로퍼티에 접근할 수 있는지 알 수 있는 코드는 드물다. self를 사용하면, 정적 분석으로 타입이 연결될 때, 확실하게 특정 클래스인 것을 알 수 있기 때문에 좀 더 강력한 정적 추론이 일어날 수 있다는 이야기는 있다. 하지만 실제 얼마나 강력한지 의문점이 드는 것도 사실이다.
+
+그럼 static은 self가 할 수 있는 모든 것을 할 수 있는데 self를 사용할 필요가 있을까? self는 확실하게 클래스 하나를 가리킨다. self가 정의된 클래스를 가리키므로 어떤 클래스인지 정의한 지점에서 알 수 있다. 반면에 static은 정의한 시점에서는 어떤 객체인지 모를 수 있기 때문에 사용한 지점의 코드를 봐야 한다. 정의한 지점에서 타입 정보를 확실히 해야하는 코드라면 self, 사용한 지점에서 타입을 확인해도 되는 경우 static을 사용하는 것이 좋다.
 
 ## References
 
@@ -176,3 +189,5 @@ self도 static도 self의 프로퍼티에 접근할 수 있다. 정적 추론이
 - https://learn.microsoft.com/ko-kr/previous-versions/office/troubleshoot/office-developer/binding-type-available-to-automation-clients
 - https://php.watch/versions/8.0/static-return-type
 - https://wiki.php.net/rfc/static_return_type
+- https://github.com/php/php-src/issues/17725
+- https://wiki.php.net/rfc/lsb_parentself_forwarding
