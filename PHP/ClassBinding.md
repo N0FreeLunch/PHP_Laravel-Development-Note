@@ -251,6 +251,22 @@ var_dump((new class extends FinalClass {})->newStatic());
 
 이는 상속을 고려했을 때는 다른 클래스이기 때문에 static이 가리키는 타입과 FinalClass가 다른 클래스가 되므로 타당하지만, 상속을 할 수 없는 final을 사용한 클래스인 경우 같은 클래스 타입이므로 논리상 에러를 발생시키지 않아도 된다. 물론 `new FinalClass`을 쓰지않고 `new static`으로 그냥 사용해도 아무런 문제는 없다.
 
+## static:: self::
+
+반환 유형이 아닌 주형 클래스에 접근하기 위해 쓰는 '대상클래스::프로퍼티'의 문법의 경우, `static::` `self::`을 사용할 때는 반환 유형의 static과 달리 객체를 꼭 생성해야 하는 것이 아니므로 생성자의 제약이 없다. 이 경우, static과 self는 정의된 클래스를 가리키느냐 사용된 클래스를 가리키느냐의 차이만을 갖는다.
+
+```php
+class ParentClass
+{
+    const PARENT_CONSTANT = 'parent class constant';
+}
+
+class ChildClass
+{
+    const CHILD_CONSTANT = 'child class constnat';
+}
+```
+
 ## self vs static
 
 self도 static도 self의 프로퍼티에 접근할 수 있다. 정적 추론이 가능한 코드를 만들 때 둘은 슈퍼 타입과 서브 타입인 것을 빼고는 동일하다. 기본적으로 static을 사용한 코드는 self 프로퍼티에 접근할 수 있지만, 서브타입인 경우 어떤 타입인지 IDE가 모르는 경우가 생길 수 있다. 하지만 대부분의 경우 static 타입의 값이 반환될 때 어떤 클래스를 주형으로 한 인스턴스인지 알 수 있으므로 static 타입힌트로 반환된 타입의 객체가 어떤 클래스 타입인지 알 수 있다. (static 타입의 반환 값의 클래스를 추론하지 못하는 케이스가 있다는 내용도 찾을 수 없었다.)
