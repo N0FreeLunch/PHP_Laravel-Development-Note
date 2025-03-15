@@ -110,6 +110,8 @@ var_dump((new class extends A {})->newSelf());
 var_dump((new class extends A {})->newStatic());
 ```
 
+static을 사용하여 객체를 생성할 때는 생성자의 시그니처를 고정해 주어야 한다는 단점이 있다. 생성자의 시그니처를 고정한다는 판단을 하고 싶지 않은 경고, 간단하게 클래스를 정의할 때는 static 보다 self를 사용하는 편이 좋다.
+
 ## static의 특징
 
 ```php
@@ -173,15 +175,54 @@ class StaticTest
 (new StaticTest)->accessStaticProperty();
 ```
 
-런타임 프로퍼티 확인은 IDE에 의해 프로퍼티가 정의된 곳으로 이동할 수 없고 프로퍼티명이 변경 되었을 때, 프포러티명이 문자열으로 되어 있어 파악하기 어렵다는 문제 때문에 권장되는 코딩스타일은 아니다. IDE 등에 의한 프로퍼티 추론을 하기 위해서는 실행 시점에서 선택되는 타입이 무엇인지 `assert($objFromStatic instanceof ExecutionClass)`등과 같은 코드로 타입을 체크해서 IDE에 알려 주어야 IDE의 코드 간 이동을 수행할 수 있다.
+`property_exists`와 같은 런타임 프로퍼티 확인 기능은 IDE에 의해 프로퍼티가 정의된 곳으로 이동할 수 없고 프로퍼티명이 변경 되었을 때, 프로퍼티명이 문자열으로 되어 있어 파악하기 어렵다는 문제 때문에 권장되는 코딩스타일은 아니다. 
 
-static을 사용했다면, static의 대상이 되는 클래스가 무엇인지 알 수 있는 맥락에서 사용을 해야 하는데, static의 대상 클래스가 무엇인지 모르는 상태에서는 정적 추론으로 지적된다. php는 정적 추론이 가능한 코드를 만들 수도 있고, 정적 추론이 불가능한 코드를 만들 수도 있다. 컴파일 언어가 컴파일 타임에 에러를 발견할 수 있는 것 처럼, php는 컴파일을 하지는 않지만 IDE나 정적 분석 툴에 의해 잘못된 코드를 감지할 수 있도록 가능하면 정적 추론이 가능한 코드를 만들기를 장려한다. static은 경우에 따라 정적 추론이 될 수도 있고 정적 추론이 되지 않을 수도 있는 코드이다. 정적 추론이 불가능한 코드는 정적 추론이 제공하는 이점을 포기해도 좋을만큼 이점이 있을 때 사용하는 것이 좋다.
+static을 사용했다면, static의 대상이 되는 클래스가 무엇인지 알 수 있는 맥락에서 사용을 해야 하는데, static의 대상 클래스가 무엇인지 모르는 상태에서는 정적 추론으로 지적된다. php는 정적 추론이 가능한 코드를 만들 수도 있고, 정적 추론이 불가능한 코드를 만들 수도 있다. 컴파일 언어가 컴파일 타임에 에러를 발견할 수 있는 것 처럼, php는 컴파일을 하지는 않지만 IDE나 정적 분석 툴에 의해 잘못된 코드를 감지할 수 있도록 가능하면 정적 추론이 가능한 코드를 만들기를 장려한다. static은 경우에 따라 정적 추론이 될 수도 있고 정적 추론이 되지 않을 수도 있는 코드이다.
+
+self는 정의된 지점에서 어떤 클래스에서 정의되었는지에 따라 타입이 바로 결정되므로 정적 추론으로 타입이 확인되지만, static은 정의된 지점에서는 self 타입이나 self의 하위 타입이란 것만 알 뿐 구체적으로 어떤 클래스라는 것인지 정적 추론으로 확인할 수 없다. static을 사용한 코드는 사용한 지점에서 어떤 클래스에서 사용되었느냐를 보고 정적 추론으로 어떤 타입이 되는지를 결정한다. 대부분의 코드에서 static을 사용한 클래스를 알 수 있기 때문에 static을 써도 대부분 타입추론이 잘 된다.
+
+## final 클래스에서의 static
+
+```php
+abstract class Abs
+{
+    abstract public function __construct();
+    
+    abstract public function newSelf(): self;
+    
+    abstract public function newStatic(): static;
+}
+
+final class FinalClass extends Abs
+{
+    public function __construct() {}
+	
+    public function newSelf(): self
+    {
+        return new self;
+    }
+
+    public function newStatic(): static
+    {
+        return new static;
+    }
+}
+
+var_dump((new class extends FinalClass {})->newSelf());
+var_dump((new class extends FinalClass {})->newStatic());
+```
+
+final 클래스인 경우, 상속이 없으므로 항상 self를 반환할텐데 static을 반환타입으로 적어야 하는 것이 이상한 느낌을 줄 수 있다는 [의견](https://github.com/php/php-src/issues/17725)이 있다. 위의 예에서 추상 클래스의 메소드 반환 타입으로 static을 정의했기 때문에 이를 상속하는 클래스도 self가 아닌 static을 반환해야 하는데, final 클래스인 경우 굳이 static을 반환할 필요가 없는데 문법상 상속을 받는 클래스에서 static 반환 타입을 바꿀 수 없는 제약이 이상하다는 것이다.
+
+하지만 final 클래스를 사용하는 시점에서 static으로 반환된 타입은 FinalClass 클래스라는 것을 정적 추론으로 잘 판단되기 때문에 굳이 self로 바꿀 필요가 있을까?라는 의문이 있다. self로 하면 확실하게 특정 클래스인 것을 알 수 있기 때문에 좀 더 강력한 정적 추론이 일어날 수 있다는 의견이 있지만, 이런 추론이 강력하게 일어날 수 있는 예가 존재하는지도 의문이고 아직 제시되지 않았기 때문에 굳이 self로 강제할 필요는 없을 것 같다.
 
 ## self vs static
 
-self도 static도 self의 프로퍼티에 접근할 수 있다. 정적 추론이 가능한 코드를 만들 때 둘은 슈퍼 타입과 서브 타입인 것을 빼고는 동일하다. 기본적으로 static을 사용한 코드는 self 프로퍼티에 접근할 수 있지만, 서브타입인 경우 어떤 타입인지 IDE가 모를 수도 있다. 어떤 클래스에서 반환된 static인지에 따라 static의 클래스 타입을 알 수 있으므로 대부분의 경우 IDE는 어떤 클래스 타입인지 판단할 수 있다. type narrowing을 해 주어야 IDE에서 정확히 어떤 프로퍼티에 접근할 수 있는지 알 수 있는 코드는 드물다. self를 사용하면, 정적 분석으로 타입이 연결될 때, 확실하게 특정 클래스인 것을 알 수 있기 때문에 좀 더 강력한 정적 추론이 일어날 수 있다는 이야기는 있다. 하지만 실제 얼마나 강력한지 의문점이 드는 것도 사실이다.
+self도 static도 self의 프로퍼티에 접근할 수 있다. 정적 추론이 가능한 코드를 만들 때 둘은 슈퍼 타입과 서브 타입인 것을 빼고는 동일하다. 기본적으로 static을 사용한 코드는 self 프로퍼티에 접근할 수 있지만, 서브타입인 경우 어떤 타입인지 IDE가 모르는 경우가 생길 수 있다. 하지만 대부분의 경우 static 타입의 값이 반환될 때 어떤 클래스를 주형으로 한 인스턴스인지 알 수 있으므로 static 타입힌트로 반환된 타입의 객체가 어떤 클래스 타입인지 알 수 있다.
 
-그럼 static은 self가 할 수 있는 모든 것을 할 수 있는데 self를 사용할 필요가 있을까? self는 확실하게 클래스 하나를 가리킨다. self가 정의된 클래스를 가리키므로 어떤 클래스인지 정의한 지점에서 알 수 있다. 반면에 static은 정의한 시점에서는 어떤 객체인지 모를 수 있기 때문에 사용한 지점의 코드를 봐야 한다. 정의한 지점에서 타입 정보를 확실히 해야하는 코드라면 self, 사용한 지점에서 타입을 확인해도 되는 경우 static을 사용하는 것이 좋다.
+그럼 static은 self가 할 수 있는 모든 것을 할 수 있는데 self를 사용할 필요가 있을까? self는 확실하게 클래스 하나를 가리킨다. self가 정의된 클래스를 가리키므로 어떤 클래스인지 정의한 지점에서 알 수 있다. 반면에 static은 정의한 시점에서는 어떤 객체인지 모를 수 있기 때문에 사용한 지점의 코드를 봐야 한다. 정의한 지점에서 꼭 타입을 고정해야 하는 경우라면 self, 정의한 지점에서 self가 가진 시그니처로 접근할 필요성이 있을 때는 static을 써도 상위 타입인 self의 프로퍼티로 접근할 수 있기 때문에 static, 사용한 지점에서 타입을 확인해도 되는 경우 static을 사용하는 것이 좋다.
+
+또한 static 반환 타입으로 반환된 객체의 경우, 어떤 방식으로든 객체를 생성할 것인데, 객체를 생성하기 위해서는 시그니처의 고정이 필수적이고, 생성자의 시그니처를 고정하지 않는다면 정적 분석에 의한 잘못된 사용이라는 지적을 당한다. 대부분의 클래스 작성에서 생성자의 시그니처를 고정하는 코드를 쓰는 것은 보일러 플레이트를 발생시키므로, 기본적으로 self 반환값을 사용하도록 하며, 상속을 고려한 객체 반환(메소드 체이닝과 같은 것을 고려할 때)이 필요한 경우, 생성자의 시그니처 고정과 함께 static 반환유형을 쓰도록 하자.
 
 ## References
 
@@ -189,5 +230,4 @@ self도 static도 self의 프로퍼티에 접근할 수 있다. 정적 추론이
 - https://learn.microsoft.com/ko-kr/previous-versions/office/troubleshoot/office-developer/binding-type-available-to-automation-clients
 - https://php.watch/versions/8.0/static-return-type
 - https://wiki.php.net/rfc/static_return_type
-- https://github.com/php/php-src/issues/17725
 - https://wiki.php.net/rfc/lsb_parentself_forwarding
