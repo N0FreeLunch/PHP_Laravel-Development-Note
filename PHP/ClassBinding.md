@@ -216,13 +216,50 @@ final 클래스인 경우, 상속이 없으므로 항상 self를 반환할텐데
 
 하지만 final 클래스를 사용하는 시점에서 static으로 반환된 타입은 FinalClass 클래스라는 것을 정적 추론으로 잘 판단되기 때문에 굳이 self로 바꿀 필요가 있을까?라는 의문이 있다. self로 하면 확실하게 특정 클래스인 것을 알 수 있기 때문에 좀 더 강력한 정적 추론이 일어날 수 있다는 의견이 있지만, 이런 추론이 강력하게 일어날 수 있는 예가 존재하는지도 의문이고 아직 제시되지 않았기 때문에 굳이 self로 강제할 필요는 없을 것 같다.
 
+### static 유형과 클래스 유형의 불일치
+
+```php
+abstract class Abs
+{
+    abstract public function __construct();
+    
+    abstract public function newSelf(): self;
+    
+    abstract public function newStatic(): static;
+}
+
+final class FinalClass extends Abs
+{
+    public function __construct() {}
+	
+    public function newSelf(): self
+    {
+        return new self;
+    }
+
+    public function newStatic(): static
+    {
+        return new FinalClass;
+    }
+}
+
+var_dump((new class extends FinalClass {})->newSelf());
+var_dump((new class extends FinalClass {})->newStatic());
+```
+
+위 코드에서 static 반환 유형에 클래스 FinalClass로 객체를 만들어 반환하면 `Fatal error: Class FinalClass@anonymous cannot extend final class FinalClass`라는 에러가 발생한다. 스테틱 반환 유형은 `A@anonymous`라는 `@anonymous`가 붙는 특수한 반환 반환유형 곧 `new static`으로 선언된 대상만 받고, `new A`로 선언한 객체는 타입 불일치로 에러이다. 사실상 반환된 후의 값의 타입은 FinalClass로 동일할 것이지만, 반환하기 전 상태에서는 `new static` 과 `new FinalClass`을 서로 다른 타입으로 판단한다.
+
+이는 상속을 고려했을 때는 다른 클래스이기 때문에 static이 가리키는 타입과 FinalClass가 다른 클래스가 되므로 타당하지만, 상속을 할 수 없는 final을 사용한 클래스인 경우 같은 클래스 타입이므로 논리상 에러를 발생시키지 않아도 된다. 물론 `new FinalClass`을 쓰지않고 `new static`으로 그냥 사용해도 아무런 문제는 없다.
+
 ## self vs static
 
-self도 static도 self의 프로퍼티에 접근할 수 있다. 정적 추론이 가능한 코드를 만들 때 둘은 슈퍼 타입과 서브 타입인 것을 빼고는 동일하다. 기본적으로 static을 사용한 코드는 self 프로퍼티에 접근할 수 있지만, 서브타입인 경우 어떤 타입인지 IDE가 모르는 경우가 생길 수 있다. 하지만 대부분의 경우 static 타입의 값이 반환될 때 어떤 클래스를 주형으로 한 인스턴스인지 알 수 있으므로 static 타입힌트로 반환된 타입의 객체가 어떤 클래스 타입인지 알 수 있다.
+self도 static도 self의 프로퍼티에 접근할 수 있다. 정적 추론이 가능한 코드를 만들 때 둘은 슈퍼 타입과 서브 타입인 것을 빼고는 동일하다. 기본적으로 static을 사용한 코드는 self 프로퍼티에 접근할 수 있지만, 서브타입인 경우 어떤 타입인지 IDE가 모르는 경우가 생길 수 있다. 하지만 대부분의 경우 static 타입의 값이 반환될 때 어떤 클래스를 주형으로 한 인스턴스인지 알 수 있으므로 static 타입힌트로 반환된 타입의 객체가 어떤 클래스 타입인지 알 수 있다. (static 타입의 반환 값의 클래스를 추론하지 못하는 케이스가 있다는 내용도 찾을 수 없었다.)
 
-그럼 static은 self가 할 수 있는 모든 것을 할 수 있는데 self를 사용할 필요가 있을까? self는 확실하게 클래스 하나를 가리킨다. self가 정의된 클래스를 가리키므로 어떤 클래스인지 정의한 지점에서 알 수 있다. 반면에 static은 정의한 시점에서는 어떤 객체인지 모를 수 있기 때문에 사용한 지점의 코드를 봐야 한다. 정의한 지점에서 꼭 타입을 고정해야 하는 경우라면 self, 정의한 지점에서 self가 가진 시그니처로 접근할 필요성이 있을 때는 static을 써도 상위 타입인 self의 프로퍼티로 접근할 수 있기 때문에 static, 사용한 지점에서 타입을 확인해도 되는 경우 static을 사용하는 것이 좋다.
+static은 self가 할 수 있는 모든 것을 할 수 있는데 self를 사용할 필요가 있을까? self는 확실하게 클래스 하나를 가리킨다. self가 정의된 클래스를 가리키므로 어떤 클래스인지 정의한 지점에서 알 수 있다. 반면에 static은 정의한 시점에서는 어떤 객체인지 모를 수 있기 때문에 사용한 지점의 코드를 봐야 한다. 정의한 지점에서 꼭 타입을 고정해야 하는 경우라면 self, 정의한 지점에서 self가 가진 시그니처로 접근할 필요성이 있을 때는 static을 써도 상위 타입인 self의 프로퍼티로 접근할 수 있기 때문에 static, 사용한 지점에서 타입을 확인해도 되는 경우 static을 사용하는 것이 좋다.
 
-또한 static 반환 타입으로 반환된 객체의 경우, 어떤 방식으로든 객체를 생성할 것인데, 객체를 생성하기 위해서는 시그니처의 고정이 필수적이고, 생성자의 시그니처를 고정하지 않는다면 정적 분석에 의한 잘못된 사용이라는 지적을 당한다. 대부분의 클래스 작성에서 생성자의 시그니처를 고정하는 코드를 쓰는 것은 보일러 플레이트를 발생시키므로, 기본적으로 self 반환값을 사용하도록 하며, 상속을 고려한 객체 반환(메소드 체이닝과 같은 것을 고려할 때)이 필요한 경우, 생성자의 시그니처 고정과 함께 static 반환유형을 쓰도록 하자.
+static은 클래스에서 프로퍼티 내부의 정적 멤버 또는 일반 멤버에 접근할 때 주의 깊게 사용하는 편이 좋다.
+
+static 반환 타입으로 반환된 객체의 경우는 프로퍼티에 접근하는 것과는 다르다. 어떤 방식으로든 객체를 생성할 것이고 객체를 생성하기 위해서는 시그니처의 고정이 필수적이다. 반환 유형에서 static을 사용하는 것은 `new static`과 같은 코드를 만든다. 생성자의 시그니처를 고정하지 않는다면 정적 분석에 의한 잘못된 사용이라는 지적을 당한다. 대부분의 클래스 작성에서 생성자의 시그니처를 고정하는 코드를 쓰는 것은 보일러 플레이트를 발생시키므로, 기본적으로 self 반환값을 사용하도록 하며, 상속을 고려한 객체 반환(메소드 체이닝과 같은 것을 고려할 때)이 필요한 경우, 생성자의 시그니처 고정과 함께 static 반환유형을 쓰도록 하자.
 
 ## References
 
