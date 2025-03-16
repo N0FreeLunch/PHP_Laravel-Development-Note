@@ -258,14 +258,35 @@ var_dump((new class extends FinalClass {})->newStatic());
 ```php
 class ParentClass
 {
-    const PARENT_CONSTANT = 'parent class constant';
+    const CONSTANT = 'parent class constant';
+
+    public function displaySelfConstant()
+    {
+        var_dump(self::CONSTANT);
+    }
+
+    public function displayStaticConstant()
+    {
+        var_dump(static::CONSTANT);
+    }
 }
 
-class ChildClass
+class ChildClass extends ParentClass
 {
-    const CHILD_CONSTANT = 'child class constnat';
+    const CONSTANT = 'child class constnat';
 }
+
+(new ParentClass)->displaySelfConstant(); // string(21) "parent class constant"
+(new ParentClass)->displayStaticConstant(); // string(21) "parent class constant"
+
+(new ChildClass)->displaySelfConstant(); // string(21) "parent class constant"
+(new ChildClass)->displayStaticConstant(); // string(20) "child class constnat"
 ```
+
+부모 클래스에서 정의된 self는 부모 클래스에 접근하므로 부모 클래스의 `CONSTANT`에 접근한다. 자식 클래스에서 부모 클래스에서 정의된 self를 사용할 때는 부모 클래스의 `CONSTANT`에 접근한다.
+부모 클래스에서 정의된 static은 사용된 클래스에 접근하므로 부모 클래스에서 사용될 때는 부모 클래스의 `CONSTANT`, 자식 클래스에서 접근할 때는 자식 클래스의 `CONSTANT`에 접근한다.
+
+클래스에 접근할 때의 
 
 ## self vs static
 
