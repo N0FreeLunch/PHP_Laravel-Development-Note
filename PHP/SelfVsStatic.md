@@ -259,6 +259,7 @@ var_dump((new class extends FinalClass {})->newStatic());
 class ParentClass
 {
     const CONSTANT = 'parent class constant';
+    const PARENT = 'only parent class constant';
 
     public function displaySelfConstant()
     {
@@ -269,11 +270,22 @@ class ParentClass
     {
         var_dump(static::CONSTANT);
     }
+
+    public function displaySelfSubConstant()
+    {
+        var_dump(self::CHILD);
+    }
 }
 
 class ChildClass extends ParentClass
 {
     const CONSTANT = 'child class constnat';
+    const CHILD = 'only child class constant';
+
+    public function displaySelfSuperConstant()
+    {
+        var_dump(self::PARENT);
+    }
 }
 
 (new ParentClass)->displaySelfConstant(); // string(21) "parent class constant"
@@ -281,20 +293,25 @@ class ChildClass extends ParentClass
 
 (new ChildClass)->displaySelfConstant(); // string(21) "parent class constant"
 (new ChildClass)->displayStaticConstant(); // string(20) "child class constnat"
+
+(new ChildClass)->displaySelfSuperConstant(); // string(26) "only parent class constant"
+(new ParentClass)->displaySelfSubConstant(); // Fatal error: Uncaught Error: Undefined constant ParentClass::CHILD
 ```
 
 부모 클래스에서 정의된 self는 부모 클래스에 접근하므로 부모 클래스의 `CONSTANT`에 접근한다. 자식 클래스에서 부모 클래스에서 정의된 self를 사용할 때는 부모 클래스의 `CONSTANT`에 접근한다.
 부모 클래스에서 정의된 static은 사용된 클래스에 접근하므로 부모 클래스에서 사용될 때는 부모 클래스의 `CONSTANT`, 자식 클래스에서 접근할 때는 자식 클래스의 `CONSTANT`에 접근한다.
 
-클래스에 접근할 때의 
+static 키워드가 붙은 멤버 및 const는 객체를 생성하지 않아도 접근할 수 있는 클래스의 정적 요소들이다. 이들 정적 요소들에 접근할 때, self는 정의된 클래스의 멤버에 접근을 하고, static은 정의된 클래스의 멤버에 접근을 한다. self는 정의된 클래스에 존재하지 않는 정적요소인 경우, 상위 클래스의 정적 요소에 접근한다.
+
+하위 클래스에서 사용한 self와 static은 정의된 클래스 또는 가장 가까운 상위 클래스의 정적 요소에 접근하지만, 상위 클래스에서 사용한 self와 static은 정의한 클래스에 정적 요소가 반드시 존재해야 하며, static의 경우에만 하위 클래스에서 정적 요소를 재정의 했을 때 재정의된 정적 요소를 접근하도록 한다.
+
+이러한 특징을 통해서 알 수 있는 것은 self와 static이 접근제한자와 비슷하다는 것이다. 상위 클래스에서 정의하여 해당 클래스나 하위 클래스에서 static으로 재정의된 정적 요소에 접근할 것인지, self로 재정의된 정적 요소를 무시하고 self를 정의한 클래스의 정적 요소에 접근할 것인지 정할 수 있다. 상위 클래스에서 정의하여 재정의한 대상에 접근하는 것을 허용할 것인지 허용하지 않을 것인지를 정할 수 있으므로 protected와 private의 관계와 비슷하다. 기본적으로 공개하지 않는 접근 제한자는 private를 쓰듯이 self와 static의 관계에서도 기본적으로는 self를 사용하고, 상속에 의한 재정의를 허용하고자 하는 의도가 있을 때 protected를 사용하도록 하자. 곧, 상속을 의도하고, 정적 요소의 재정의에 따라서 값이 달라지는 것을 고려한 설계를 하고자 할 때 static을 사용한다.
 
 ## self vs static
 
 self도 static도 self의 프로퍼티에 접근할 수 있다. 정적 추론이 가능한 코드를 만들 때 둘은 슈퍼 타입과 서브 타입인 것을 빼고는 동일하다. 기본적으로 static을 사용한 코드는 self 프로퍼티에 접근할 수 있지만, 서브타입인 경우 어떤 타입인지 IDE가 모르는 경우가 생길 수 있다. 하지만 대부분의 경우 static 타입의 값이 반환될 때 어떤 클래스를 주형으로 한 인스턴스인지 알 수 있으므로 static 타입힌트로 반환된 타입의 객체가 어떤 클래스 타입인지 알 수 있다. (static 타입의 반환 값의 클래스를 추론하지 못하는 케이스가 있다는 내용도 찾을 수 없었다.)
 
 static은 self가 할 수 있는 모든 것을 할 수 있는데 self를 사용할 필요가 있을까? self는 확실하게 클래스 하나를 가리킨다. self가 정의된 클래스를 가리키므로 어떤 클래스인지 정의한 지점에서 알 수 있다. 반면에 static은 정의한 시점에서는 어떤 객체인지 모를 수 있기 때문에 사용한 지점의 코드를 봐야 한다. 정의한 지점에서 꼭 타입을 고정해야 하는 경우라면 self, 정의한 지점에서 self가 가진 시그니처로 접근할 필요성이 있을 때는 static을 써도 상위 타입인 self의 프로퍼티로 접근할 수 있기 때문에 static, 사용한 지점에서 타입을 확인해도 되는 경우 static을 사용하는 것이 좋다.
-
-static은 클래스에서 프로퍼티 내부의 정적 멤버 또는 일반 멤버에 접근할 때 주의 깊게 사용하는 편이 좋다.
 
 static 반환 타입으로 반환된 객체의 경우는 프로퍼티에 접근하는 것과는 다르다. 어떤 방식으로든 객체를 생성할 것이고 객체를 생성하기 위해서는 시그니처의 고정이 필수적이다. 반환 유형에서 static을 사용하는 것은 `new static`과 같은 코드를 만든다. 생성자의 시그니처를 고정하지 않는다면 정적 분석에 의한 잘못된 사용이라는 지적을 당한다. 대부분의 클래스 작성에서 생성자의 시그니처를 고정하는 코드를 쓰는 것은 보일러 플레이트를 발생시키므로, 기본적으로 self 반환값을 사용하도록 하며, 상속을 고려한 객체 반환(메소드 체이닝과 같은 것을 고려할 때)이 필요한 경우, 생성자의 시그니처 고정과 함께 static 반환유형을 쓰도록 하자.
 
