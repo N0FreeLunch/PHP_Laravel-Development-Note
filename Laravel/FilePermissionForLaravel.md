@@ -2,7 +2,7 @@
 
 ## 도입
 
-인터프리터 언어에서 파일 업로드를 할 때 일반적으로 S3와 같은 외부 저장소를 사용하지만, 웹 애플리케이션이 동작하고 있는 서버에 직접 저장을 할 때도 있다. 애플리케이션 서버에 업로드한 파일을 저장을 할 때는 파일에 대한 처리를 임시적으로 하고 처리가 완료된 파일을 외부 저장소로 옮기기 전의 작업에 사용하는데, 이 때, 유저가 업로드한 파일을 통해서 파일 인젝션 공격이 이뤄질 수 있다. 리눅스의 파일 및 폴더 설정을 적절히 하는 것을 통해서 파일 인젝션을 막을 수 있는데 이 보안 설정의 기본을 알기 위한 기초 지식을 습득해 보자.
+파일 업로드를 할 때 일반적으로 S3와 같은 외부 저장소를 사용하지만, 웹 애플리케이션이 동작하고 있는 서버에 직접 저장을 할 때도 있다. 흔히 서버에 업로드한 파일 또는 생성한 파일을 저장을 할 때는 애플리케이션 서버에 임시 파일을 만들어 파일 처리를 하고, 처리가 완료된 파일을 외부 저장소로 옮기는 방식을 사용한다. 이 때, 유저가 업로드한 파일을 통해서 파일 인젝션 공격이 이뤄질 수 있다. 리눅스의 파일 및 폴더 설정을 적절히 하는 것을 통해서 파일 인젝션을 막을 수 있는데 이 보안 설정의 기본을 알기 위한 기초 지식을 습득해 보자.
 
 ## 사전 지식
 
@@ -346,20 +346,17 @@ mkdir -p ${PROJECT_PATH}/storage
 
 chown appuser:www-data -R ${PROJECT_PATH}
 
-find ${PROJECT_PATH} -mindepth 1 -type d -exec chmod 751 {} \;
-find ${PHP_FPM_SOCK_FOLDER_PATH} -type d -exec chmod 751 {} \;
-find ${PROJECT_PATH}/public -type d -exec chmod 751 {} \;
+find ${PROJECT_PATH} -type d -exec chmod 751 {} \;
+# find ${PHP_FPM_SOCK_FOLDER_PATH} -type d -exec chmod 751 {} \;
 find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
 find ${PROJECT_PATH}/public -type f -exec chmod 644 {} \;
 
 chmod -R 770 ${PROJECT_PATH}/storage ${PROJECT_PATH}/bootstrap/cache
 ```
 
-경우에 따라 `find ${PHP_FPM_SOCK_FOLDER_PATH} -type d -exec chmod 751 {} \;`, `find ${PROJECT_PATH}/public -type d -exec chmod 751 {} \;`는 사용하지 않아도 된다.
-
 ### 각각 명령어의 해설
 
-라라벨 프로젝트의 폴더 구조를 예를 들어 설명한다. 이 예제 코드는 root 권한으로 쉘 커멘드를 실행하는 경우의 예이다. `chmod`, `chown`의 -R은 지정한 폴더 하위의 모든 파일 및 폴더에 적용한다는 의미를 갖고 있다.
+라라벨 프로젝트의 폴더 구조를 예를 들어 설명한다. 이 예제 코드는 root 권한으로 쉘 커멘드를 실행하는 경우의 예이다. `chmod`, `chown`의 `-R`은 지정한 폴더 하위의 모든 파일 및 폴더에 적용한다는 의미를 갖고 있다.
 
 ```
 mkdir -p ${PROJECT_PATH}/storage
@@ -371,31 +368,29 @@ mkdir -p ${PROJECT_PATH}/storage
 chown appuser:www-data -R ${PROJECT_PATH}
 ```
 
-프로젝트의 파일 및 폴더의 권한이 `root:root` 으로 되어 있을 수 있다. `root` 권한의 파일에 권한 부여를 시도할 때 이들 파일의 소유 권한을 소유자 `appuser` 소유권한 `www-data`으로 만든다.
+프로젝트의 파일 및 폴더의 권한이 `root:root` 으로 되어 있을 수 있다. `root` 권한의 파일에 권한 부여를 시도할 때 이들 파일의 소유 권한을 소유자를 `appuser`으로 소유 그룹을 `www-data`으로 만든다.
 
 ```
-find ${PROJECT_PATH} -mindepth 1 -type d -exec chmod 751 {} \;
+find ${PROJECT_PATH} -type d -exec chmod 751 {} \;
 ```
 
 지정한 프로젝트 폴더 하위의 모든 폴더의 소유자 권한에 읽기, 쓰기, 실행 권한 7(`100 | 010 | 001 = 111`)을, 소유자 그룹에 읽기, 실행 권한 5(`100 | 001 = 101`)을, 그 외 다른 유저들에게는 읽기 권한 1(`001`)을 부여한다.
 
-nginx 또는 apache를 사용할 때 php-fpm의 소켓을 연결해서 동작을 구성하는 경우 소유자 이외의 권한으로 폴더 경로에 엑세스 할 수 있도록 폴더의 실행 권한 `001`을 부여해야 하는 경우가 있다. 만약 php-fpm 쪽에서 'permission denied'가 발생하는 경우 폴더 실행 권한 1을 설정하자. (부여하지 않아도 잘 실행되는 경우도 있으니 0으로 세팅 후 되지 않으면 1로 세팅하자. 권한은 가능한 최소한으로 부여하는 것이 좋지만, 폴더 권한의 1 정도는 보안상 위험을 초래하지는 않는다.)
+때때로 소유자 이외의 권한으로 폴더 경로에 엑세스 할 수 있도록 폴더에 실행 권한 `001`을 부여해야 하는 경우가 있다. 만약 'permission denied'가 발생하는 경우 폴더 실행 권한 1을 설정하자. 부여하지 않아도 잘 실행되는 경우도 있으니 0으로 세팅 후 되지 않으면 1로 세팅하자. 권한은 가능한 최소한으로 부여하는 것이 좋지만, 폴더 권한의 1 정도는 보안상 위험을 초래하지는 않는다.
 
-프로젝트 폴더는 root 권한을 갖거나 소유자도 수정할 수 없도록 만드는 경우도 있기 때문에 지정한 폴더는 포함하지 않고 하위 폴더만 적용될 수 있도록 `-mindepth 1` 옵션을 부여해 준다.
-
-소유자 권한은 기본적으로는 개발 환경을 고려하여 쓰기 권한이 들어간 7을 세팅하지만, 실제 디플로이 되었을 때의 쓰기를 허용하지 않는 환경을 위해 5를 세팅할 수도 있다.
+소유자 권한은 기본적으로는 개발 환경을 고려하여 쓰기 권한이 들어간 7을 세팅하지만, 실제 디플로이 되었을 때는 쓰기를 허용하지 않는 설정을 할 때는 5를 세팅해서 좀 더 제한된 권한을 부여할 수 있다.
 
 ```
-find ${PHP_FPM_SOCK_FOLDER_PATH} -type d -exec chmod 751 {} \;
+# find ${PHP_FPM_SOCK_FOLDER_PATH} -type d -exec chmod 751 {} \;
 ```
 
-nginx와 php-fpm을 간의 연결에 소켓을 사용할 때는 소켓 파일이 있는 폴더의 권한도 부여해 주어야 한다.
+nginx와 php-fpm을 간의 연결에 소켓을 사용할 때는 소켓 파일이 있는 폴더의 권한도 부여해 주어야 한다. 소켓 파일이 프로젝트 폴더 안에 있는 경우 이 과정을 생략해도 된다.
 
 ```
 find ${PROJECT_PATH}/public -type d -exec chmod 751 {} \;
 ```
 
-apache나 nginx를 사용하는 php는 url의 path에 맞는 폴더 경로의 파일을 매칭한다. 라라벨의 경우 url이 `domain/sub_folder/file.js`으로 전달 되었을 때, public 폴더를 기준으로 `sub_folder` 폴더의 `file.js`를 매칭한다. 이 때 경로는 nginx나 apache 유저 권한이 아닌 퍼블릭 엑세스가 되기 때문에 소유자 소유그룹 이외의 폴더에 실행권한(1)을 준다.
+`public`은 서버 외부에서 엑세스 할 수 있는 공유 폴더이다. apache나 nginx를 사용하는 php는 url의 path에 맞는 폴더 경로의 파일을 매칭한다. 라라벨의 경우 url이 `domain/sub_folder/file.js`으로 전달 되었을 때, public 폴더를 기준으로 `sub_folder` 폴더의 `file.js`를 매칭한다. 이 때 경로는 nginx나 apache 유저 권한이 아닌 퍼블릭 엑세스가 되기 때문에 소유자 소유그룹 이외의 폴더에 실행권한(1)을 준다.
 
 ```
 find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
@@ -410,6 +405,10 @@ find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
 ```
 find ${PROJECT_PATH}/public -type f -exec chmod 644 {} \;
 ```
+
+public 폴더는 js, css, img 등 정적 파일에 대한 외부 엑세스를 할 수 있도록 설정된 폴더이다. nginx나 apache 등의 웹 서버는 파일의 내용을 읽어 http 리스폰스 형태로 브라우저에 전송하고, 브라우저는 파일을 다운로드 받을 수 있다. 이 때 브라우저가 html 파일을 다운받은 후, 해당 문서에 의해 js, css, img 등을 브라우저에 표시한다. 이 때, 읽기(r) 권한이 부여되지 않으면 정적 파일이 다운로드가 되지 않는 문제가 발생하므로 읽기 권한을 부여하도록 하자.
+
+`public` 폴더의 정적 파일은 php 엔진에 의해 해석되어 전달되는 것이 아니라, nginx나 apache 등의 웹 서버에 의해서 php 엔진을 거치지 않고 그대로 전송이 이뤄진다. 이들 정적 파일은 php-fpm의 권한이 아닌, nginx나 apache에 의한 직접적인 접근으로 www-data에 의한 파일 읽기(w) 권한이 필요한 작업이다. 경우에 따라 소유자, 소유그룹 이외의 유저 권한을 사용하는 경우가 있으므로 이외의 유저에 대한 `004` 권한을 부여한다. 기본적으로는 `640`으로 동작하지 않는다면 `644`를 권한을 주도록 하자.
 
 ```
 chmod -R 770 ${PROJECT_PATH}/storage ${PROJECT_PATH}/bootstrap/cache
@@ -434,4 +433,5 @@ chmod 770 -R ${PROJECT_PATH}/bootstrap/cache
 도커 시스템을 구성할 때 호스트와 컨테이너 내부의 환경이 나눠져 있다. 이 때, 호스트 환경의 파일 및 폴더의 권한과 컨테이너 환경의 파일 및 폴더의 권한이 일치하지 않으면 'permission denied'가 발생할 수 있다. 도커 환경의 파일 및 폴더 권한을 설정했다면 그에 맞게 호스트 환경의 볼륨을 공유하는 프로젝트의 파일 및 폴더 권한을 부여할 필요가 있다.
 
 ## References
+
 - https://stackoverflow.com/questions/30639174/how-to-set-up-file-permissions-for-laravel
