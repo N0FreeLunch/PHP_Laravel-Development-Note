@@ -347,12 +347,15 @@ mkdir -p ${PROJECT_PATH}/storage
 chown appuser:www-data -R ${PROJECT_PATH}
 
 find ${PROJECT_PATH} -mindepth 1 -type d -exec chmod 751 {} \;
+find ${PHP_FPM_SOCK_FOLDER_PATH} -type d -exec chmod 751 {} \;
+find ${PROJECT_PATH}/public -type d -exec chmod 751 {} \;
 find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
 find ${PROJECT_PATH}/public -type f -exec chmod 644 {} \;
 
 chmod -R 770 ${PROJECT_PATH}/storage ${PROJECT_PATH}/bootstrap/cache
-
 ```
+
+경우에 따라 `find ${PHP_FPM_SOCK_FOLDER_PATH} -type d -exec chmod 751 {} \;`, `find ${PROJECT_PATH}/public -type d -exec chmod 751 {} \;`는 사용하지 않아도 된다.
 
 ### 각각 명령어의 해설
 
@@ -376,6 +379,8 @@ find ${PROJECT_PATH} -mindepth 1 -type d -exec chmod 751 {} \;
 
 지정한 프로젝트 폴더 하위의 모든 폴더의 소유자 권한에 읽기, 쓰기, 실행 권한 7(`100 | 010 | 001 = 111`)을, 소유자 그룹에 읽기, 실행 권한 5(`100 | 001 = 101`)을, 그 외 다른 유저들에게는 읽기 권한 1(`001`)을 부여한다.
 
+nginx 또는 apache를 사용할 때 php-fpm의 소켓을 연결해서 동작을 구성하는 경우 소유자 이외의 권한으로 폴더 경로에 엑세스 할 수 있도록 폴더의 실행 권한 `001`을 부여해야 하는 경우가 있다. 만약 php-fpm 쪽에서 'permission denied'가 발생하는 경우 폴더 실행 권한 1을 설정하자. (부여하지 않아도 잘 실행되는 경우도 있으니 0으로 세팅 후 되지 않으면 1로 세팅하자. 권한은 가능한 최소한으로 부여하는 것이 좋지만, 폴더 권한의 1 정도는 보안상 위험을 초래하지는 않는다.)
+
 프로젝트 폴더는 root 권한을 갖거나 소유자도 수정할 수 없도록 만드는 경우도 있기 때문에 지정한 폴더는 포함하지 않고 하위 폴더만 적용될 수 있도록 `-mindepth 1` 옵션을 부여해 준다.
 
 소유자 권한은 기본적으로는 개발 환경을 고려하여 쓰기 권한이 들어간 7을 세팅하지만, 실제 디플로이 되었을 때의 쓰기를 허용하지 않는 환경을 위해 5를 세팅할 수도 있다.
@@ -384,7 +389,7 @@ find ${PROJECT_PATH} -mindepth 1 -type d -exec chmod 751 {} \;
 find ${PHP_FPM_SOCK_FOLDER_PATH} -type d -exec chmod 751 {} \;
 ```
 
-nginx 또는 apache를 사용할 때 php-fpm의 소켓을 연결해서 동작을 구성하는 경우 소유자 이외의 권한으로 폴더 경로에 엑세스 할 수 있도록 폴더의 실행 권한 `001`을 부여할 필요가 있다. 만약 php-fpm 쪽에서 'permission denied'가 발생하는 경우 폴더 실행 권한 1을 설정한다.
+nginx와 php-fpm을 간의 연결에 소켓을 사용할 때는 소켓 파일이 있는 폴더의 권한도 부여해 주어야 한다.
 
 ```
 find ${PROJECT_PATH}/public -type d -exec chmod 751 {} \;
@@ -401,6 +406,10 @@ find ${PROJECT_PATH} -type f -exec chmod 640 {} \;
 소유자 권한은 기본적으로는 개발 환경을 고려하여 쓰기 권한이 들어간 6(`110`)을 세팅하지만, 실제 디플로이 되었을 때의 쓰기를 허용하지 않는 구성을 만들 수 있기 때문에 4(`010`)를 세팅할 수도 있다. php 파일은 인터프리터가 실행되어 파일 내용을 읽기 때문에 읽기 권한이 필요(`100`)하며 실행 권한(`001`)이 필요하지 않다.
 
 가끔 경우에 따라 파일을 실행해야 하는 경우도 있는데 이런 경우는 실행 권한(`001`)을 별도로 세팅하는 편이 좋다. 어떤 php의 코드가 php가 아닌 어떤 프로그램을 실행해서 동작해야 하는 경우 실행 권한을 요구할 때가 있다.
+
+```
+find ${PROJECT_PATH}/public -type f -exec chmod 644 {} \;
+```
 
 ```
 chmod -R 770 ${PROJECT_PATH}/storage ${PROJECT_PATH}/bootstrap/cache
