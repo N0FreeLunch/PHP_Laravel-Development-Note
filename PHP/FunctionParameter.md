@@ -147,23 +147,23 @@ phpdoc으로 함수의 파라메터로 함수를 받을 때 함수의 타입 정
 ### 예제코드
 
 ```php
-function checkStringIntParamStringReturn(Closure $fn): bool {
+function check0Target1String2IntParamStringReturn(Closure $fn): bool {
     $ref = new ReflectionFunction($fn);
     $params = $ref->getParameters();
     if (count($params) !== 3) return false;
-    if ($params[0]->getType()->getName() !== 'string') return false;
-    if ($params[1]->getType()->getName() !== 'int') return false;
-    $param2TypeName = $params[2]->getType()->getName();
-    if ($param2TypeName !== Storage::class || is_subclass_of($param2TypeName, Storage::class)) return false;
+    $param0TypeName = $params[0]->getType()->getName();
+    if ($param0TypeName !== Target::class || is_subclass_of($param0TypeName, Target::class)) return false;
+    if ($params[1]->getType()->getName() !== 'string') return false;
+    if ($params[2]->getType()->getName() !== 'int') return false;
     if ($ref->getReturnType()->getName() !== 'string') return false; 
     return true;
 }
 
-$repeat = fn(string $word, int $terationNumber, Storage $store) => $word * $terationNumber;
+$repeatPropertyValue = fn(Target $target, string $property, int $terationNumber): string => $target->{$property} * $terationNumber;
 
-assert(checkStringIntParamStringReturn($repeat));
+assert(check0Target1String2IntParamStringReturn($repeatPropertyValue));
 
-class Storage
+class Target
 {
     public readonly string $value;
 }
@@ -177,13 +177,13 @@ class Storage
 
 리플랙션 클래스의 인스턴스의 `getType()`를 사용하면 [ReflectionType](https://www.php.net/manual/en/class.reflectiontype.php) 클래스의 객체를 반환한다. `getName` 메소드로 타입의 이름을 확인할 수 있다.
 
-`if ($params[0]->getType()->getName() !== 'string') return false;`: 첫 번째 파라메터가 문자열 타입인지 확인한다.
+`if ($param0TypeName !== Target::class || is_subclass_of($param2TypeName, Target::class)) return false;`: 첫 번째 파라메터가 Target 클래스인지 확인한다. 타입 체크를 할 때는 서브 타입인 경우도 허용되는 타입으로 고려해야 하므로 전달된 대상의 타입이 서브타입인지도 확인한다.
 
-`if ($params[1]->getType()->getName() !== 'int') return false;`: 두 번째 파라메터가 정수 타입인지 확인한다.
+`if ($params[1]->getType()->getName() !== 'string') return false;`: 두 번째 파라메터가 문자열 타입인지 확인한다.
 
-`if ($param2TypeName !== Storage::class || is_subclass_of($param2TypeName, Storage::class)) return false;`: 세 번째 파라메터가 Storage 클래스인지 확인한다. 타입 체크를 할 때는 서브 타입인 경우도 허용되는 타입으로 고려해야 하므로 전달된 대상의 타입이 서브타입인지도 확인한다.
+`if ($params[2]->getType()->getName() !== 'int') return false;`: 세 번째 파라메터가 정수 타입인지 확인한다.
 
-참고 : 서브타입 체크 방식
+#### 참고 : 서브타입 체크 방식
 
 ```php
 class ParentClass {}
@@ -219,23 +219,23 @@ function checkClosureReturn(Closure $fn, string ...$types): bool {
     return in_array($returnTypeName, $types, true) || (array_reduce($types, fn($acc, $type) => $acc || is_subclass_of($returnTypeName, $type), false));
 }
 
-$repeat = fn(string $word, int $terationNumber, ChildClass $store, $option): string => $word * $terationNumber;
+$repeatPropertyValue = fn(ChildClass $target, string $property, int $terationNumber, $option): string => $target->{$property} * $terationNumber;
 
-assert(checkClosureParam($repeat, 'word', 'string'));
-assert(checkClosureParam($repeat, 0, 'string'));
-assert(checkClosureParam($repeat, 'terationNumber', 'int'));
-assert(checkClosureParam($repeat, 1, 'int'));
-assert(checkClosureParam($repeat, 'store', ParentClass::class));
-assert(checkClosureParam($repeat, 2, ParentClass::class));
-assert(checkClosureParam($repeat, 'option', ''));
-assert(checkClosureParam($repeat, 3, ''));
-assert(checkClosureReturn($repeat, 'string'));
+assert(checkClosureParam($repeatPropertyValue, 'target', ParentClass::class));
+assert(checkClosureParam($repeatPropertyValue, 0, ParentClass::class));
+assert(checkClosureParam($repeatPropertyValue, 'property', 'string'));
+assert(checkClosureParam($repeatPropertyValue, 1, 'string'));
+assert(checkClosureParam($repeatPropertyValue, 'terationNumber', 'int'));
+assert(checkClosureParam($repeatPropertyValue, 2, 'int'));
+assert(checkClosureParam($repeatPropertyValue, 'option', ''));
+assert(checkClosureParam($repeatPropertyValue, 3, ''));
+assert(checkClosureReturn($repeatPropertyValue, 'string'));
 
 class ParentClass {}
 class ChildClass extends ParentClass {}
 ```
 
-런타임 타입 검사를 위해 `checkClosureParam`라는 파라메터의 타입을 검사하는 기능과 `checkClosureReturn`라는 리턴 타입을 검사하는 기능을 만들었다. 유니온 타입을 체크할 수 있도록 가변 파라메터로 복수의 타입을 지정할 수 있도록 만들어 주었다. 또한 타입힌트가 없는 경우도 허용할지 말지를 정할 수 있도록 빈 문자열('')로 타입힌트가 없는 경우 통과할 수 있도록 만들었다. 또한 리스코프 치환이 가능하도록 `is_subclass_of`으로 타입 체크를 하였다. `use function checkClosureParam`, `use function checkClosureReturn`으로 불러와서 클로저의 타입을 확인하자.
+런타임 타입 검사를 위해 `checkClosureParam`라는 파라메터의 타입을 검사하는 기능과 `checkClosureReturn`라는 리턴 타입을 검사하는 기능을 만들었다. 유니온 타입을 체크할 수 있도록 가변 파라메터로 복수의 타입을 지정할 수 있도록 만들어 주었다. 또한 타입힌트가 없는 경우도 허용할지 말지를 정할 수 있도록 빈 문자열('')로 타입힌트가 없는 경우 통과할 수 있도록 만들었다. 또한 리스코프 치환이 가능하도록 `is_subclass_of`으로 타입 체크를 하였다. `use function checkClosureParam`, `use function checkClosureReturn`으로 불러와서 클로저의 타입을 확인하자. 타입을 하나씩 검사하는 방식으로 타입 파라메터를 만드는 방식은 사용할 수 없다는 한계가 있다.
 
 런타임 확인을 위한 리플렉션은 리소스가 드는 작업이므로 프로덕션 환경에서는 동작하지 않는 `assert` 함수로 로컬 또는 테스트 환경에서의 실행을 확인할 때 사용하면 적절하다.
 
