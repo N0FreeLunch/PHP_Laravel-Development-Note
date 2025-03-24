@@ -52,9 +52,9 @@ console.log($a); // Uncaught ReferenceError: $a is not defined
 ブロック内で宣言された`$a`は、ブロックの外部からアクセスすることはできません。
 
 ```js
-fn = function () {
+(function () {
     let $a = 10;
-}
+})()
 
 console.log($a); // Uncaught ReferenceError: $a is not defined
 ```
@@ -90,9 +90,9 @@ JavaScriptには、phpの`isset`のように、変数が定義されているか
 関数スコープを持つ変数`$b`は、コードが実行されなかった場合でもエラーではなく、`undefined` の値となります。
 
 ```js
-const fn = function () {
+(function () {
     var $a = 10;
-}
+})();
 
 console.log($a); // Uncaught ReferenceError: $a is not defined
 ```
@@ -151,9 +151,9 @@ phpには`isset`, `??`, `??=`などの文法を使用して、定義されてい
 ### 関数スコープあり
 
 ```php
-$fn = function () {
+(function () {
     $a = 10;
-};
+})();
 
 var_dump($a); // Warning: Undefined variable $a
 ```
