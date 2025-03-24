@@ -102,3 +102,7 @@ namespace DefineDto {
     }
 }
 ```
+
+## References
+- https://wiki.php.net/rfc/nested_classes
+- https://externals.io/message/126589
