@@ -231,18 +231,18 @@ $class->accessNonStaticMemberWithDollar();
 ```php
 class SomeClass
 {
-	private const sameNameConstAndMethod = 'constant value';
-	
-	public function accessDoubleColone()
-	{
-		var_dump(self::sameNameConstAndMethod);
-		var_dump(self::sameNameConstAndMethod());
-	}
-	
-	private function sameNameConstAndMethod()
-	{
-		return "non static method";
-	}
+    private const sameNameConstAndMethod = 'constant value';
+
+    public function accessDoubleColone()
+    {
+        var_dump(self::sameNameConstAndMethod);
+        var_dump(self::sameNameConstAndMethod());
+    }
+
+    private function sameNameConstAndMethod()
+    {
+        return "non static method";
+    }
 }
 
 (new SomeClass)->accessDoubleColone();
@@ -255,29 +255,46 @@ class SomeClass
 ```php
 class ParentClass
 {    
-	public string $nonStaticMember = 'access ParentClass\'s $nonStaticMember';
-	
-	public function getParentClassNonStaticMemberVariable()
-	{
-		return $this->nonStaticMember;
-	}
+    protected string $nonStaticMember = 'access ParentClass\'s $nonStaticMember';
+
+    public function getParentClassNonStaticMemberVariable()
+    {
+        return $this->nonStaticMember;
+    }
 }
 
 class ChildClass extends ParentClass
 {
-	public string $nonStaticMember = 'access ChildClass\'s $nonStaticMember';
-	
-	public function getParentClassNonStaticMemberVariable()
+    protected string $nonStaticMember = 'access ChildClass\'s $nonStaticMember';
+
+    public function getParentClassNonStaticMemberVariable()
     {
-        var_dump(parent::getParentClassNonStaticMemberVariable());
+        return parent::getParentClassNonStaticMemberVariable();
     }
 }
 
 $class = new ChildClass();
-$class->getParentClassNonStaticMemberVariable();
+var_dump($class->getParentClassNonStaticMemberVariable());
 ```
 
-상위 클래스에서 멤버 변수에 접근할 수 있는 메소드를 만들어 자식 클래스에게 건네주는 방법을 사용해야 한다.
+상위 클래스에서 멤버 변수에 접근할 수 있는 메소드를 만들어 자식 클래스에게 건네주는 방법을 사용해야 한다. 
+
+## 부모 클래스의 멤버에 접근하게 할 경우 생기는 일
+
+자바에서는 상위 클래스의 멤버 변수에 `super.memberVariable`으로 접근할 수 있는데, 이런 코드를 사용할 때 생각지도 못한 버그를 발생시킬 수 있다.
+
+```java
+Parent p = new Child();
+System.out.println(p.value); // Parent's value
+```
+
+자바의 상속 관계에서 필드는 오버라이딩하는 대상이 아니라, 상위 클래스의 변수를 가린다.
+
+`p`라는 변수는 부모 클래스 타입이다. 상위 클래스 타입의 변수에 하위 클래스의 인스턴스를 넣을 수 있는 것은 리스코프 치환 원칙을 만족하기 때문에 가능하다. 이 때 타입은 상위 클래스이므로 하위 클래스로 만든 인스턴스를 할당하더라도 상위 클래스가 제공하는 인터페이스만을 하위 클래스가 사용할 수 있다.
+
+인터페이스는 공개 메소드에 적용되는 시그니처인데, 멤버 변수는 인터페이스의 대상이 아니다. 상위, 하위 타입의 관계는 (인터페이스를 사용하지 않더라도 공개 맴버가 같은) 상위 타입의 인터페이스를 하위타입에서 이용한다는 것이다.
+
+상위 타입의 변수에 하위 타입의 인스턴스를 할당하면 해당 변수에서 사용할 수 있는 인터페이스는 동일하고, 해당 인터페이스에 대한 구현만이 다르다. 그에 반해, 멤버 변수는 오버라이딩을 하지 않기 때문에 구현이 달라진다는 개념이 적용이 안 된다. 따라서 동일한 멤버 시그니처 그대로 엑세스를 하고, 하위 인터스턴스에서 달라진 구현을 적용하지 않게 되고 상위 타압의 클래스의 멤버 값 그대로 이용한다.
 
 ## References
 
