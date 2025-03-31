@@ -139,7 +139,7 @@ class ParentClass
 
 class ChildClass extends ParentClass
 {
-	public function parentNonStaticMethod()
+    public function parentNonStaticMethod()
     {
         parent::nonStaticMethod();
     }
@@ -168,7 +168,7 @@ $class->parentNonStaticMethod();
 ```php
 class ParentClass
 {    
-	public function accessNonStaticMethodByStatic()
+    public function accessNonStaticMethodByStatic()
     {
         self::nonStaticMethod();
     }
@@ -201,14 +201,14 @@ $class->accessNonStaticMethodByStatic();
 ```php
 class ParentClass
 {    
-	public string $nonStaticMember = 'access ParentClass\'s $nonStaticMember';
+    public string $nonStaticMember = 'access ParentClass\'s $nonStaticMember';
 }
 
 class ChildClass extends ParentClass
 {
-	public string $nonStaticMember = 'access ChildClass\'s $nonStaticMember';
+    public string $nonStaticMember = 'access ChildClass\'s $nonStaticMember';
 	
-	public function accessNonStaticMemberWithoutDollar()
+    public function accessNonStaticMemberWithoutDollar()
     {
         parent::nonStaticMember; // Fatal error: Uncaught Error: Undefined constant ParentClass::nonStaticMember
     }
@@ -296,7 +296,7 @@ System.out.println(p.value); // Parent's value
 
 상위 타입의 변수에 하위 타입의 인스턴스를 할당하면 해당 변수에서 사용할 수 있는 인터페이스는 동일하고, 해당 인터페이스에 대한 구현만이 다르다. 그에 반해, 멤버 변수는 오버라이딩을 하지 않기 때문에 구현이 달라진다는 개념이 적용이 안 된다. 따라서 동일한 멤버 시그니처 그대로 엑세스를 하고, 하위 인터스턴스에서 달라진 구현을 적용하지 않게 되고 상위 타압의 클래스의 멤버 값 그대로 이용한다.
 
-이게 문제가 되는 이유는, 기본적으로 인스턴스화 된 객체의 멤버 변수를 변경하는데, 멤버 메소드에 의해 상태 변경이 여러 차례 이뤄진 후의 멤버 변수를 접근하려고 할 때, 상위 타입의 멤버 변수에만 접근을 하게 되어 원하는 결과를 획득할 수 없게 된다. 이로 인해서 실수를 할 수 있다.
+이게 문제가 되는 이유는, 기본적으로 인스턴스화 된 객체의 멤버 변수를 변경하는데, 멤버 메소드에 의해 상태 변경이 여러 차례 이뤄진 후의 멤버 변수를 접근하려고 할 때, 상위 타입의 멤버 변수에만 접근을 하게 되어 원하는 결과를 획득할 수 없게 된다. 이로 인해서 실수를 할 수 있다. 따라서 캡슐화를 통해서 의도된 방식으로만 멤버 값에 엑세스하는 코드를 작성하도록 하는 것이 좋아 php에서는 부모 클래스의 비정적 멤버 변수에 엑세스 할 수 없게 하였다.
 
 ## References
 
