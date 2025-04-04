@@ -8,7 +8,34 @@
 
 php 엔진에서 제공하는 내장 함수, 유저가 정의한 기명 함수 모두 문자열로 실행할 수 있지만, 함수처럼 생겼지만 함수가 아닌 구조에 해당하는 array(), echo, empty(), eval(), exit(), isset(), list(), print or unset()은 문자열로 실행할 수 있는 대상이 아니다.
 
+```php
+function fnName() {
+    var_dump("call: fnName");
+};
+
+fnName();
+'fnName'();
+```
+
+함수 명칭을 그 자체로 함수를 실행할 수도 있지만, 함수명과 동일한 문자열을 실행하여 함수를 실행할 수 있다.
+
+```php
+function callStringParam(string $param) {
+    $param();
+}
+
+callStringParam('fnName');
+```
+
+함수명을 파라메터로 전달할 때는 문자열로 전달해서 함수를 실행할 수 있다.
+
 ## 배열으로 메소드 실행하기
+
+### 정적 메소드를 배열으로 실행하기
+
+> Static class methods can also be passed without instantiating an object of that class by either, passing the class name instead of an object at index 0, or passing 'ClassName::methodName'.
+
+클래스 이름의 문자열을 배열의 0번 인덱스 위치에, 정적 메소드를 배열의 1번 인덱스 위치에 배치된 배열은, 배열이기도 하지만 callable이기도 하다. '배열()'의 방식으로 이 배열을 실행할 수 있다.
 
 ```php
 class A
@@ -23,6 +50,14 @@ class A
 ```
 
 `A` 클래스의 `staticMethod` 정적 메소드를 배열을 사용한 `['A', 'staticMethod']()`을 통해서 실행할 수 있다.
+
+### 객체 메소드를 배열으로 실행하기
+
+> A method of an instantiated object is passed as an array containing an object at index 0 and the method name at index 1. Accessing protected and private methods from within a class is allowed.
+
+오브젝트를 배열의 0번 인덱스 위치에, 메소드 이름을 1번 인덱스 위치에 배치된 배열은, 배열이기도 하지만 callable이기도 하다. '배열()'의 방식으로 이 배열을 실행할 수 있다.
+
+이 때 배열의 1번 인덱스 위치의 메소드 이름의 문자열은 public 메소드 뿐만 아닌 private나 protected 등도 실행할 수 있다.
 
 ```php
 class B
@@ -69,7 +104,7 @@ class B
 }
 
 var_dump(is_callable([new B, 'objectMethod'])); // bool(true)
-var_dump([new B, 'objectMethod'] instanceof Closure); // bool(true)
+var_dump([new B, 'objectMethod'] instanceof Closure); // bool(false)
 ```
 
 ## 메소드를 클로저로 만들기
