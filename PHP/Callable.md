@@ -110,17 +110,30 @@ var_dump([new B, 'objectMethod'] instanceof Closure); // bool(false)
 ### callable 하위 타입
 
 ```php
-function callParam(callable $param) {
-	$param();
+function callParam(callable $param, bool $printout = false) {
+    if ($printout) {
+        echo $param();
+        return;
+    }
+    $param();
 }
-
 
 callParam(function () { var_dump('anonymous function param'); });
 
 callParam(fn() => var_dump('arrow function param'));
+
+function namedFunction() {
+    var_dump(__FUNCTION__);
+}
+
+callParam('namedFunction');
+
+callParam('phpversion', true);
 ```
 
 `callable` 타입의 매개변수에 (Closure 타입의) 익명 함수와 화살표 함수를 전달할 수 있다.
+
+익명 함수와 화살표 함수는 값이므로 그대로 함수의 인자로 전달할 수 있지만, 기명 함수는 값이 아니므로 그냥 전달 할 수 없고, 기명 함수 이름을 담은 문자열을 전달하여 이 문자열을 함수처럼 실행한다.
 
 ## 메소드를 클로저로 만들기
 
