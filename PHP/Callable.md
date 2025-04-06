@@ -107,6 +107,21 @@ var_dump(is_callable([new B, 'objectMethod'])); // bool(true)
 var_dump([new B, 'objectMethod'] instanceof Closure); // bool(false)
 ```
 
+### callable 하위 타입
+
+```php
+function callParam(callable $param) {
+	$param();
+}
+
+
+callParam(function () { var_dump('anonymous function param'); });
+
+callParam(fn() => var_dump('arrow function param'));
+```
+
+`callable` 타입의 매개변수에 (Closure 타입의) 익명 함수와 화살표 함수를 전달할 수 있다.
+
 ## 메소드를 클로저로 만들기
 
 ```php
