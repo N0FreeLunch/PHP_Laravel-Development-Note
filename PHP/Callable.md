@@ -107,7 +107,7 @@ var_dump(is_callable([new B, 'objectMethod'])); // bool(true)
 var_dump([new B, 'objectMethod'] instanceof Closure); // bool(false)
 ```
 
-### callable 하위 타입
+#### 클로저
 
 ```php
 function callParam(callable $param, bool $printout = false) {
@@ -121,7 +121,13 @@ function callParam(callable $param, bool $printout = false) {
 callParam(function () { var_dump('anonymous function param'); });
 
 callParam(fn() => var_dump('arrow function param'));
+```
 
+`callable` 타입의 매개변수에 (Closure 타입의) 익명 함수와 화살표 함수를 전달할 수 있다.
+
+#### 문자열
+
+```php
 function namedFunction() {
     var_dump(__FUNCTION__);
 }
@@ -131,9 +137,78 @@ callParam('namedFunction');
 callParam('phpversion', true);
 ```
 
-`callable` 타입의 매개변수에 (Closure 타입의) 익명 함수와 화살표 함수를 전달할 수 있다.
-
 익명 함수와 화살표 함수는 값이므로 그대로 함수의 인자로 전달할 수 있지만, 기명 함수는 값이 아니므로 그냥 전달 할 수 없고, 기명 함수 이름을 담은 문자열을 전달하여 이 문자열을 함수처럼 실행한다.
+
+매개변수의 타입은 callable인데 문자열이 전달된다. 
+
+```php
+function callParam(callable $param, bool $printout = false) {
+    if ($printout) {
+        echo $param();
+        return;
+    }
+    $param();
+}
+
+
+callParam('hello', true); // Fatal error: Uncaught TypeError: callParam(): Argument #1 ($param) must be of type callable, string given
+```
+
+전달된 문자열이 기명함수의 이름이 아닌 경우, callable로 판별되지 않기 때문에 에러가 발생한다.
+
+### 배열과 정적 메소드
+
+```php
+function callParam(callable $param, bool $printout = false) {
+    if ($printout) {
+        echo $param();
+        return;
+    }
+    $param();
+}
+
+callParam(['A', 'staticMethod']); // call: A::staticMethod
+callParam(['A', 'not exists method']); // Fatal error: Uncaught TypeError: callParam(): Argument #1 ($param) must be of type callable, array given
+
+class A
+{
+    public static function staticMethod()
+    {
+        echo 'call: '.__METHOD__;
+    }
+}
+```
+
+배열의 첫 번째 인덱스에 주형 클래스를, 두 번째 인덱스에 (정적이든 비정적이든) 메소드를 담은 배열의 형태일 때만 `callable` 타입으로 판단한다. 만약 존재하지 않는 클래스 또는 메소드 명을 배열에 넣은 경우에는 `callable`이 아닌 배열으로 판단한다.
+
+### 배열과 비정적 메소드
+
+```php
+function callParam(callable $param, bool $printout = false) {
+    if ($printout) {
+        echo $param();
+        return;
+    }
+    $param();
+}
+
+callParam([new A, 'nonStaticMethod']); // call: A::staticMethod
+callParam([new A, 'not exists method']); // Fatal error: Uncaught TypeError: callParam(): Argument #1 ($param) must be of type callable, array given
+
+class A
+{
+    public function nonStaticMethod()
+    {
+        echo 'call: '.__METHOD__;
+    }
+}
+```
+
+배열의 첫 번째 인덱스에 객체를, (정적이든 비정적이든) 두 번째 인덱스에 비정적 메소드를 담은 배열의 형태일 때만 `callable` 타입으로 판단한다. 만약 객체가 아니거나 존재하지 않는 메소드 명을 배열에 넣은 경우에는 `callable`이 아닌 배열으로 판단한다.
+
+## 메소드를 값으로 사용하기
+
+메소드는 값이 아니라서 다른 함수의 파라메터로 전달할 수 없다. 기명 함수의 경우 문자열로 전달해서 문자열을 호출하면 되지만, 메소드는 문자열로도 전달할 수 없기 때문에 배열의 0번 인덱스에 클래스 또는 객체를 담고 1번 인덱스에 메소드 또는 정적 메소드를 담아서 배열 형태로 메소드를 값으로 전달하는 특수 구문이 도입되었다.
 
 ## 메소드를 클로저로 만들기
 
@@ -148,11 +223,41 @@ class A
 
     private function methodTobeClosure($methodParam)
     {
-        var_dump('run: '.__METHOD__);
-        var_dump($this);
-        var_dump('method param: '.$methodParam);
+        var_dump('run: '.__METHOD__); // string(25) "run: A::methodTobeClosure"
+        var_dump($this); object(A)#1 (0) {}
+        var_dump('method param: '.$methodParam); // string(27) "method param: closure param"
     }
 }
 
 (new A)->runMethodAsClosure();
 ```
+
+`fromCallable`의 [사양](https://www.php.net/manual/en/closure.fromcallable.php)을 보면 `public static Closure::fromCallable(callable $callback): Closure`으로 되어 있다. `callable`로 판단되는 배열에 대한 지식이 없다면 `Closure::fromCallable([$this, 'methodTobeClosure'])`는 배열을 전달했는데 왜 실행이 되는지 이상하다고 생각할 것이다. 하지만, 객체와 메소드가 0번과 1번 인덱스에 할당된 형태로 `callable`에 해당하는 값으로 `fromCallable`에 할당할 수 있는 값이다. 메소드는 배열 형태의 `callable`이 아니면 값으로 전달할 수 없기 때문에 위와 같은 방법을 사용해서 메소드를 값으로 전달하였다.
+
+### First class callable syntax 이용하기
+
+PHP8.1 부터 일급 콜러블 문법이라는 `...` 스프레드 구문을 통해서 `callable`을 `Closure`로 만드는 문법이 도입되었다.
+
+`callable`인 함수에 인자를 하나도 넣지 않고 `...`만 할당하면 동일하게 함수의 형태이면서 타입만 `callable`에서 `Closure`으로 바뀌게 된다. 이를 통해서 `Closure::`의 방식을 사용하지 않아도 간단하게 `callable`을 `Closure`으로 바꿀 수 있게 되었다.
+
+```php
+class A
+{
+    public function runMethodAsClosure()
+    {
+        $ClosureFromMethod = $this->methodTobeClosure(...);
+        $ClosureFromMethod('closure param');
+    }
+
+    private function methodTobeClosure($methodParam)
+    {
+        var_dump('run: '.__METHOD__); // string(25) "run: A::methodTobeClosure"
+        var_dump($this); // object(A)#1 (0) {}
+        var_dump('method param: '.$methodParam); // string(27) "method param: closure param"
+    }
+}
+
+(new A)->runMethodAsClosure();
+```
+
+#### 일급 콜러블 문법 자세히 알아보기
