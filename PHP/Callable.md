@@ -224,7 +224,7 @@ class A
     private function methodTobeClosure($methodParam)
     {
         var_dump('run: '.__METHOD__); // string(25) "run: A::methodTobeClosure"
-        var_dump($this); object(A)#1 (0) {}
+        var_dump($this); // object(A)#1 (0) {}
         var_dump('method param: '.$methodParam); // string(27) "method param: closure param"
     }
 }
@@ -260,4 +260,80 @@ class A
 (new A)->runMethodAsClosure();
 ```
 
-#### 일급 콜러블 문법 자세히 알아보기
+## 일급 콜러블 문법 자세히 알아보기
+
+> The first class callable syntax is introduced as of PHP 8.1.0, as a way of creating anonymous functions from callable. It supersedes existing callable syntax using strings and arrays. The advantage of this syntax is that it is accessible to static analysis, and uses the scope at the point where the callable is acquired.
+
+- `callable`에서 익명함수를 생성하는데 사용된다.
+- 기본의 `Closure::`을 사용한 방식과 다른 점은 문법이므로 정적 분석이 가능하다는 점이다.
+- 그리고 `Closure::`을 사용한 방식이 바인딩할 객체나 클래스를 지정해 주어야 하는 반면, 이 문법을 사용한 시점의 대상을 바인딩 하므로 별도로 바인딩할 대상을 지정할 필요가 없다.
+
+```php
+class Foo {
+   public function method() {}
+   public static function staticmethod() {}
+   public function __invoke() {}
+}
+
+$obj = new Foo();
+$classStr = 'Foo';
+$methodStr = 'method';
+$staticmethodStr = 'staticmethod';
+
+$f1 = strlen(...);
+$f2 = $obj(...);  // invokable object
+$f3 = $obj->method(...);
+$f4 = $obj->$methodStr(...);
+$f5 = Foo::staticmethod(...);
+$f6 = $classStr::$staticmethodStr(...);
+
+// traditional callable using string, array
+$f7 = 'strlen'(...);
+$f8 = [$obj, 'method'](...);
+$f9 = [Foo::class, 'staticmethod'](...);
+```
+
+내장 함수를 클로저로 만들기
+```php
+$f1 = strlen(...);
+```
+
+`__invoke`가 정의된 내장 함수를 클로저로 만들기
+```php
+$f2 = $obj(...);
+```
+
+비 정적 메소드를 클로저로 만들기
+```php
+$f3 = $obj->method(...);
+```
+
+메소드명을 담은 변수로 메소드를 지정해서 클로저 만들기
+```php
+$f4 = $obj->$methodStr(...);
+```
+
+정적 메소드를 클로저로 만들기
+```php
+$f5 = Foo::staticmethod(...);
+```
+
+메소드명을 담은 변수로 정적 메소드를 지정해서 클로저 만들기
+```php
+$f6 = $classStr::$staticmethodStr(...);
+```
+
+내장 함수의 이름을 문자열에 담아 `callable`을 만들고 내장함수를 클로저로 만들기
+```php
+$f7 = 'strlen'(...);
+```
+
+배열의 0번 인덱스에 객체를, 배열의 1번 인덱스에 메소드명을 담아 `callable`을 만들고 메소드를 클로저로 만들기
+```php
+$f8 = [$obj, 'method'](...);
+```
+
+배열의 0번 인덱스에 클래스를, 배열의 1번 인덱스에 메소드명을 담아 `callable`을 만들고 정적 메소드를 클로저로 만들기
+```
+$f9 = [Foo::class, 'staticmethod'](...);
+```
