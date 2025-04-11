@@ -337,3 +337,80 @@ $f8 = [$obj, 'method'](...);
 ```
 $f9 = [Foo::class, 'staticmethod'](...);
 ```
+
+### 일급 콜러블의 접근 제한자 무시
+
+#### 메소드를 배열 형태의 콜러블로 만들 때의 문제점
+
+접근 제한자가 있는 메소드에는 접근할 수 없다. 아래의 예를 보자.
+
+```php
+class Foo {
+    public function getPrivateMethod() {
+        return [$this, 'privateMethod'];
+    }
+
+    private function privateMethod() {
+        echo __METHOD__, "\n";
+    }
+}
+
+$foo = new Foo;
+$privateMethod = $foo->getPrivateMethod();
+$privateMethod();
+```
+
+`$this`는 변수이다. 클래스 내부에서 사용하면 클래스로 인스턴스가 만들어졌을 때, 해당 인스턴스를 참조하는 변수이다.
+
+`getPrivateMethod`는 메소드를 값으로 반환하는 함수이다. 메소드를 값으로 반환하기 위해서는 `callable` 타입의 값으로 만들어주어야 하고, 이를 위해서 `[$this, 'privateMethod']`를 반환한다.
+
+`$foo->getPrivateMethod()`는 `[$this, 'privateMethod']`라는 값을 반환할 것이다. php에서 배열은 함수에 전달하고 반환할 때 기본적으로 복사가 되지만, 내부의 값이 참조의 방식이라면 참조로 유지된다. 이 때 반환된 배열의 `$this`는 `$foo` 객체에 대한 참조를 유지할 것이다.
+
+문제는 `$foo` 객체에는 `privateMethod`란 접근할 수 있는 메소드가 존재하지 않는다. 왜냐하면 클래스에서 `private` 접근자로 메소드를 만들었기 때문에 객체에는 `privateMethod` 접근 가능한 대상이 없는 것이다. `[$this, 'privateMethod']`에서 `$foo` 객체의 `'privateMethod'` 메소드를 실행하고 싶지만 실행할 수가 없다. 따라서 에러가 발생한다.
+
+> // Fatal error: Call to private method Foo::privateMethod() from global scope
+
+> // This is because call is performed outside from Foo and visibility will be checked from this point.
+
+이 때 php는 객체의 엑세스 할 수 없는 메소드에 대한 정보를 찾기 위해 오브젝트의 주형 클래스에 정의된 `Foo::privateMethod()`를 찾는다. 프라이빗 메소드이기 때문에 프라이빗 메소드에 대한 엑세스를 허가하는 객체 내부에서 실행하는 것이 아니라면 엑세스 할 수 없다는 의미이며, `$privateMethod()`으로 `[$this, 'privateMethod']`가 실행된 맥락은 글로벌 스코프이기 때문에 private 메소드에 대한 엑세스는 불가능하다는 에러를 낸다.
+
+다음과 같이 퍼블릭 메소드인 경우 문제 없이 실행할 수 있다.
+
+```php
+class Foo {
+    public function getPublicMethod() {
+        return [$this, 'publicMethod'];
+    }
+
+    public function publicMethod() {
+        echo __METHOD__, "\n";
+    }
+}
+
+$foo = new Foo;
+$publicMethod = $foo->getPublicMethod();
+$publicMethod();
+```
+
+#### 일급 콜러블로 접근제한자 무시하기
+
+일급 콜러블 문법으로 콜러블이 아닌 클로저로 만들면, 콜러블이 바인딩할 대상의 정보를 담고 있지 못하는 반면, 클로저는 바인딩할 대상의 정보를 담고 있기 때문에 클래스를 바인딩하고 있다면 클래스 정보에, 객체를 바인딩하고 있다면 객체 정보에 자유롭게 엑세스 가능하다. 다음의 `getPrivateMethod` 메소드는 콜러블을 반환하는 것이 아니라, 일급 콜러블 문법을 사용하여 클로저를 반환을 한다.
+
+배열으로 메소드를 콜러블로 접근하는 방식은 외부에서 해당 메소드에 접근하는 방식이므로 접근할 수 없는 반면, 클로저로서 실행될 때는 마치 해당 객체를 내부에 속한 익명함수를 실행하는 것이 되어 접근 제한자로 가려진 대상에 접근할 수 있게 된다.
+
+```php
+class Foo1 {
+    public function getPrivateMethod() {
+        // Uses the scope where the callable is acquired.
+        return $this->privateMethod(...); // identical to Closure::fromCallable([$this, 'privateMethod']);
+    }
+
+    private function privateMethod() {
+        echo __METHOD__, "\n";
+    }
+}
+
+$foo1 = new Foo1;
+$privateMethod = $foo1->getPrivateMethod();
+$privateMethod();  // Foo1::privateMethod
+```
