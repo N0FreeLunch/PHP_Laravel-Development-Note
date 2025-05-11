@@ -69,6 +69,43 @@ public Generator::key(): mixed
 
 yielded 값의 키를 반환한다. 이 때 키는 몇 번째의 yield인지를 파악하기 위해서 사용된다.
 
+#### next
+
+```
+public Generator::next(): void
+```
+
+#### rewind
+
+```
+public Generator::rewind(): void
+```
+
+#### send
+
+```
+public Generator::send(mixed $value): mixed
+```
+
+#### throw
+
+```
+public Generator::throw(Throwable $exception): mixed
+```
+
+#### valid
+
+```
+public Generator::valid(): bool
+```
+
+#### __wakeup
+
+```
+public Generator::__wakeup(): void
+```
+
+
 ## 제너레이터의 예
 
 ```
