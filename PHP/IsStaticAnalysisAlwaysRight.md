@@ -13,11 +13,15 @@
 
 > 3. On a more philosophical note, I believe that a programming language should be usable without external tooling. While IDE use is widespread among PHP programmers, it should still be possible to write PHP code in a text editor like vim without exposing you to silent bug classes.
 
-- 위 RFC는 객체 속성의 동적 생성을 할 수 없도록 만들자는 내용이다. 이 RFC에 대한 반론으로 논의된 내용 중 하나는 정의하지 않은 속성에 접근할 때 정적 분석이 이를 알려 주기 때문에 php 언어 차원에서 이러한 기능을 굳이 제공하지 않아도 된다는 의견이다.
-- 이러한 의견에 동적 속성을 php 언어에서 제거해야 한다고 생각하는 쪽의 입장은 언어 차원에서 동적 속성을 허용하면 동적 속성이 의도된 사용인지 아닌지 정적 분석이 알 수 없기 때문에 정적 분석 도구는 이게 실수 일 수도 있고 아닐 수도 있다는 모호한 경고를 제시하게 된다는 의견을 낸다. 의도적인 동적 속성 사용에 잘못 사용된 것일 수 있지 않을까라고 의견을 내는 것이 보기에 좋지 않다는 의견이다.
-- 이러한 의견의 제시를 통해서 알 수 있는 것은, php 언어의 스팩은 언어의 사용에 대한 엄격한 스타일 가이드를 최소화 하고 이러한 언어 사용에 대한 스타일 가이드는 정적 분석 도구로 하면 된다는 의견들이 있는 것으로 보아 정적 분석 도구로 언어의 부족한 점을 보완한다는 것은 일반적인 방식인 것을 알 수 있다. 또한 가능한 정적 추론의 도구가 명확하게 판단할 수 있도록 언어를 좀 더 명확하게 만들고자 하는 의도가 있음을 알 수 있다.
-- 물론 정적 분석과 같은 외부 도구 없이도 php의 코딩이 가능해야 하므로 동적 속성 사용에서 발생할 수 있는 실수를 줄이기 위해서 동적 속성을 제거하는 주장하는 것으로 보아 정적 분석을 사용하지 않는 코딩 스타일도 존중 되어야 하는 입장을 갖고 있다.
-- 곧 정적 분석을 사용해서 언어가 할 수 없는 부족한 부분에 대한 보완을 하지만, 정적 분석을 사용하지 않았다고 해서 php에서 명시적으로 에러, 경고, 알림을 발생시키지 않는 코딩 스타일이 잘못된 것은 아니라는 것이다.
+위 RFC는 객체 속성의 동적 생성을 할 수 없도록 만들자는 내용이다. 이 RFC에 대한 반론으로 논의된 내용 중 하나는 정의하지 않은 속성에 접근할 때 정적 분석이 이를 알려 주기 때문에 php 언어 차원에서 이러한 기능을 굳이 제공하지 않아도 된다는 의견이다.
+
+이러한 의견에 동적 속성을 php 언어에서 제거해야 한다고 생각하는 쪽의 입장은 언어 차원에서 동적 속성을 허용하면 동적 속성이 의도된 사용인지 아닌지 정적 분석이 알 수 없기 때문에 정적 분석 도구는 이게 실수 일 수도 있고 아닐 수도 있다는 모호한 경고를 제시하게 된다는 의견을 낸다. 의도적인 동적 속성 사용에 잘못 사용된 것일 수 있지 않을까라고 의견을 내는 것이 보기에 좋지 않다는 의견이다.
+
+이러한 의견의 제시를 통해서 알 수 있는 것은, php 언어의 스팩은 언어의 사용에 대한 엄격한 스타일 가이드를 최소화 하고 이러한 언어 사용에 대한 스타일 가이드는 정적 분석 도구로 하면 된다는 의견들이 있는 것으로 보아 정적 분석 도구로 언어의 부족한 점을 보완한다는 것은 일반적인 방식인 것을 알 수 있다. 또한 가능한 정적 추론의 도구가 명확하게 판단할 수 있도록 언어를 좀 더 명확하게 만들고자 하는 의도가 있음을 알 수 있다.
+
+물론 정적 분석과 같은 외부 도구 없이도 php의 코딩이 가능해야 하므로 동적 속성 사용에서 발생할 수 있는 실수를 줄이기 위해서 동적 속성을 제거하는 주장하는 것으로 보아 정적 분석을 사용하지 않는 코딩 스타일도 존중 되어야 하는 입장을 갖고 있다.
+
+곧 정적 분석을 사용해서 언어가 할 수 없는 부족한 부분에 대한 보완을 하지만, 정적 분석을 사용하지 않았다고 해서 php에서 명시적으로 에러, 경고, 알림을 발생시키지 않는 코딩 스타일이 잘못된 것은 아니라는 것이다.
 
 #### [RFC: Is_Trusted](https://wiki.php.net/rfc/is_trusted#static_analysis)
 > Why not use static analysis?
@@ -28,8 +32,9 @@
 
 > Also, these tools currently focus on other issues (type checking, basic logic flaws, code formatting, etc), rarely attempting to address Injection Vulnerabilities. Those that do are often incomplete, need sinks specified on all library methods (unlikely to happen), and are not enabled by default. For example, Psalm, even in its strictest errorLevel (1), and running --taint-analysis (rarely used), will not notice the missing quote marks in this SQL, and incorrectly assume it's safe:
 
-- 위의 RFC는 통과되지 않은 RFC이지만, php 언어 스펙을 결정하는 투표를 할 수 있는 일원이 정적 분석에 관해 쓴 것이므로 참고 가능하다.
-- 언어의 기능은 정적 분석을 사용할 수 없는 또는 사용하지 않는 정적 분석 툴을 다루는 수준이 아닌 사람들도 충분히 다룰 수 있어야 하므로 언어 차원에서 변수 안에 든 문자열이 신뢰할 수 있는 것인지 없는 것인지 판단할 수 있는 기능을 제공하는 것이 옳다고 주장하고 있다.
+위의 RFC는 통과되지 않은 RFC이지만, php 언어 스펙을 결정하는 투표를 할 수 있는 일원이 정적 분석에 관해 쓴 것이므로 참고 가능하다.
+
+언어의 기능은 정적 분석을 사용할 수 없는 또는 사용하지 않는 정적 분석 툴을 다루는 수준이 아닌 사람들도 충분히 다룰 수 있어야 하므로 언어 차원에서 변수 안에 든 문자열이 신뢰할 수 있는 것인지 없는 것인지 판단할 수 있는 기능을 제공하는 것이 옳다고 주장하고 있다.
 
 ### 독선적인 코딩 스타일의 정적 분석
 
@@ -53,15 +58,30 @@ readonly의 지연 초기화를 정적 분석에서 에러로 표기하는 것�
 php에는 다양한 코딩 스타일이 존재할 수 있지만, 정적 분석은 php의 다양한 코딩 스타일의 일부를 제약하는 역할을 하기도 한다. 그리고 해당 제약이 대체로 옳다고 생각되는 방향일 수는 있지만 절대적으로 옳은 방향은 아닐 수도 있다.
 
 phpstan에서 readonly 관련 에러 메시지가 나오지 않게 하려면 `phpstan.neon` 파일에서 `ignoreErrors:` 부분에 다음과 같은 코드를 추가하면 된다.
+
 ```
     ignoreErrors:
         - '#^Class [a-zA-Z0-9\\_]+ has an uninitialized readonly property \$[a-zA-Z0-9_.]+ Assign it in the constructor.$#'
 ```
 
+#### readonly에 대한 적절한 코딩 스타일
+
+생성자를 통한 초기화 로직에서 readonly를 사용하지 않고, 한 번 할당이 일어난 코드에 대해서는 재할당이 얼어나지 않기 위해서 readonly를 사용하는 경우에는 readonly 대신 readonly를 멤버 변수에 붙이지 않고, assert를 통해서 확인하는 방법을 사용할 수 있다. 멤버 변수에 값이 할당되지 않으면 undefined 상태이고, `assert(!isset($this->memberVar))`인 경우에만 메소드의 다음 코드를 실행하는 방식을 통해서 재할당을 방지할 수 있는 코드를 작성할 수 있다.
+
 #### 런타임에서만 알 수 있는 지식을 알지못한다.
 
-- https://phpstan.org/writing-php-code/solving-undefined-variables
+- 참고 : https://phpstan.org/writing-php-code/solving-undefined-variables
+
+다음과 같은 코드가 있다고 하자.
+
 ```php
+
+interface User
+{
+	public function isDelete(): bool;
+	public function isActive(): bool;
+}
+
 function getUserStatusColor(User $user): srting
 {
     if($user->isDelete()) {
@@ -72,9 +92,17 @@ function getUserStatusColor(User $user): srting
     return $statusColor;
 }
 ```
-- 예를 들어서 위와 같은 코드가 있다고 하자. 유저 객체의 isDelete 메소드와 isActive 메소드는 서로 베타적이라고 하자. isDelete isActive 이외의 케이스는 존재하지 않음에도 불구하고 정적 분석 도구는 위의 코드에서 `$statusColor`가 정의되지 않은 경우가 발생할 수 없다는 것을 알 수 없다. 그래서 `might not be defined`라는 에러를 보고할 것이다.
+
+예를 들어서 위와 같은 코드가 있다고 하자. 유저 객체의 isDelete 메소드와 isActive 메소드는 서로 베타적이라고 하자. isDelete isActive 이외의 케이스는 존재하지 않음에도 불구하고 정적 분석 도구는 위의 코드에서 `$statusColor`가 정의되지 않은 경우가 발생할 수 없다는 것을 알 수 없다. 그래서 `might not be defined`라는 에러를 보고할 것이다.
+
 ```php
-function getUserStatusColor(User $user): srting
+interface User
+{
+	public function isDelete(): bool;
+	public function isActive(): bool;
+}
+
+function getUserStatusColor(User $user): string
 {
     if($user->isDelete()) {
         $statusColor = 'red';
@@ -86,9 +114,21 @@ function getUserStatusColor(User $user): srting
     return $statusColor;
 }
 ```
-- 위와 같은 코드도 정적 분석으로 감지 할 수 없으며 다음과 같은 코드를 생각해 볼 수 있지만, 반환값이 정의되지 않은 경우가 있을 수 있기 때문에 에러가 발생할 수도 있을 것이다.
+
+위와 같은 코드도 정적 분석으로 감지 할 수 없으며 다음과 같은 코드를 생각해 볼 수 있지만, phpstan은 다음과 같은 에러를 반환한다.
+
+> Call to function assert() with false and 'isDelete, isActive…' will always evaluate to false.
+
+> Variable $statusColor might not be defined.
+
 ```php
-function getUserStatusColor(User $user): srting
+interface User
+{
+	public function isDelete(): bool;
+	public function isActive(): bool;
+}
+
+function getUserStatusColor(User $user): string
 {
     if($user->isDelete()) {
         return 'red';
@@ -99,7 +139,37 @@ function getUserStatusColor(User $user): srting
     }
 }
 ```
-- php는 기본적으로 런타임에 동작하는 언어라서 위와 같은 코드는 합법적인 코딩 스타일이다. 하지만, 런타임의 실행을 감지할 수 없는 정적 분석은 위와 같은 코드들이 불법에 해당한다.
+
+php는 기본적으로 런타임에 동작하는 언어라서 위와 같은 코드를 작성할 수 있다. 하지만, 런타임의 실행을 감지할 수 없는 정적 분석은 위와 같은 코드들이 불법에 해당한다.
+
+> Call to function assert() with false and 'isDelete, isActive…' will always evaluate to false.
+function.impossibleType
+
+> Function getUserStatusColor() should return string but return statement is missing.
+
+이 경우 정적 분석을 만족할 수 있는 코드를 작성하기 위해서 `Error` 클래스를 활용한다. 예외가 예외가 발생하면 처리해 달라는 의미도 포함하는 반면 `Error`는 이러한 동작이 일어나지 않도록 미리 사전 조건을 잘 세팅하라는 의미를 가지고 있으며, 해당 로직이 일어나지 않을 것이라면 `Error`를 반환하여 발생하지 않도록 만들도록 코드를 작성하도록 한다.
+
+```php
+interface User
+{
+	public function isDelete(): bool;
+	public function isActive(): bool;
+}
+
+function getUserStatusColor(User $user): string
+{
+    if($user->isDelete()) {
+        return 'red';
+    } elseif ($user->isActive()) {
+        return 'blue';
+    } else {
+		throw new Error('isDelete, isActive 이외는 존재할 수 없는 케이스입니다.');
+    }
+}
+```
 
 ### 정적 분석의 코드 스타일에 맞춰야 하는가?
-- 정적 분석 도구의 장점은 직접 실행하지 않고도 버그 또는 에러가 발생할 수 있어 보이는 코드를 탐지한다는 것이다. 이런 탐지를 위해서 php 코딩으로 가능한 표현 방식의 일부를 제한한다. 대체로 정적 분석이 알려주는 코딩 스타일을 지키는 것은 좋지만, 프레임워크, 아키텍처, 각 프로젝트의 코딩 스타일의 제약사항으로 인해 항상 정적 분석이 제시하는 방식을 따를 수 있는 것은 아니다.
+
+정적 분석 도구의 장점은 직접 실행하지 않고도 버그 또는 에러가 발생할 수 있어 보이는 코드를 탐지한다는 것이다. 이런 탐지를 위해서 php 코딩으로 가능한 표현 방식의 일부를 제한한다. 대체로 정적 분석이 알려주는 코딩 스타일을 지키는 것은 좋지만, 레거시 코드가 존재할 수 있고, 정적 분석을 고려하지 않은 프레임워크나 라이브러리의 설계로 인해서 반드시 정적 분석이 제시하는 방식을 따를 수 있는 것은 아니다.
+
+하지만 새로운 프로젝트나 정적 추론 도구를 적극적으로 활용하여 런타임에서 발생할 수 있는 버그를 최대한 차단하기 위해서는 정적 분석 툴을 적극적으로 도입하는 것이 옳으며, 가능하면 정적 분석을 할 수 있는 코드를 작성하는 코딩 스타일을 갖추는 편이 좋다.
