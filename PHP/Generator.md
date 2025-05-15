@@ -42,7 +42,7 @@ public Generator::getReturn(): mixed
 
 함수의 반환 값을 반환한다.
 
-```
+```php
 $gen = (function() {
     yield 1;
     yield 2;
@@ -67,7 +67,7 @@ echo $gen->getReturn(), PHP_EOL;
 public Generator::key(): mixed
 ```
 
-yielded 값의 키를 반환한다. 이 때 키는 몇 번째의 yield인지를 파악하기 위해서 사용된다.
+yielded 값의 키를 반환한다. 이 때 키는 몇 번째 실행된 yield인지를 파악하기 위해서 사용된다.
 
 #### next
 
@@ -75,10 +75,35 @@ yielded 값의 키를 반환한다. 이 때 키는 몇 번째의 yield인지를 
 public Generator::next(): void
 ```
 
+함수 내의 다음 번 실행되는 yield 위치까지 실행을 한다. 반환값이 `void`인 것을 통해서 다음 번 yielded 값을 얻을 수 있는 위치까지만 이동한다.
+
 #### rewind
 
 ```
 public Generator::rewind(): void
+```
+
+제너레이터는 순 방향으로만 데이터를 조회할 수 있기 때문에, rewind 메소드로 이전 yield로 갈 수 없으며 단순히 iterator 인터페이스와 일치시키기 위한 역할의 구현체일 뿐이다.
+
+```php
+$gen = (function() {
+    yield 1;
+    yield 2;
+    yield 3;
+})();
+
+$gen->next();
+var_dump('key: '.$gen->key());
+var_dump('yield: '.$gen->current());
+
+$gen->next();
+var_dump('key: '.$gen->key());
+var_dump('yield: '.$gen->current());
+
+$gen->rewind(); // Fatal error: Uncaught Exception: Cannot rewind a generator that was already run 
+
+var_dump('key: '.$gen->key());
+var_dump('yield: '.$gen->current());
 ```
 
 #### send
