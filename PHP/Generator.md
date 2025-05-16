@@ -112,6 +112,28 @@ var_dump('yield: '.$gen->current());
 public Generator::send(mixed $value): mixed
 ```
 
+`yield value`에서 `value`는 제너레이터가 `yield` 지점에서 실행을 멈추었을 때 `getCurrent` 등으로 `yield`에 의해 반환되는 값이다. 이에 반해 `yield`에 값을 부여하지 않을 때는 제너레이터가 멈추는데, 제너레이터 외부에서 `send` 메소드로 `yield` 값을 제너레이트 내부로 보내면 `yield` 값이 없는 부분까지 제너레이터 재개되고, 값이 없는 `yield` 단계에서 정지한다.
+
+```php
+function printer() {
+    echo "I'm printer!".PHP_EOL;
+    while (true) {
+        $string = yield;
+        echo $string.PHP_EOL;
+    }
+}
+
+$printer = printer();
+$printer->send('Hello world!');
+$printer->send('Bye world!');
+```
+
+`$printer = printer();`에 의해 제너레이터가 생성된다. 생성된 제너레이트는 `$printer->send()`에 의해서 첫 번째로 yield값을 받고, 첫 번째 yield 단계까지 코드를 실행한다.
+
+따라서 `$printer->send('Hello world!');`는 `echo "I'm printer!".PHP_EOL;` 부분의 코드와 while 문의 첫 번째 `$string = yield;`를 실행하여 `I'm printer! Hello world!`가 되고, 두 번째 `yield`는 값이 없으므로 이 지점에서 정지해 있다가 `$printer->send('Bye world!')`으로 다음 `yield` 값을 받으면 실행이 되어 `Bye world!`를 출력한다.
+
+
+
 #### throw
 
 ```
