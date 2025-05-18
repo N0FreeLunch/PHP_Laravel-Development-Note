@@ -32,7 +32,7 @@ Iterator 인터페이스를 구현하는 것은 `current`, `key`, `next`, `rewin
 public Generator::current(): mixed
 ```
 
-현제의 yielded 값을 반환한다.
+제너레이터 내부의 현제 단계의 yielded 값을 반환한다.
 
 #### getReturn
 
@@ -40,7 +40,7 @@ public Generator::current(): mixed
 public Generator::getReturn(): mixed
 ```
 
-함수의 반환 값을 반환한다.
+제너레이터 함수 내부의 함수의 반환 값(`return` 키워드로 반환되는) 값을 얻는다.
 
 ```php
 $gen = (function() {
@@ -57,7 +57,7 @@ foreach ($gen as $val) {
 echo $gen->getReturn(), PHP_EOL;
 ```
 
-만약 함수 내에 정의된 모든 yield를 밟는 절차가 끝나지 않은 상태에서 `getReturn()`를 반환하면 다음과 같은 에러가 반환된다.
+이 때 제너레이터 내부의 단계가 `return` 키워드에 도달하지 못하고 어떤 yield 단계에서 멈춰 있다면 에러가 발생한다. 다음 예를 보자.
 
 ```php
 $gen = (function() {
@@ -88,7 +88,7 @@ var_dump('yield: '.$gen->current());
 public Generator::key(): mixed
 ```
 
-yielded 값의 키를 반환한다. 이 때 키는 몇 번째 실행된 yield인지를 파악하기 위해서 사용된다.
+`yielded` 값의 키를 반환한다. 이 때 키는 몇 번째 실행된 `yield`인지를 파악하기 위해서 사용된다.
 
 #### next
 
@@ -96,7 +96,7 @@ yielded 값의 키를 반환한다. 이 때 키는 몇 번째 실행된 yield인
 public Generator::next(): void
 ```
 
-함수 내의 다음 번 실행되는 yield 위치까지 실행을 한다. 반환값이 `void`인 것을 통해서 다음 번 yielded 값을 얻을 수 있는 위치까지만 이동한다.
+함수 내의 다음 번 실행되는 `yield` 위치까지 실행을 한다. 반환값이 `void`인 것을 통해서 알 수 있는 것은, 다음 번 `yield` 부분까지 이동하고 `yielded` 값을 반환하지는 않는다는 의미이다.
 
 #### rewind
 
@@ -104,9 +104,9 @@ public Generator::next(): void
 public Generator::rewind(): void
 ```
 
-제너레이터는 순 방향으로만 데이터를 조회할 수 있기 때문에, rewind 메소드로 이전 `yield`로 갈 수 없으며 단순히 `iterator` 인터페이스와 일치시키기 위한 역할의 구현체이다.
+제너레이터는 순 방향으로만 데이터를 조회할 수 있기 때문에, `rewind` 메소드로 이전 `yield`로 갈 수 없으며 단순히 `iterator` 인터페이스와 일치시키기 위한 역할의 구현체이다.
 
-단, 제너레이터의 단계가 첫 번째 `yield` 단계라면 유의미한 실행을 하는데, 첫 번째 `yield`가 실행되기 바로 전 지점까지 동작시킨다. 이는 제너레이터의 생성 시점에서는 제너레이터 내부에 정의된 코드가 실행되지는 않지만 `rewind`를 사용하면 첫 번째 yield 지점까지 코드를 실행한다.
+단, 제너레이터의 단계가 첫 번째 `yield` 단계라면 유의미한 실행을 하는데, 첫 번째 `yield`가 실행되기 바로 전 지점까지 동작시킨다. 이는 제너레이터의 생성 시점에서는 제너레이터 내부에 정의된 코드가 실행되지는 않지만 `rewind`를 사용하면 첫 번째 `yield` 지점까지 코드를 실행한다.
 
 `current` 메소드를 사용하면 해당 단계의 `yield` 값을 얻을 수는 있지만, 다음 단계의 `yield` 위치로 이동하지는 않는다. 첫 번째 단계의 `yield`에서 `current`를 사용하면 단계는 여전히 첫 번째 단계이므로 `rewind`를 사용하면 해당 단계 그대로 머물게 된다.
 
@@ -131,13 +131,19 @@ $generator->rewind(); // I'm a generator!
 $generator->rewind(); // No output (NULL)
 ```
 
+제너레이터를 생성 후 첫 번째 `rewind` 메소드가 실행되면, 첫 번째 yield 위치까지의 코드가 실행되며, 첫 번째 yielded 값은 아직 얻지 않은 단계까지 코드의 실행이 이뤄진다.
+
+그래서 for문 내부의 yield 부분의 값은 얻지 않고, 그 전의 `echo "I'm a generator!\n";` 부분의 코드만 실행된다.
+
+첫 번째 `yield` 단계에서 `rewind` 메소드가 실행되면, 이미 첫 번째 `yield` 단계에서 첫 번째 `yield` 단계로 이동하는 것이기 때문에 특별하게 코드를 실행할 것이 없기 때문에 아무런 코드를 실행하지 않는다.
+
 #### send
 
 ```
 public Generator::send(mixed $value): mixed
 ```
 
-`yield value`에서 `value`는 제너레이터가 `yield` 지점에서 실행을 멈추었을 때 `getCurrent` 등으로 `yield`에 의해 반환되는 값이다. 이에 반해 `yield`에 값을 부여하지 않을 때는 제너레이터가 멈추는데, 제너레이터 외부에서 `send` 메소드로 `yield` 값을 제너레이트 내부로 보내면 `yield` 값이 없는 부분까지 제너레이터 재개되고, 값이 없는 `yield` 단계에서 정지한다.
+`yield value`에서 `value`는 제너레이터가 `yield` 지점에서 실행을 멈추었을 때 `current`으로 `yield`에 의해 반환되는 값이다. 이에 반해 `yield`에 값을 부여하지 않을 때는 제너레이터가 멈추는데, 제너레이터 외부에서 `send` 메소드로 `yield` 값을 제너레이트 내부로 보내면 `yield` 값이 있으므로 제너레이터 재개되고, 그 다음으로 값이 없는 `yield` 단계에서 정지한다.
 
 ```php
 function printer() {
@@ -153,7 +159,7 @@ $printer->send('Hello world!');
 $printer->send('Bye world!');
 ```
 
-`$printer = printer();`에 의해 제너레이터가 생성된다. 생성된 제너레이트는 `$printer->send()`에 의해서 첫 번째로 yield값을 받고, 첫 번째 yield 단계까지 코드를 실행한다.
+`$printer = printer();`에 의해 제너레이터가 생성된다. 생성된 제너레이트는 `$printer->send()`에 의해서 첫 번째로 `yield`값을 받고, 첫 번째 `yield` 단계까지 코드를 실행한다.
 
 따라서 `$printer->send('Hello world!');`는 `echo "I'm printer!".PHP_EOL;` 부분의 코드와 while 문의 첫 번째 `$string = yield;`를 실행하여 `I'm printer! Hello world!`가 되고, 두 번째 `yield`는 값이 없으므로 이 지점에서 정지해 있다가 `$printer->send('Bye world!')`으로 다음 `yield` 값을 받으면 실행이 되어 `Bye world!`를 출력한다.
 
