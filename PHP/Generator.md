@@ -59,6 +59,27 @@ echo $gen->getReturn(), PHP_EOL;
 
 만약 함수 내에 정의된 모든 yield를 밟는 절차가 끝나지 않은 상태에서 `getReturn()`를 반환하면 다음과 같은 에러가 반환된다.
 
+```php
+$gen = (function() {
+    yield 1;
+    yield 2;
+    yield 3;
+})();
+
+$gen->next();
+var_dump('key: '.$gen->key());
+var_dump('yield: '.$gen->current());
+
+$gen->next();
+var_dump('key: '.$gen->key());
+var_dump('yield: '.$gen->current());
+
+$gen->rewind(); // Fatal error: Uncaught Exception: Cannot rewind a generator that was already run 
+
+var_dump('key: '.$gen->key());
+var_dump('yield: '.$gen->current());
+```
+
 > Fatal error: Uncaught Exception: Cannot get return value of a generator that hasn't returned 
 
 #### key
@@ -83,27 +104,31 @@ public Generator::next(): void
 public Generator::rewind(): void
 ```
 
-제너레이터는 순 방향으로만 데이터를 조회할 수 있기 때문에, rewind 메소드로 이전 yield로 갈 수 없으며 단순히 iterator 인터페이스와 일치시키기 위한 역할의 구현체일 뿐이다.
+제너레이터는 순 방향으로만 데이터를 조회할 수 있기 때문에, rewind 메소드로 이전 `yield`로 갈 수 없으며 단순히 `iterator` 인터페이스와 일치시키기 위한 역할의 구현체이다.
+
+단, 제너레이터의 단계가 첫 번째 `yield` 단계라면 유의미한 실행을 하는데, 첫 번째 `yield`가 실행되기 바로 전 지점까지 동작시킨다. 이는 제너레이터의 생성 시점에서는 제너레이터 내부에 정의된 코드가 실행되지는 않지만 `rewind`를 사용하면 첫 번째 yield 지점까지 코드를 실행한다.
+
+`current` 메소드를 사용하면 해당 단계의 `yield` 값을 얻을 수는 있지만, 다음 단계의 `yield` 위치로 이동하지는 않는다. 첫 번째 단계의 `yield`에서 `current`를 사용하면 단계는 여전히 첫 번째 단계이므로 `rewind`를 사용하면 해당 단계 그대로 머물게 된다.
 
 ```php
-$gen = (function() {
-    yield 1;
-    yield 2;
-    yield 3;
-})();
+function generator(): Generator
+{
+    echo "I'm a generator!\n";
 
-$gen->next();
-var_dump('key: '.$gen->key());
-var_dump('yield: '.$gen->current());
+    for ($i = 1; $i <= 3; $i++) {
+        yield $i;
+    }
+}
 
-$gen->next();
-var_dump('key: '.$gen->key());
-var_dump('yield: '.$gen->current());
+// Initialize the generator
+$generator = generator();
 
-$gen->rewind(); // Fatal error: Uncaught Exception: Cannot rewind a generator that was already run 
+// Rewind the generator to the beginning of the first yield expression,
+// if it's not already there
+$generator->rewind(); // I'm a generator!
 
-var_dump('key: '.$gen->key());
-var_dump('yield: '.$gen->current());
+// Nothing happens here; the generator is already rewound
+$generator->rewind(); // No output (NULL)
 ```
 
 #### send
@@ -132,12 +157,28 @@ $printer->send('Bye world!');
 
 따라서 `$printer->send('Hello world!');`는 `echo "I'm printer!".PHP_EOL;` 부분의 코드와 while 문의 첫 번째 `$string = yield;`를 실행하여 `I'm printer! Hello world!`가 되고, 두 번째 `yield`는 값이 없으므로 이 지점에서 정지해 있다가 `$printer->send('Bye world!')`으로 다음 `yield` 값을 받으면 실행이 되어 `Bye world!`를 출력한다.
 
-
-
 #### throw
 
 ```
 public Generator::throw(Throwable $exception): mixed
+```
+
+`yield` 부분에 예외 객체를 전달하면서 던진다. `send`로 단순히 에외 객체를 전달하면 예외 객체를 값으로 사용하는 것이 되며, 예외 객체를 전달하는 것 + 전달한 예외 객체를 던지는 것까지 이뤄진다.
+
+```php
+function gen() {
+    echo "Foo\n";
+    try {
+        yield;
+    } catch (Exception $e) {
+        echo "Exception: {$e->getMessage()}\n";
+    }
+    echo "Bar\n";
+}
+ 
+$gen = gen();
+$gen->rewind();
+$gen->throw(new Exception('Test'));
 ```
 
 #### valid
