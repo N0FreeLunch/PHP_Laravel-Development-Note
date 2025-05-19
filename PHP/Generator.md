@@ -1,14 +1,8 @@
 # Generator
 
-## 배열의 문제
-
-PHP의 foreach와 같은 문법은 배열을 순회할 수 있는 기능을 제공한다. php에서 배열은 array의 형태를 docblock generic이나 array shape로 적어주지 않는 한, 배열 안에 든 원소가 무엇인지 정적 분석툴로 추론할 수 없다는 단점을 가진 문법이다.
-
-배열의 타입 추론이 docblock에 의존하는 문제 때문에, 보일러 플레이트가 좀 더 있더라도, DTO 클래스를 사용하거나, Iterator 클래스를 사용하는 문법 등을 활용하는 방법이 추천되기도 한다. 하지만 이 방식은 지나치게 장황할 수 있어서 타입 추론이 잘 되지만, 많은 개발자들에게 광범위하게 채택되지 않는 문제점이 존재한다.
-
 ## Generator 사용 이유
 
-Iterator 인터페이스를 구현하는 것은 `current`, `key`, `next`, `rewind`, `valid` 등의 메소드를 모두 구현해야 하기 때문에 보일러 플레이트가 장황하다. 순 방향 조회의 순회만 할 경우, Iterator 인터페이스에서 `next`만을 사용하는 방법으로 사용한다고 하면, Generator는  사용해서 보일러 플레이트를 줄이는 코드를 작성할 수 있다.
+`Iterator` 인터페이스를 구현하는 것은 `current`, `key`, `next`, `rewind`, `valid` 등의 메소드를 모두 구현해야 하기 때문에 보일러 플레이트가 장황하다. 순 방향 조회의 순회만 할 경우, `Iterator` 인터페이스에서 `next`만을 사용하는 방법으로 사용한다고 하면, Generator를 사용해서 보일러 플레이트를 줄이는 코드를 작성할 수 있다.
 
 ## 제너레이터의 특징
 
@@ -18,13 +12,34 @@ Iterator 인터페이스를 구현하는 것은 `current`, `key`, `next`, `rewin
 
 모든 데이터를 미리 생성하면, 반복되는 사용에는 유용하지만 1회성 작업에는 많은 메모리를 소비하기 때문에 적절한 방법은 아니다. 순회와 동시에 1회만 취득하는 경우 제너레이터를 사용해서 메모리 소비를 최소한으로 하여 사용가능하다.
 
-### iterator의 인터페이스 사용 가능
+### `Iterator`의 인터페이스 사용 가능
 
-제너레이트는 iterator의 인터페이스와 동일한 인터페이스를 갖는데, iterator의 인터페이스인 `current`, `key`, `next`, `rewind`, `valid` 뿐만 아니라, `send`, `getReturn`, `throw`, `_​_​wakeup` 등의 메소드도 추가적으로 사용할 수 있다. iterator의 인터페이스를 가지고 있기 때문에 iterator를 활용하는 다양한 구문에 제너레이터를 사용할 수 있다.
+제너레이트는 `Iterator`의 인터페이스와 동일한 인터페이스를 갖는데, `Iterator`의 인터페이스인 `current`, `key`, `next`, `rewind`, `valid` 뿐만 아니라, `send`, `getReturn`, `throw`, `_​_​wakeup` 등의 메소드도 추가적으로 사용할 수 있다. `Iterator`의 인터페이스를 가지고 있기 때문에 `Iterator`를 활용하는 다양한 구문에 제너레이터를 사용할 수 있다.
 
 ## 제너레이터의 기본 문법
 
-제너레이터의 메소드는 다음과 같다.
+### 클래스
+
+```php
+final class Generator implements Iterator {
+    /* Methods */
+    public current(): mixed
+    public getReturn(): mixed
+    public key(): mixed
+    public next(): void
+    public rewind(): void
+    public send(mixed $value): mixed
+    public throw(Throwable $exception): mixed
+    public valid(): bool
+    public __wakeup(): void
+}
+```
+
+`Iterator` 인터페이스를 클래스를 구현하므로 `Iterator` 인터페이스를 전달할 수 있는 다양한 인자 및 구문에 사용될 수 있다.
+
+`final` 클래스이므로 상속을 사용해서 확장할 수 없다. 이는 메소드의 타입힌트를 구체화하여 명확한 타입을 사용하도록 하는 방법을 사용할 수 없게 한다.
+
+### 메소드
 
 #### [current](https://www.php.net/manual/en/generator.current.php)
 
