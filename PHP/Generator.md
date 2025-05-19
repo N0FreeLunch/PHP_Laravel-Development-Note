@@ -272,6 +272,10 @@ bool(false)
 public Generator::__wakeup(): void
 ```
 
+> The intended use of __wakeup() is to reestablish any database connections that may have been lost during serialization and perform other reinitialization tasks.
+
+`__wakeup` 매직 메소드는 시리얼라이즈 된 문자열을 다시 프로그래밍 언어의 값으로 (언시리얼라이즈를 통해서) 부활 시켰을 때, 이 객체를 동작시키기 위해서 필요한 조건들을 세팅하기 위한 것들을 정의하는 데 사용한다. 제너레이터는 직렬화 대상이 아니므로 이 메소드를 실행하는 것은 에러를 발생한다. 시리얼라이즈 이후 자동으로 `__wakeup` 메소드가 실행이 되는데, 이 때 에러를 발생시켜 언시리얼라이즈를 할 수 없도록 만든다.
+
 ## 제너레이터의 예
 
 ```php
