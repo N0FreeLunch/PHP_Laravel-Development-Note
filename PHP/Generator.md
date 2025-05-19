@@ -26,7 +26,7 @@ Iterator 인터페이스를 구현하는 것은 `current`, `key`, `next`, `rewin
 
 제너레이터의 메소드는 다음과 같다.
 
-#### current
+#### [current](https://www.php.net/manual/en/generator.current.php)
 
 ```
 public Generator::current(): mixed
@@ -34,7 +34,7 @@ public Generator::current(): mixed
 
 제너레이터 내부의 현제 단계의 yielded 값을 반환한다.
 
-#### getReturn
+#### [getReturn](https://www.php.net/manual/en/generator.getreturn.php)
 
 ```
 public Generator::getReturn(): mixed
@@ -82,7 +82,7 @@ var_dump('yield: '.$gen->current());
 
 > Fatal error: Uncaught Exception: Cannot get return value of a generator that hasn't returned 
 
-#### key
+#### [key](https://www.php.net/manual/en/generator.key.php)
 
 ```
 public Generator::key(): mixed
@@ -90,7 +90,7 @@ public Generator::key(): mixed
 
 `yielded` 값의 키를 반환한다. 이 때 키는 몇 번째 실행된 `yield`인지를 파악하기 위해서 사용된다.
 
-#### next
+#### [next](https://www.php.net/manual/en/generator.next.php)
 
 ```
 public Generator::next(): void
@@ -98,7 +98,7 @@ public Generator::next(): void
 
 함수 내의 다음 번 실행되는 `yield` 위치까지 실행을 한다. 반환값이 `void`인 것을 통해서 알 수 있는 것은, 다음 번 `yield` 부분까지 이동하고 `yielded` 값을 반환하지는 않는다는 의미이다.
 
-#### rewind
+#### [rewind](https://www.php.net/manual/en/generator.rewind.php)
 
 ```
 public Generator::rewind(): void
@@ -137,7 +137,48 @@ $generator->rewind(); // No output (NULL)
 
 첫 번째 `yield` 단계에서 `rewind` 메소드가 실행되면, 이미 첫 번째 `yield` 단계에서 첫 번째 `yield` 단계로 이동하는 것이기 때문에 특별하게 코드를 실행할 것이 없기 때문에 아무런 코드를 실행하지 않는다.
 
-#### send
+```php
+foreach ($generator as $value) {
+    // After yielding the first value, the generator remains at
+    // the first yield expression until it resumes execution and advances to the next yield
+    echo $value, PHP_EOL; // 1
+
+    break;
+}
+```
+
+아직 첫 번째 `yield` 단계에 있기 때문에, 제너레이터를 순회하는 `foreach` 구문에 의해서 첫 번째 `yield` 값 부터 순회를 하게 된다.
+
+위의 예제는 `foreach` 문에 `break`가 존재하기 때문에 첫 번째 순회만 실행하므로 1만 출력한다.
+
+```php
+// Resume and rewind again. No error occurs because the generator has not advanced beyond the first yield
+$generator->rewind();
+
+echo $generator->current(), PHP_EOL; // 1
+```
+
+`yield`의 단계가 첫 번째 단계이므로 `rewind` 메소드를 다시 실행해도 첫 번째 단계에서 멈춰있는 단계가 된다. `current`으로 현재 값을 취득할 때는 해당 단계의 값인 1을 얻는다.
+
+```php
+// No error occurs, the generator is still at the first yield
+$generator->rewind();
+
+// This advances the generator to the second yield expression
+$generator->next();
+
+try {
+    // This will throw an Exception,
+    // because the generator has already advanced to the second yield
+    $generator->rewind(); // Fatal error: Uncaught Exception: Cannot rewind a generator that was already run
+} catch (Exception $e) {
+    echo $e->getMessage();
+}
+```
+
+`next()` 메소드를 통해서, 제너레이터의 단계가 다음 단계의 `yield`로 이동을 하게되면, `rewind()`메소드는 첫 번째 단계의 `yield`로 가야 하는데, 제너레이터는 순 방향 조회만 가능하므로, 두 번째 단계의 `yield`에서 첫 번째 단계의 `yield`로 `rewind` 할 수 없다는 에러를 반환한다.
+
+#### [send](https://www.php.net/manual/en/generator.send.php)
 
 ```
 public Generator::send(mixed $value): mixed
@@ -163,7 +204,7 @@ $printer->send('Bye world!');
 
 따라서 `$printer->send('Hello world!');`는 `echo "I'm printer!".PHP_EOL;` 부분의 코드와 while 문의 첫 번째 `$string = yield;`를 실행하여 `I'm printer! Hello world!`가 되고, 두 번째 `yield`는 값이 없으므로 이 지점에서 정지해 있다가 `$printer->send('Bye world!')`으로 다음 `yield` 값을 받으면 실행이 되어 `Bye world!`를 출력한다.
 
-#### throw
+#### [throw](https://www.php.net/manual/en/generator.throw.php)
 
 ```
 public Generator::throw(Throwable $exception): mixed
@@ -187,22 +228,53 @@ $gen->rewind();
 $gen->throw(new Exception('Test'));
 ```
 
-#### valid
+#### [valid](https://www.php.net/manual/en/generator.valid.php)
 
 ```
 public Generator::valid(): bool
 ```
 
-#### __wakeup
+제너레이터의 모든 단계가 순회 되었는지 아니면 아직 단계의 진행중인지 확인한다. 어떤 `yield` 단계에서 정지되어 있다면 `true`를 모든 단계가 끝나 (`return`이 없어도 `null`을 반환하며 종료하기 때문) 함수가 종료되었다면 `false`를 반환한다.
+
+```php
+$gen1to3 = (function() {
+    for ($i = 1; $i <= 3; $i++) {
+        // Note that $i is preserved between yields.
+        yield $i;
+    }
+})();
+
+foreach ($gen1to3 as $value) {
+    var_dump($gen1to3->valid());
+    echo "$value\n";
+}
+
+var_dump($gen1to3->valid());
+```
+
+위의 결과는 다음과 같다.
+
+```
+bool(true)
+1
+bool(true)
+2
+bool(true)
+3
+bool(false)
+```
+
+제너레이터 단계가 yield에서 멈춰 있을 때, `valid()` 메소드는 `true`를 반환하지만 제너레이터 함수가 종료 되었을 때는 `false`를 반환한다.
+
+#### [__wakeup](https://www.php.net/manual/en/generator.wakeup.php)
 
 ```
 public Generator::__wakeup(): void
 ```
 
-
 ## 제너레이터의 예
 
-```
+```php
 function gen1to3() {
     for ($i = 1; $i <= 3; $i++) {
         // Note that $i is preserved between yields.
