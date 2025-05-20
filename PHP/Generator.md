@@ -18,7 +18,7 @@
 
 ## 제너레이터의 기본 문법
 
-### 클래스
+### 클래스 사양
 
 ```php
 final class Generator implements Iterator {
@@ -38,6 +38,12 @@ final class Generator implements Iterator {
 `Iterator` 인터페이스를 클래스를 구현하므로 `Iterator` 인터페이스를 전달할 수 있는 다양한 인자 및 구문에 사용될 수 있다.
 
 `final` 클래스이므로 상속을 사용해서 확장할 수 없다. 이는 메소드의 타입힌트를 구체화하여 명확한 타입을 사용하도록 하는 방법을 사용할 수 없게 한다.
+
+> Generator objects cannot be instantiated via new.
+
+제너레이터는 클래스이고 `private function __construct()`가 정의된 것은 아니지만 `new` 키워드를 통해서 객체를 생성할 수 없는 특수한 대상이다. 만약 new 키워드로 `new Generator` 코드를 사용하면 다음과 같은 에러메시지가 나타난다.
+
+> Fatal error: Uncaught Error: The "Generator" class is reserved for internal use and cannot be manually instantiated
 
 ### 메소드
 
@@ -72,7 +78,7 @@ foreach ($gen as $val) {
 echo $gen->getReturn(), PHP_EOL;
 ```
 
-이 때 제너레이터 내부의 단계가 `return` 키워드에 도달하지 못하고 어떤 yield 단계에서 멈춰 있다면 에러가 발생한다. 다음 예를 보자.
+이 때 제너레이터 내부의 단계가 `return` 키워드에 도달하지 못하고 어떤 `yield` 단계에서 멈춰 있다면 에러가 발생한다. 다음 예를 보자.
 
 ```php
 $gen = (function() {
@@ -291,7 +297,7 @@ public Generator::__wakeup(): void
 
 `__wakeup` 매직 메소드는 시리얼라이즈 된 문자열을 다시 프로그래밍 언어의 값으로 (언시리얼라이즈를 통해서) 부활 시켰을 때, 이 객체를 동작시키기 위해서 필요한 조건들을 세팅하기 위한 것들을 정의하는 데 사용한다. 제너레이터는 직렬화 대상이 아니므로 이 메소드를 실행하는 것은 에러를 발생한다. 시리얼라이즈 이후 자동으로 `__wakeup` 메소드가 실행이 되는데, 이 때 에러를 발생시켜 언시리얼라이즈를 할 수 없도록 만든다.
 
-## 제너레이터의 예
+## 제너레이터의 활용
 
 ```php
 function gen1to3() {
@@ -306,6 +312,77 @@ foreach ($generator as $value) {
     echo "$value\n";
 }
 ```
+
+제너레이터는 함수의 평가와 같이 '함수()'의 방식의 리턴 값을 통해서 제너레이터 객체를 얻을 수 있다. `new Generator`를 사용하지 않고 '제너레이터_함수()'의 방식으로 제너레이터 객체를 얻는 것에 주의하자.
+
+제너레이터 객체는 `Iterator` 인터페이스를 구현하며, `Iterator`는 `Traversable` 인터페이스를 상속하는 인터페이스인데, `Traversable` 인터페이스는 `foreach`의 순회가 가능한 인터페이스 사양을 가진다.
+
+제너레이터는 `foreach`에 의한 순회가 가능한 인터페이스를 가지고 있으며, 배열의 각각의 원소를 `foreach($arr as $el)`으로 사용하는 것과 같이 `foreach($gen as $yielded)` 각 `yieled` 단계를 엑세스 할 수 있다.
+
+```php
+foreach ($generator as $value) {
+    echo "$value\n";
+}
+```
+
+`foreach`의 각 순회 단계 중괄호를 여는 시점에서 제너레이터는 이전 단계에서 다음 단계의 `yield`까지 코드를 실행을 한다.
+
+### `yield`에서 키-값 쌍을 반환하기 
+
+php의 foreach 구문은 `foreach ($generator as $value)`와 같이 각각의 원소에 대한 순회를 지원하기도 하지만, `foreach ($generator as $key => $value)` 방식의 순회를 할 수 있다.
+`foreach` 구문에 의한 순회가 가능한 `Traversable`의 구현체는 순회할 값 뿐만 아니라 키에 대한 구현도 하기 때문에 키를 기반으로 한 `foreach` 순회가 가능하다.
+
+제너레이터에서는 `yield $key => $value`의 구문으로 `foreach` 구문의 `$key => $value`에서 키와 값을 취득할 수 있도록 할 수 있다.
+
+```php
+/*
+ * The input is semi-colon separated fields, with the first
+ * field being an ID to use as a key.
+ */
+
+$input = <<<'EOF'
+1;PHP;Likes dollar signs
+2;Python;Likes whitespace
+3;Ruby;Likes blocks
+EOF;
+
+function input_parser($input) {
+    foreach (explode("\n", $input) as $line) {
+        $fields = explode(';', $line);
+        $id = array_shift($fields);
+
+        yield $id => $fields;
+    }
+}
+
+foreach (input_parser($input) as $id => $fields) {
+    echo "$id:\n";
+    echo "    $fields[0]\n";
+    echo "    $fields[1]\n";
+}
+```
+
+`input_parser` 함수는 제너레이터 함수이다. 이 제너레이터의 `yield`는 `yield $id => $fields`으로 키와 값을 `foreach` 구문에 전달한다.
+
+`input_parser($input) as $id => $fields`으로 생성한 제너레이터를 순회할 때, `yield`에서 전달된 키-벨류를 반환한다.
+
+### 자동 키 생성
+
+```php
+function gen_three_nulls() {
+    foreach (range(1, 3) as $i) {
+        yield;
+    }
+}
+
+var_dump(iterator_to_array(gen_three_nulls()));
+```
+
+위 제너레이터의 `yield`의 인자는 세팅되지 않았다. 하지만, 해당 단계의 `yield` 값은 `null`이 되며, 키-벨류 쌍의 배열로 변경할 때 생성된 순서대로 0,1,2...으로 인덱스가 생성된다.
+
+### 제너레이터 참조
+
+제너레이터는 `yield` 단계를 가진다. 곧, 일반적인 함수와 달리, 어느 `yield` 단계에 위치해 있는지에 대한 상태 정보를 가지고 있다. 하지만 제너레이터는 `clone` 키워드 등으로 복사를 할 수 있는 대상이 아니다. (Fatal error: Uncaught Error: Trying to clone an uncloneable object of class Generator 라는 에러가 발생한다.), 복사를 해서 동일한 상태를 가진 제너레이터를 이용할 수는 없지만, 새로 제너레이터 객체를 생성할 때, 다른 제너레이터들과 `yield` 단계를 공유할 수 있는 제너레이터를 만들 수 있다.
 
 ## 함수형 프로그래밍
 
