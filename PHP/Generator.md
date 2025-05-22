@@ -380,9 +380,82 @@ var_dump(iterator_to_array(gen_three_nulls()));
 
 위 제너레이터의 `yield`의 인자는 세팅되지 않았다. 하지만, 해당 단계의 `yield` 값은 `null`이 되며, 키-벨류 쌍의 배열로 변경할 때 생성된 순서대로 0,1,2...으로 인덱스가 생성된다.
 
-### 제너레이터 참조
+### yield 참조 (Yielding by reference)
 
-제너레이터는 `yield` 단계를 가진다. 곧, 일반적인 함수와 달리, 어느 `yield` 단계에 위치해 있는지에 대한 상태 정보를 가지고 있다. 하지만 제너레이터는 `clone` 키워드 등으로 복사를 할 수 있는 대상이 아니다. (Fatal error: Uncaught Error: Trying to clone an uncloneable object of class Generator 라는 에러가 발생한다.), 복사를 해서 동일한 상태를 가진 제너레이터를 이용할 수는 없지만, 새로 제너레이터 객체를 생성할 때, 다른 제너레이터들과 `yield` 단계를 공유할 수 있는 제너레이터를 만들 수 있다.
+php에서 참조 기호는 `&`를 변수에 함께 표기하는 방식으로 사용한다. 제너레이터의 참조 표기는 조금 독특한데, 함수명에 `&`를 쓰지만, 참조하는 값은 `yield` 부분이 참조 된다. 이런 표기의 문제는 마치 함수를 참조하는 것 처럼 생각하게 한다는 것이다.
+
+제너레이터는 `yield` 단계를 가진다. 곧, 일반적인 함수와 달리, 어느 `yield` 단계에 위치해 있는지에 대한 상태 정보를 가지고 있다. 참조 표기된 제너레이터를 사용해서 제너레이터 객체를 생성하면, 다른 제너레이터들과 `yield` 단계를 공유할 수 있는 참조형 제너레이터를 만들 것 같은 느낌을 주지만, `yield` 단계를 공유하는 것이 아니라, `yield` 값을 참조하는 표기를 함수에 한다는 것이라는 것에 유의하자.
+
+'제너레이터 참조'라는 용어로 기억할 수 있는데, Yielding by reference으로 '참조에 의한 yield의 동작' 정도의 의미이다. `&`표기는 제너레이터 함수에 하지만, 제너레이터 함수에 대한 참조가 아닌, `yield`에 대한 참조이다.
+
+#### yield의 인자로 변수 사용
+
+`yield` 값이 참조 되어야 하기 때문에 `yield`의 인자로는 변수가 할당 되어야 한다. 다음과 같이 `yield` 다음에 변수에 할당되지 않은 값이 인자로 주어지면 에러가 발생한다. `yield`는 변수가 아닌 특정 값을 전달하거나 담고 있는 키워드로서 변수가 아니기 때문에 참조의 대상이 아니다. 따라서 참조 표현을 사용하면 다음과 같은 에러가 발생한다.
+
+```php
+function &genFn() {
+    yield 1;
+    yield 2;
+    yield 3;
+};
+
+$gen = genFn();
+$gen->next(); // Notice: Only variable references should be yielded by reference
+```
+
+다음과 같이 yield에 변수를 인자로 할당하면 문제 위의 에러가 발생하지 않는다.
+
+```php
+function &genFn() {
+    $var1 = 1;
+    $var2 = 2;
+    $var3 = 3;
+
+    yield $var1;
+    yield $var2;
+    yield $var3;
+};
+
+$gen = genFn();
+$gen->next();
+```
+
+#### 외부에서 참조 yield 값 변경
+
+```php
+function &gen_reference() {
+    $value = 3;
+
+    while ($value > 0) {
+        yield $value;
+    }
+}
+
+/*
+ * Note that we can change $number within the loop, and
+ * because the generator is yielding references, $value
+ * within gen_reference() changes.
+ */
+foreach (gen_reference() as &$number) {
+    echo (--$number).'... ';
+}
+```
+
+참조 `yield`를 사용하면, `yield` 값으로 반환되는 변수는 참조할 수 있는 값이 되며, `as &$number`와 같이 `yield` 값을 받는 변수에 `&` 표기를 사용하는 것으로 `yield` 인자에 할당된 값을 참조하는 변수를 만들 수 있다. 이를 통해서 제너레이터 외부에서 참조 값을 변경하면, 제너레이터 내부의 변수 값이 바뀌게 된다.
+
+### 제너레이터와 스프레드 연산자
+
+스프레드 연산자도 이터레이터를 기반으로 동작하기 때문에, \[...배열\] 뿐만 아니라, \[...제너레이터\]의 방식으로 스프레드 연산자로 언패킹을 할 수 있다.
+
+```php
+function genFn() {
+    yield 1;
+    yield 2;
+    yield 3;
+};
+
+var_dump([...genFn()]);
+```
 
 ## 함수형 프로그래밍
 
