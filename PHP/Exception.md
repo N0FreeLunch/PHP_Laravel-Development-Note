@@ -265,7 +265,7 @@ Exception
 
 런타임 예외는 코드의 실행 중, 일반적으로 던져지는 예외로 별도의 예외 처리로 이 예외를 잡아서 처리하거나, 이 예외가 발생하지 않도록 사전 조건을 만족하도록 로직을 구성하는 등 상황에 따라 적절한 처리를 할 때 사용하면 되는 에러이다. 일반적으로 php에서 예외 처리를 요구하는 예외의 경우 RuntimeException 클래스를 상속해서 예외를 만든다.
 
-#### LogicException[https://www.php.net/manual/en/class.logicexception.php]
+#### [LogicException](https://www.php.net/manual/en/class.logicexception.php)
 > Exception that represents error in the program logic. This kind of exception should lead directly to a fix in your code.
 
 로직 에러는 이런 예외가 발생하지 않도록 코드를 짜야 하는 것을 의미한다. 이는 위에서 설명한 Error의 처리와 비슷하게 이런 예외가 발생하지 않도록 사전에 미리 예외가 발생하지 않도록 코드를 만들어 주어야 한다. PHP에서 Error 클래스는 일반적으로 php의 내부 에러 (php 엔진에서 발생하는 에러)를 처리하는데 사용되며, 일반 사용자의 경우, 발생하면 안 되는 에러의 경우 LogicException 클래스를 사용하여 나타낸다.
