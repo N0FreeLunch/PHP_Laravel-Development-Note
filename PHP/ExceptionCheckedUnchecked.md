@@ -22,6 +22,8 @@ checked 에러는 적절한 사전조건을 설정하면 발생하지 않기 때
 
 php는 checked 예외가 존재하지 않으며, 현대화된 자바라는 코틀린 언어도 checked 예외가 존재하지 않는다. 하지만 잘못된 에러처리로 인해 대량의 리퀘스트가 대량의 예외를 생성할 때 예외 처리가 없다면, 무수한 스텍트레이스의 생성으로 인해서 시스템 리소스가 부족해 애플리케이션 서버가 터질 수 있다는 문제가 있다.
 
+때때로 사전조건을 잘 설정하는 것만으로는 예외가 발생하지 않도록 할 수 없는 경우가 있다. 사전 조건이 설정되지 않는다는 것은, 사전에 미리 예방을 할 수 없는 런타임의 여러 조건에 따라 예외가 발생할 수도 있는 경우이다. 이 때 checked 예외와 같이 예외 처리를 강제하는 것이 좋다.
+
 ## checked 예외가 없는 php
 
 php는 파일이 실행될 때 컴파일 타임이 있기는 하지만, 구문 및 문법 오류를 적극적으로 검사하는 컴파일 언어와 달리, php 코드를 파싱하면서 감지 가능한 최소한의 문법 및 구문 오류를 감지하는 정도의 역할만을 한다. 또한 하나의 파일에 대한 검사이기 때문에 여러 파일에 걸쳐서 이뤄져야 하는 구문 및 문법 오류는 감지할 수 없다.
@@ -46,6 +48,26 @@ Exceptions
     UnderflowException — The UnderflowException class
     UnexpectedValueException — The UnexpectedValueException class
 ```
+
+## 정적 분석과 checked 예외
+
+기본적으로 phpstan을 사용하면, 모든 예외는 반드시 예외 처리를 해 주어야 하므로 checked 예외가 된다. phpstan에는 unchecked 예외로 분류할 예외와 checked 예외로 분류할 대상을 나눌 수 있다. phpstan이 무엇을 cheked로 할지 무엇을 unchecked로 할지 설정을 해 주어야 하는 반면, [phpstan-exception-rules](https://github.com/pepakriz/phpstan-exception-rules)라는 확장 기능을 사용하면, php에 내장된 예외 클래스를 디폴트로 LogicException 클래스는 checked 예외로, RuntimeException 클래스는 unchecked 예외로 사용하도록 한다.
+
+### [LogicException](https://www.php.net/manual/en/class.logicexception.php)과 [RuntimeException](https://www.php.net/manual/en/class.runtimeexception.php)
+
+#### RuntimeException
+
+> Exception thrown if an error which can only be found on runtime occurs.
+
+런타임에서만 확인할 수 있는 종류의 에러라고 설명한다. 이는 사전 조건을 부여하는 등의 방법으로 해결할 수 없고 런타임의 조건에 의해서만 에러의 발생 유무를 알 수 있는 것에 해당한다.
+
+#### LogicException
+
+> Exception that represents error in the program logic. This kind of exception should lead directly to a fix in your code.
+
+발생해서는 안 되는 에러로, 이런 에러가 발생하지 않도록 전제 조건을 부여한다던지 잘못된 코드를 수정해야하는 종류의 에러를 의미한다. 이런 에러가 발생했다는 것은 코드를 잘못 만들었거나, 사전 조건을 잘못 세팅 했거나, 각종 설정 옵션들의 잘못 혹은 연동되는 외부 환경에 대한 엑세스 문제 등이 요인이 될 수 있기 때문에 이를 해결해 주어야 한다.
+
+## Error과 LogicException
 
 ## References
 - https://news.ycombinator.com/item?id=36708759
