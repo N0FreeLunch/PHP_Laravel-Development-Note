@@ -477,12 +477,12 @@ foreach 문에서 `$el`의 타입을 알 수 없기 때문에 `echo $item`으로
 ```php
 class Item
 {
-	protected int $cached;
+    protected int $cached;
 
-	public function __construct()
-	{
-		$this->cached = rand();
-	}
+    public function __construct()
+    {
+        $this->cached = rand();
+    }
 	
     public function getCachedValue(): int
     {
@@ -492,10 +492,10 @@ class Item
 
 class SubItem extends Item
 {
-	public function getCachedValueToString(): string
-	{
-		return strval($this->cached);
-	}
+    public function getCachedValueToString(): string
+    {
+        return strval($this->cached);
+    }
 }
 
 $numberList = [];
@@ -525,7 +525,68 @@ php는 배열에 하나의 유형 뿐만 아닌 다양한 유형을 갖고 있�
 
 ## phpdoc 제네릭
 
-phpdoc을 사용하여 `/* @var array<int, string> */` 또는 `/* @template */` 템플릿을 사용하면 php에서 제네릭을 사용할 수 있다. 하지만, 이는 언어의 네이티브 문법이 아니고 제 3자의 도구에 의존하며, 런타임의 타입 확인을 하지 않는다. php는 타입스크립트 만큼 엄격한 타입 검사를 하기 어려운 문제가 있다. 그래서 런타임 체크를 더 많이 해야 한다. assert를 사용하면 런타임 검사르 하면서 IDE에 타입을 알려주는 것으로 타입을 좁히고 좀 더 적은 타입에 대해 코드를 생각할 수 있다.
+phpdoc을 사용하여 `/* @var array<int, Type> */` 또는 `/* @template Type */` 템플릿을 사용하면 php에서 제네릭을 사용할 수 있다.
+
+```php
+/**
+ * @template T
+ */
+class Lifo
+{
+    /**
+     * @var array<int, T> $array 
+     */
+    private array $array = [];
+
+    /**
+     * @param $value T
+     */
+    public function push(mixed $value): void
+    {
+        $this->array[] = $value;
+    }
+
+    /**
+     * @return ?T
+     */
+    public function pop(): mixed
+    {
+        return array_pop($this->array);
+    }
+}
+```
+
+docblock generic은 언어의 네이티브 문법이 아니고 제 3자의 정적 분석 도구에 의존하며, 런타임의 타입 확인을 하지 않는다. 네이티브 문법이 아니기 때문에 언어의 내장 툴에 비해 작성해야 하는 보일러 플레이트의 양이 많으며, 언어의 동작에 영향을 주지 않기 위해서 런타임 체크가 없다.
+
+문제는 php의 각종 라이브러리가 유니온 타입으로 타입이 만들어져 있고, 제네릭을 사용하지 않기 때문에 라이브러리의 기능이 유니온 타입 또는 클래스 타입이라면 유니온 타입 중의 몇 가지 타입, 하위 타입 중의 무언가를 사용하는데 모든 코드에 대해, 정적 분석을 사용하면 라이브러리의 타입 힌트로 제공되는 모든 타입에 대한 처리를 만들어야 한다.
+
+예를 들어 라라벨의 Eloquent를 사용했을 때 `SomeModel::someQuery()->first()`라는 코드를 사용했을 때, [`Model|object|BuildsQueries|null`](https://api.laravel.com/docs/10.x/Illuminate/Database/Eloquent/Builder.html#method_first)가 타입힌트로 되어 있다. 라라벨 11 부터는 phpstan으로 정적 분석이 되도록 [TValue|null](https://api.laravel.com/docs/11.x/Illuminate/Database/Eloquent/Builder.html#method_first)을 지원하지만, 라라벨 10 이전이라면, Model|object|BuildsQueries|null 정적 분석 툴을 사용하면 모든 타입에 대한 분기처리를 해야 한다. 하지만 실제 first가 반환하는 값은 SomeModel 클레스의 인스턴스 또는 null을 반환한다.
+
+정적 분석 도구는 `assert`를 통해서 타입 좁히기 기능을 제공하기 때문에 `assert`로 유니온 또는 상위 타입에 실제 사용되는 타입을 구체적으로 알려주는 것을 통해서 모든 타입에 대한 분기처리가 아니라, 실제 사용하는 타입에 대한 로직만 작성해도 되도록 한다.
+
+```php
+$someData = SomeModel::someQuery()->first();
+assert(is_null($someData) || $someData instanceof SomeModel);
+```
+
+SomeModel은 Model 인스턴스를 상속하여 정의한 모델으로 Model의 하위 타입이다. 따라서 타입 좁히기를 통해서 변수에 할당된 값이 SomeModel 타입 또는 null으로 정적 분석 툴과 IDE에 알려 준다. 그러면 assert 이후 라인 부터는 `$someData` 변수를 사용할 때 null과 SomeModel 두 가지 타입에 대한 처리만 하면 된다.
+
+Eloquent 모델 내에서 메소드를 오버라이딩 하는 방법도 존재한다. 마찬가지로 부모 클래스의 메소드의 반환 값이  Model|object|BuildsQueries|null 타입을 가지고 있으므로 타입 좁히기를 해 주어야 한다.
+
+```php
+public function first(array|string $columns = ['*']): ?SomeModel
+{
+    $first = parent::first($columns);
+    assert(is_null($first) || $first instanceof SomeModel);
+    return $first;
+}
+```
+
+위 방법은 first가 존재하는 클래스에 정의해 주어야 하기 때문에 first가 정의된 [BuilderClass](https://timacdonald.me/dedicated-eloquent-model-query-builders/)를 상속받는 클래스에 적어 주어야 한다.
+
+## Type narrowing의 문제
+
+타입스크립트는 타입에 의한 안정성을 최대한 확보하기 위해서 전달된 변수를 사용할 때 변수가 가진 모든 타입에 대한 처리를 요구한다. as를 사용해서 타입좁히기를 하면 모든 타입 중에서 일부 타입만 전달되는 것을 가정하고 코드를 전개하기 때문에 런타임에 좁힌 타입과 다른 타입이 전달될 경우 연결된 코드의 타입 추론이 잘못되어 런타임에 잘못된 동작을 하게 될 가능성이 존재한다.
 
 ## PHP에 왜 제네릭이 없는가?
 
