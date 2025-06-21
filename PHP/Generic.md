@@ -533,13 +533,11 @@ phpdoc을 사용하여 `/* @var array<int, Type> */` 또는 `/* @template Type *
  */
 class Lifo
 {
-    /**
-     * @var array<int, T> $array 
-     */
+    /** @var array<int, T> */
     private array $array = [];
 
     /**
-     * @param $value T
+     * @param T $value
      */
     public function push(mixed $value): void
     {
@@ -547,18 +545,25 @@ class Lifo
     }
 
     /**
-     * @return ?T
+     * @return T|null
      */
     public function pop(): mixed
     {
         return array_pop($this->array);
     }
 }
+
+/** @var Lifo<int> $lifo */
+$lifo = new Lifo();
+$lifo->push(1);
+$lifo->push(2);
+
+$sum = ($lifo->pop() ?? 0) + ($lifo->pop() ?? 0);
 ```
 
-docblock generic은 언어의 네이티브 문법이 아니고 제 3자의 정적 분석 도구에 의존하며, 런타임의 타입 확인을 하지 않는다. 네이티브 문법이 아니기 때문에 언어의 내장 툴에 비해 작성해야 하는 보일러 플레이트의 양이 많으며, 언어의 동작에 영향을 주지 않기 위해서 런타임 체크가 없다.
+docblock generic은 언어의 네이티브 문법이 아니고 제 3자의 정적 분석 도구에 의존하며, 런타임의 타입 확인을 하지 않는다. 네이티브 문법이 아니기 때문에 언어의 내장 툴에 비해 작성해야 하는 보일러 플레이트의 양이 많으며, 언어의 동작에 영향을 주지 않기 위해서 런타임 체크가 없다. 또한 docblock으로 타입을 맞출 때, IDE에 의한 구문 지적이 없기 때문에 docblock을 타이핑 할 때 실수하기 쉽고 무엇이 잘못되었는지 파악하기 어려운 문제가 있다.
 
-문제는 php의 각종 라이브러리가 유니온 타입으로 타입이 만들어져 있고, 제네릭을 사용하지 않기 때문에 라이브러리의 기능이 유니온 타입 또는 클래스 타입이라면 유니온 타입 중의 몇 가지 타입, 하위 타입 중의 무언가를 사용하는데 모든 코드에 대해, 정적 분석을 사용하면 라이브러리의 타입 힌트로 제공되는 모든 타입에 대한 처리를 만들어야 한다.
+더 큰 문제는 php의 각종 라이브러리가 유니온 타입으로 타입이 만들어져 있고, 제네릭을 사용하지 않기 때문에 라이브러리의 기능이 유니온 타입 또는 클래스 타입이라면 유니온 타입 중의 몇 가지 타입, 하위 타입 중의 무언가를 사용하는데 모든 코드에 대해, 정적 분석을 사용하면 라이브러리의 타입 힌트로 제공되는 모든 타입에 대한 처리를 만들어야 한다.
 
 예를 들어 라라벨의 Eloquent를 사용했을 때 `SomeModel::someQuery()->first()`라는 코드를 사용했을 때, [`Model|object|BuildsQueries|null`](https://api.laravel.com/docs/10.x/Illuminate/Database/Eloquent/Builder.html#method_first)가 타입힌트로 되어 있다. 라라벨 11 부터는 phpstan으로 정적 분석이 되도록 [TValue|null](https://api.laravel.com/docs/11.x/Illuminate/Database/Eloquent/Builder.html#method_first)을 지원하지만, 라라벨 10 이전이라면, Model|object|BuildsQueries|null 정적 분석 툴을 사용하면 모든 타입에 대한 분기처리를 해야 한다. 하지만 실제 first가 반환하는 값은 SomeModel 클레스의 인스턴스 또는 null을 반환한다.
 
@@ -587,6 +592,24 @@ public function first(array|string $columns = ['*']): ?SomeModel
 ## Type narrowing의 문제
 
 타입스크립트는 타입에 의한 안정성을 최대한 확보하기 위해서 전달된 변수를 사용할 때 변수가 가진 모든 타입에 대한 처리를 요구한다. as를 사용해서 타입좁히기를 하면 모든 타입 중에서 일부 타입만 전달되는 것을 가정하고 코드를 전개하기 때문에 런타임에 좁힌 타입과 다른 타입이 전달될 경우 연결된 코드의 타입 추론이 잘못되어 런타임에 잘못된 동작을 하게 될 가능성이 존재한다.
+
+다음 리액트 코드에서 `event.target`는 여러 태그 요소 중 하나를 자바스크립트의 인스턴스로 만든 것이다. 전달되는 태그는 여러 태그 중 어느 태그가 전달되는 것이고, 태그들 각각이 서로 다른 타입을 갖기 때문에 여러 타입 중 어느 하나를 알려 줘야 다음 코드를 작성할 수 있어서 as를 사용하여 타입 좁히기를 통해서 타입을 알려 주었다.
+
+```ts
+const handleClick = (event: React.MouseEvent) => {
+  const target = event.target as HTMLInputElement;
+  console.log(target.value);
+};
+```
+
+타입스크립트에서는 위의 코드 대신에, 제네릭을 통해서 다음과 같이 `.target`의 타입을 구체적으로 지정하는 방식을 추천한다.
+
+```ts
+const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const target = event.target as HTMLInputElement;
+  console.log(target.value);
+};
+```
 
 ## PHP에 왜 제네릭이 없는가?
 
