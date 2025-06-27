@@ -626,18 +626,18 @@ $list = json_decode(json_encode(range('a', 'i')) ?: '[]');
 
 assert(is_array($list));
 
-foreach($list as $item) {
-    assert(is_string($item));
+foreach($list as $el) {
+    assert(is_string($el));
 }
 
-foreach($list as $item) {
-    echo $item; // Parameter #1 (mixed) of echo cannot be converted to string.
+foreach($list as $el) {
+    echo $el; // Parameter #1 (mixed) of echo cannot be converted to string.
 }
 ```
 
-심지어 위의 코드와 같이 배열 안의 모든 원소가 문자열임을 순회를 통해 모든 원소의 타입을 `assert(is_string($item))`으로 확인을 하더라도, 다음 순회 코드에서 IDE의 정적 분석이나 PHPStan과 같은 정적 분석 도구는 배열 내의 타입이 무엇인지 확인하지 못한다. 따라서 순회 코드를 작성할 때마다 `assert`를 통한 타입 좁히기 코드를 반복적으로 적어야 하는 문제점이 있다.
+심지어 위의 코드와 같이 배열 안의 모든 원소가 문자열임을 순회를 통해 모든 원소의 타입을 `assert(is_string($el))`으로 확인을 하더라도, 다음 순회 코드에서 IDE의 정적 분석이나 PHPStan과 같은 정적 분석 도구는 배열 내의 타입이 무엇인지 확인하지 못한다. 따라서 순회 코드를 작성할 때마다 `assert`를 통한 타입 좁히기 코드를 반복적으로 적어야 하는 문제점이 있다.
 
-たとえ上記のコードのように、配列内のすべての要素が文字列であることをループで `assert(is_string($item))` によって確認したとしても、その後のループ処理において、IDEの静的解析やPHPStanなどの静的解析ツールは配列内の要素の型を認識できません。そのため、ループ処理を書くたびに `assert` を使った型の絞り込みコードを繰り返し記述しなければならないという問題があります。
+たとえ上記のコードのように、配列内のすべての要素が文字列であることをループで `assert(is_string($el))` によって確認したとしても、その後のループ処理において、IDEの静的解析やPHPStanなどの静的解析ツールは配列内の要素の型を認識できません。そのため、ループ処理を書くたびに `assert` を使った型の絞り込みコードを繰り返し記述しなければならないという問題があります。
 
 ### foreach vs array_walk
 
@@ -660,16 +660,16 @@ assert(is_array($list));
 
 foreach($list as $el) {
     // assert(is_string($el));
-    echo $item;
+    echo $el;
 }
 
 array_walk($list, function (string $el) {
-    echo $item;
+    echo $el;
 });
 
 array_walk($list, function (mixed $el) {
     // assert(is_string($el));
-    echo $item;
+    echo $el;
 });
 ```
 
@@ -1003,19 +1003,19 @@ assert(array_reduce($list, fn($acc, $v) => $acc && is_string($v), true));
 
 foreach($list as $el) {
     // assert(is_string($el));
-    echo $item;
+    echo $el;
 }
 
 array_walk($list, function (mixed $el) {
     // assert(is_string($el));
-    echo $item;
+    echo $el;
 });
 ```
 
-`assert(array_reduce($list, fn($acc, $v) => $acc && is_int($v), true))`는 배열의 모든 원소가 문자열인지 확인하는 전제조건을 설정한 코드이다. 이 코드는 앞서 IDE에 의해서 배열의 원소 타입 추론이 되지 않는다고 하였다. 따라서 배열을 순회 할 때 마다 `assert(is_string($item))`, ` assert(is_string($el))`를 써 주어야 한다고 하였다.
+`assert(array_reduce($list, fn($acc, $v) => $acc && is_int($v), true))`는 배열의 모든 원소가 문자열인지 확인하는 전제조건을 설정한 코드이다. 이 코드는 앞서 IDE에 의해서 배열의 원소 타입 추론이 되지 않는다고 하였다. 따라서 배열을 순회 할 때 마다 `assert(is_string($el))`, ` assert(is_string($el))`를 써 주어야 한다고 하였다.
 
 
-`assert(array_reduce($list, fn($acc, $v) => $acc && is_int($v), true))`というコードは、配列のすべての要素が整数であることを確認する前提条件を設定するものです。このコードでは、IDEによって配列の要素の型が推論されないことがあるため、配列をループするたびに`assert(is_string($item))`, ` assert(is_string($el))`のように、毎回型チェックを書く必要があるとされます。
+`assert(array_reduce($list, fn($acc, $v) => $acc && is_int($v), true))`というコードは、配列のすべての要素が整数であることを確認する前提条件を設定するものです。このコードでは、IDEによって配列の要素の型が推論されないことがあるため、配列をループするたびに`assert(is_string($el))`, ` assert(is_string($el))`のように、毎回型チェックを書く必要があるとされます。
 
 하지만 `@var array<int, string> $list`라는 docblock을 사용하면 IDE는 타입을 배열의 원소 타입을 알 수 있고, `assert`로 배열의 원소 타입을 런타임에서 체크하도록 하였다. 이를 통해서 IDE와 정적 분석에 의한 타입 확인 및 런타임 타입 확인 둘을 만족하는 코드를 작성할 수 있어서 배열을 순회 할 때마다 `assert`로 각 원소의 타입을 확인할 필요가 없다.
 
