@@ -106,15 +106,15 @@ function isInStatus(bool $excluded = false, ...$statuses) {}
 
 문제는 동일하게 `bool $excluded = false`를 정의하는데, 어떤 경우는 두 번째 파라메터가 되고, 어떤 경우는 첫 번째 파라메터가 된다는 것이다. 만약 명명된 인자가 없다면,
 
-`isInStatus(false, ...[StatusEnum::Deleted, StatusEnum::Stopped])`으로 사용해야 한다. `excluded`는 기본 `false`라서 생략하고 싶은데, 파라메터가 정의된 순서대로 적어야 하기 때문에 코드가 우아해지지 못한다는 문제가 있다.
+`isInStatus(false, ...[StatusEnum::Deleted, StatusEnum::Stopped])`으로 사용해야 한다. `excluded`는 기본 `false`라서 생략하고 싶은데, 파라메터가 정의된 순서대로 적어야 하기 때문에 코드가 우아해지지 못하며, `excluded`가 어떤 옵션으로 쓰였는지 함수의 정의를 확인해야 한다.
 
-명명된 인자를 사용하면 `excluded` 인자를 뒤로 배치하여 생략할 수 있다는 장점이 있다.
+명명된 인자를 사용하면 `excluded` 인자를 뒤로 배치하여 디폴트 값이 부여된 파라메터에 대한 인자 전달을 생략할 수 있다는 장점이 있다. 또한 전달하려는 인자의 의미를 분명히 하여, 함수의 정의된 파라메터를 직접 읽지 않고서도 어떤 의미의 인자를 전달하는지 알 수 있다.
+
+디폴트 값이 붙은 파라메터는 생략할 수 있으므로 다음과 같이 전달하려는 인자를 생략하여 불필요한 정보를 제거한 코드를 만들 수 있다.
 
 ```php
 isInStatus(statuses: ...[StatusEnum::Deleted, StatusEnum::Stopped], excluded: false);
 ```
-
-그리고 디폴트 값이 붙은 파라메터는 생략할 수 있으므로 다음과 같이 사용할 수 있다.
 
 ```php
 isInStatus(statuses: ...[StatusEnum::Deleted, StatusEnum::Stopped]);
@@ -124,8 +124,51 @@ isInStatus(statuses: ...[StatusEnum::Deleted, StatusEnum::Stopped]);
 
 명명된 인자를 사용하는 쪽에서는 함수의 파라메터를 쓰기 때문에, 함수 파라메터명이 달라지게 되면, 해당 함수를 사용하는 모든 코드를 바꿔야 한다는 문제점이 있다.
 
-따라서 상황에 따라서 가변 인자를 써야 하는 경우에는 사용하돼, 굳이 사용할 필요가 없는 경우에는 가변 인자를 쓰지 않는 편이 좋다.
+그러므로 모든 함수에 명명된 인자를 사용하기 보다는 함수명으로 어떤 인자를 전달해야 하는지 알 수 있는 경우는 굳이 사용하지 않는 편이 좋으며, 함수명으로 전달하려는 파라메터가 무엇인지 몇 번째 인자로 전달해야 하는지 알기 어려운 경우에는 명명된 인자를 사용하는 편이 좋다.
 
 ## 인간의 언어처럼 표현하기
 
 명명된 인자를 사용하면, 함수의 인자에서 디폴트 값이 있는 것을 생략할 수 있고, `isUpdatedBy` 처럼 영문법상 `id`가 먼저 나오고, `excluded`가 나중에 나오는 것이 자연스러운데, 인자의 전달 순서를 바꿀 수 있어서 자연스런 영문법 표현이 가능하다는 장점이 있다.
+
+## 싱글 엑션 클래스와 비교
+
+명명된 인자가 없던 시절에는 코드를 읽을 때 함수의 정의로 이동하거나, 변수에 파라메터로 전달하려는 대상을 담아서 전달하는 방식 등을 사용했다. 또 다른 방법으로는 setter로 필요한 값을 전달받고, action 함수를 하나 정의하여 객체를 함수 대신에 사용하는 방법이 있었다.
+
+하나의 엑션을 가진 다양한 클래스를 정의할 수 있지만, 대표적인 예로 빌드 패턴을 들 수 있다.
+
+```php
+class User {
+    private $name;
+    private $age;
+    private Gender $gender;
+
+    public function setName(string $name): self {
+        $this->name = $name;
+        return $this;
+    }
+
+    public function setAge(int $age): self {
+        $this->age = $age;
+        return $this;
+    }
+
+    public function setGender(Gender $gender) {
+        $this->age = $gender;
+        return $this;
+    }
+
+    public function build(): User {
+        return $this;
+    }
+}
+
+(new User)->setName('yamada')->setAge(30)->setGender(Gender::Male)->build();
+```
+
+위와 같이 action은 build 메소드 하나이며 필요한 값은 setter를 통해서 받았다.
+
+# 마지막으로
+
+php에 명명된 인자가 없던 시절에는, 싱글 엑션 클래스 또는 인자를 파라메터의 의미의 변수에 담아서 전달했지만, php에 명명된 인자가 생기고 나서는 좀 더 간단하게 가독성 좋은 함수 인자 전달 방식을 사용할 수 있게 되었다.
+
+명명된 인자를 사용하면 인자의 순서를 달리 전달할 수 있어, 영문법의 수순을 따르는 코드를 작성할 수 있기 때문에 코드를 읽을 때 글을 읽는 듯한 편안함을 준다. 필요에 따라 적극 사용하는 것으로 가독성을 높일 수 있다.
