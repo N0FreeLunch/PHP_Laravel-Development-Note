@@ -227,8 +227,8 @@ isInStatus(statuses: ...[StatusEnum::Deleted, StatusEnum::Stopped]);
 
 ```php
 class UserBuilder {
-    private $name;
-    private $age;
+    private string $name;
+    private int $age;
     private Gender $gender;
 
     public function setName(string $name): self {
