@@ -343,6 +343,7 @@ function checkClosureParam(Closure $fn, string|int $keyNameOrIdx, string ...$typ
 function checkClosureReturn(Closure $fn, string ...$types): bool {
     $ref = new ReflectionFunction($fn);
     $returnTypeObj = $ref->getReturnType();
+    if ($returnTypeObj === null && (in_array('', $types, true) || in_array(null, $types, true))) return true;
     $returnTypeName = $returnTypeObj->getName() ?? '';
     return in_array($returnTypeName, $types, true) || (array_reduce($types, fn($acc, $type) => $acc || is_subclass_of($returnTypeName, $type), false));
 }
