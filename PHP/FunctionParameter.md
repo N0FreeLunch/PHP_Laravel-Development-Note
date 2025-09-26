@@ -15,16 +15,16 @@ phpでClosureを関数の引数として受け取る際、`Closure`型ヒント�
 ## php Closure의 특징
 ## php Closureの特徴
 
-이 부분은 이 글의 목적을 이해하는데 중요한 부분은 아니므로 [Closure의 문제](#Closure의-문제)으로 건너뛰어도 괜찮다.
+이 부분은 이 글의 목적을 이해하는데 중요한 부분은 아니므로 [Closure의 문제](#closure_problem)으로 건너뛰어도 괜찮다.
 
-この部分は本稿の目的を理解する上で必須ではありません。そのため、必要に応じて読み飛ばし、[Closureの問題点](#Closureの問題点)に進んでいただいて構いません。
+この部分は本稿の目的を理解する上で必須ではありません。そのため、必要に応じて読み飛ばし、[Closureの問題点](#closure_problem)に進んでいただいて構いません。
 
 ### 시놉시스
 ### シノプシス
 
 다음은 [PHP 공식 문서](https://www.php.net/manual/en/class.closure.php#closure.synopsis)의 `Closure`에 대한 시놉시스(synopsis: 요약, 개요)이다.
 
-次は、[PHP公式マニュアル]((https://www.php.net/manual/en/class.closure.php#closure.synopsis))にある`Closure`のシノプシス（synopsis: 概要）です。
+次は、[PHP公式マニュアル]((https://www.php.net/manual/ja/class.closure.php#closure.synopsis))にある`Closure`のシノプシス（synopsis: 概要）です。
 
 ```
 final class Closure {
@@ -125,6 +125,7 @@ public static fromCallable(callable $callback): Closure
 
 なお、`callable`型ヒントに`Closure`型を渡すことができます。しかし、`Closure`は`callable`のサブタイプではないと言われています。<sup>[[1]](#endnote_1)</sup>
 
+<a name="closure_problem"></a>
 ## Closure의 문제
 ## Closureの問題点
 
