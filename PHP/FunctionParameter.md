@@ -266,7 +266,7 @@ function check0Target1String2IntParamStringReturn(Closure $fn): bool {
     return true;
 }
 
-$repeatPropertyValue = fn(Target $target, string $property, int $iterationNumber): string => $target->{$property} * $iterationNumber;
+$repeatPropertyValue = fn(ChildClass $target, string $property, int $n, $option): string => str_repeat((string)$target->{$property}, $n);
 
 assert(check0Target1String2IntParamStringReturn($repeatPropertyValue));
 
@@ -347,7 +347,7 @@ function checkClosureReturn(Closure $fn, string ...$types): bool {
     return in_array($returnTypeName, $types, true) || (array_reduce($types, fn($acc, $type) => $acc || is_subclass_of($returnTypeName, $type), false));
 }
 
-$repeatPropertyValue = fn(ChildClass $target, string $property, int $terationNumber, $option): string => $target->{$property} * $terationNumber;
+$repeatPropertyValue = fn(ChildClass $target, string $property, int $n, $option): string => str_repeat((string)$target->{$property}, $n);
 
 assert(checkClosureParam($repeatPropertyValue, 'target', ParentClass::class));
 assert(checkClosureParam($repeatPropertyValue, 0, ParentClass::class));
