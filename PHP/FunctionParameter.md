@@ -266,7 +266,7 @@ function check0Target1String2IntParamStringReturn(Closure $fn): bool {
     return true;
 }
 
-$repeatPropertyValue = fn(ChildClass $target, string $property, int $iterationNumber): string => str_repeat((string)$target->{$property}, $iterationNumber);
+$repeatPropertyValue = fn(Target $target, string $property, int $iterationNumber):  string => str_repeat((string)$target->{$property}, $iterationNumber);
 
 assert(check0Target1String2IntParamStringReturn($repeatPropertyValue));
 
