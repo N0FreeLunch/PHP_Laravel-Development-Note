@@ -1,5 +1,5 @@
 # 파라메터로 클로저를 사용하는 더 나은 방법
-# パラメーターとしてクロージャを使用するより良い方法
+# 引数としてクロージャを使用するより良い方法
 
 # 들어가며
 # はじめに
@@ -264,7 +264,7 @@ function check0Target1String2IntParamStringReturn(Closure $fn): bool {
     return true;
 }
 
-$repeatPropertyValue = fn(Target $target, string $property, int $terationNumber): string => $target->{$property} * $terationNumber;
+$repeatPropertyValue = fn(Target $target, string $property, int $iterationNumber): string => $target->{$property} * $iterationNumber;
 
 assert(check0Target1String2IntParamStringReturn($repeatPropertyValue));
 
