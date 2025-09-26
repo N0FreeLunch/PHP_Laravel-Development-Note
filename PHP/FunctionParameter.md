@@ -16,7 +16,7 @@ phpでClosureを関数の引数として受け取る際、`Closure`型ヒント�
 # 本論
 
 ## php Closure의 특징
-## php Closureの特徴
+## PHP Closureの特徴
 
 이 부분은 이 글의 목적을 이해하는데 중요한 부분은 아니므로 [Closure의 문제](#closure_problem)으로 건너뛰어도 괜찮다.
 
@@ -112,8 +112,8 @@ public call(object $newThis, mixed ...$args): mixed
 
 このメソッドが静的メソッドでない理由は、`$fn->call()`のように、無名関数をオブジェクトとして扱い、直接`->call()`で実行するためです。
 
-### 콜러블 함수를 클로저로 만들기
-### コーラブル関数をクロージャに変換する
+### callable 함수를 클로저로 만들기
+### callable関数をクロージャに変換する
 
 ```php
 public static fromCallable(callable $callback): Closure
