@@ -6,7 +6,7 @@
 
 php에서 Closure를 함수 인자로 받을 때는 `Closure` 타입힌트를 사용한다. 함수 내로 전달된 함수를 사용하려면 매개변수로 어떤 값을 전달 받고, 반환 값으로 어떤 타입을 반환하는지 알아야 하는데, `Closure` 매개변수만으로는 함수의 스펙 정보가 부족하다.
 
-phpでClosureを関数の引数として受け取る際、`Closure`型ヒントを使用します。関数内部に伝われた関数を使うようとしたら、引数としてどんな値を渡し、戻り値としてどの型を返すのかを知っておく必要があります。しかし、`Closure`型の引数だけでは、関数の仕様に関する情報が十分ではありません。
+phpでClosureを関数の引数として受け取る際、`Closure`型ヒントを使用します。関数内部に渡された関数を使おうとしたら、引数としてどんな値を渡し、戻り値としてどの型を返すのかを知っておく必要があります。しかし、`Closure`型の引数だけでは、関数の仕様に関する情報が十分ではありません。
 
 이 글은 php의 리플렉션을 통한 런타임 검사를 통해 함수의 인자로 전달된 `Closure`의 매개변수 타입과 반환 타입을 확인하는 기능을 제안하고, 클로저의 매개변수와 반환 값의 타입 정보를 추가하여 클로저를 다룰 때의 불편함을 줄이는 방법을 알아본다. 또한 클로저를 사용할 때 신중해야 하는 이유와 대안도 함께 살펴보자.
 
@@ -228,8 +228,8 @@ PHPの文法だけでは型推論ができないClosureの仕様のため、docb
 /**
  * @param Closure(int, int): int $operation
  */
-function calculate(Closure $operation, int $trasArg1, int $transArg2): int {
-    return $operation($trasArg1, $transArg2);
+function calculate(Closure $operation, int $transArg1, int $transArg2): int {
+    return $operation($transArg1, $transArg2);
 }
 
 $result = calculate(fn($x, $y) => $x + $y, 3, 5);
@@ -293,9 +293,9 @@ class Target
 
 リフレクションクラスのインスタンスで`getType()`を使用すると、[ReflectionType](https://www.php.net/manual/ja/class.reflectiontype.php)クラスのオブジェクトが返されます。`getName`メソッドで型名を確認することができます。
 
-`if ($param0TypeName !== Target::class || is_subclass_of($param2TypeName, Target::class)) return false;`: 첫 번째 파라메터가 `Target` 클래스인지 확인한다. 타입 체크를 할 때는 서브 타입인 경우도 허용되는 타입으로 고려해야 하므로 전달된 대상의 타입이 서브타입인지도 확인한다.
+`if ($param0TypeName !== Target::class || is_subclass_of($param0TypeName, Target::class)) return false;`: 첫 번째 파라메터가 `Target` 클래스인지 확인한다. 타입 체크를 할 때는 서브 타입인 경우도 허용되는 타입으로 고려해야 하므로 전달된 대상의 타입이 서브타입인지도 확인한다.
 
-`if ($param0TypeName !== Target::class || is_subclass_of($param2TypeName, Target::class)) return false;`：最初のパラメータが`Target`クラスかどうかを確認します。型チェックではサブタイプも許容する型として考慮する必要があるため、渡された対象がサブタイプかどうかも確認します。
+`if ($param0TypeName !== Target::class || is_subclass_of($param0TypeName, Target::class)) return false;`：最初のパラメータが`Target`クラスかどうかを確認します。型チェックではサブタイプも許容する型として考慮する必要があるため、渡された対象がサブタイプかどうかも確認します。
 
 `if ($params[1]->getType()->getName() !== 'string') return false;`: 두 번째 파라메터가 문자열 타입인지 확인한다.
 
@@ -330,14 +330,15 @@ function checkClosureParam(Closure $fn, string|int $keyNameOrIdx, string ...$typ
     $ref = new ReflectionFunction($fn);
     $params = $ref->getParameters();
     if (is_numeric($keyNameOrIdx)) {
-    	$paramIdx = $keyNameOrIdx;
+        $targetParamKey = $keyNameOrIdx;
     } else {
-        $paramIdx = array_search($keyNameOrIdx, array_map(fn($e) => $e->getName(), $params));
+        $targetParamKey = array_search($keyNameOrIdx, array_map(fn($e) => $e->getName() ,$params));
     }
-    $targetParam = $params[$paramIdx] ?? null;
+    $targetParam = $params[$targetParamKey] ?? null;
     if (is_null($targetParam)) return false;
     $paramTypeName = $targetParam->getType()?->getName() ?? '';
-    return in_array($paramTypeName, $types, true) || (array_reduce($types, fn($acc, $type) => $acc || is_subclass_of($paramTypeName, $type), false));
+    return in_array($paramTypeName, $types, true)
+        || (array_reduce($types, fn($acc, $type) => $acc || is_subclass_of($paramTypeName, $type), false));
 }
 
 function checkClosureReturn(Closure $fn, string ...$types): bool {
