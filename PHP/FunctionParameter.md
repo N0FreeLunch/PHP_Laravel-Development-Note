@@ -121,9 +121,9 @@ public static fromCallable(callable $callback): Closure
 
 この部分は、`callable`型の呼び出し可能なものを受け取り、`Closure`型の関数を生成できることを示しています。
 
-참고로 callable 타입힌트에 Closure 타입을 전달할 수 있다. 그러나 Closure는 callable의 서브타입은 아니라고 한다.
+참고로 `callable` 타입힌트에 `Closure` 타입을 전달할 수 있다. 그러나 `Closure`는 `callable`의 서브타입은 아니라고 한다.
 
-なお、`Closure`は`callable`のサブタイプであるため、callable 型ヒントに Closure 型を渡すことも可能です。<sup>[1](#endnote_1)</sup>
+なお、`callable`型ヒントに`Closure`型を渡すことができます。しかし、`Closure`は`callable`のサブタイプではないと言われています。<sup>[[1]](#endnote_1)</sup>
 
 ## Closure의 문제
 ## Closureの問題点
@@ -462,4 +462,4 @@ Closure를 매개변수로 사용하기에 앞서, 꼭 사용해야 할까? 대�
 クロージャをパラメーターとして使用する前に、本当に使う必要があるかどうかを考えてみましょう。代替できる方法がないか検討し、どうしても必要な場合は、ランタイムで検証する方法を考えると役立ちます。
 
 ---
-<a name="endnote_1">[1]</a>: https://externals.io/message/125943
+<a name="endnote_1">[1]</a> https://externals.io/message/125943
