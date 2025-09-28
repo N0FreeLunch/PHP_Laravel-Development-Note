@@ -172,5 +172,5 @@ php 배열 기능이 좋지 않기 때문에 대안이 될 수 있으므로 인�
 - https://www.php.net/manual/en/ref.array.php
 - https://externals.io/message/125809
 
-[^1] https://wiki.php.net/rfc/pipe-operator-v3
-[^2] https://dev.to/robertobutti/using-collections-package-outside-of-laravel-1alk
+[^1]: https://wiki.php.net/rfc/pipe-operator-v3
+[^2]: https://dev.to/robertobutti/using-collections-package-outside-of-laravel-1alk
