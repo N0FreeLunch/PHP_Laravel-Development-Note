@@ -342,9 +342,10 @@ function checkClosureParam(Closure $fn, string|int $keyNameOrIdx, string ...$typ
 function checkClosureReturn(Closure $fn, string ...$types): bool {
     $ref = new ReflectionFunction($fn);
     $returnTypeObj = $ref->getReturnType();
-    if ($returnTypeObj === null && (in_array('', $types, true) || in_array(null, $types, true))) return true;
+    if ($returnTypeObj === null && (in_array('', $types, true) || in_array('null', $types, true))) return true;
     $returnTypeName = $returnTypeObj->getName() ?? '';
-    return in_array($returnTypeName, $types, true) || (array_reduce($types, fn($acc, $type) => $acc || is_subclass_of($returnTypeName, $type), false));
+    return in_array($returnTypeName, $types, true)
+        || (array_reduce($types, fn($acc, $type) => $acc || is_subclass_of($returnTypeName, $type), false));
 }
 
 $repeatPropertyValue = fn(ChildClass $target, string $property, int $iterationNumber): string => str_repeat((string)$target->{$property}, $iterationNumber);
@@ -370,6 +371,14 @@ class ChildClass extends ParentClass {}
 하지만 이 방식은 타입을 하나씩 검사하는 방식이므로 제네릭(타입 파라메터)를 만드는 방식은 사용할 수 없다는 한계가 있다. 제네릭에 관한 정보는 이 방법이 아닌 docblock 제네릭이나, 유니온 타입, 타입 단언 등을 사용하여 보완하자.
 
 ただし、この方法は型を1つずつチェックする方式であるため、ジェネリクス（型パラメータ）を利用する方法は使えないという制限があります。ジェネリクスに関する情報は、この方法ではなく、`docblock`のジェネリクスやユニオン型、型アサーションなどを用いて補完する必要があります。
+
+위 코드의 주의점으로는 실제 런타임에 전달되는 클로저의 파라메터나 반환 타입이 유니온 타입일 경우의 로직은 구현하지 않았다. **클로저의 파라메터 타입과 반환 타입이 싱글 타입인 경우만을 가정**한다. 여기서 유니온 타입을 고려한 것은 파라메터 타입과 반환 타입이 싱글 타입인 여러 종류의 시그니처인 클로저를 받을 수 있는 있도록 하기 위함이다. 만약 유니온 타입의 파라메터 타입과 반환 타입을 가진 클로저에 대한 타입 검사 로직을 추가하려고 한다면 '전달되는 클로저의 유니온 타입 각각은 런타임 검사를 통해 확인하려는 유니온 타입 중에서 적어도 어느 하나의 타입과 일치하거나 또는 서브 타입이어야 한다'라는 조건을 만족하는 로직을 만들면 된다.
+
+上記コードの注意点としては、実際のランタイムで渡されるクロージャのパラメータや返却型がユニオン型の場合のロジックは実装していません。**クロージャのパラメータ型と返却型が単一型の場合のみを仮定**しています。ここでユニオン型を考慮したのは、パラメータ型と返却型が単一型である複数種類のシグネチャを持つクロージャを受け入れられるようにするためです。もしユニオン型のパラメータ型や返却型を持つクロージャに対する型チェックロジックを追加したい場合は、『渡されるクロージャのユニオン型それぞれが、ランタイム検査によって確認したいユニオン型の中で少なくとも一つの型と一致するか、またはサブタイプである』という条件を満たすロジックを作成することでできます。
+
+또한 실무에서 거의 쓰이지 않는 intersection type은 고려하지 않았다. 여기서 제시한 코드는 개인 업무에서 사용하기 위한 최소한의 로직을 작성한 것을 게제하였고, 불필요한 오버엔지니어링은 지양하므로 이 정도의 범위의 기능만을 구현하였다.
+
+また、実務ではほとんど使われない「intersection type」は考慮していません。ここで提示したコードは、個人の業務で使用するための最低限のロジックを作成し掲載したものであり、不要なオーバーエンジニアリングは避ける方針のため、この程度の範囲の機能のみを実装しました。
 
 런타임 확인을 위한 리플렉션은 리소스가 드는 작업이므로 프로덕션 환경에서는 동작하지 않는 `assert` 함수로 로컬 또는 테스트 환경에서의 실행을 확인할 때 사용하면 적절하다.
 
