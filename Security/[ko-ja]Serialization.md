@@ -22,6 +22,7 @@
 3. 변수나 값은 메모리에 저장되고, 각 값에는 주소가 있다.
 4. CPU는 명령어의 지시대로 주소를 참조하여 실행한다.
 
+
 1. 作成したコードはコンピューターが実行可能な形に変換します（コンパイル／インタプリティングを行います）。
 2. 実行ファイルやバイトコードはメモリにロードされます。
 3. 変数や値はメモリに保存され、それぞれの値にはアドレスが割り当てられます。
@@ -108,9 +109,9 @@ evalは文字列として記述されたコードを実行する機能です。�
 
 #### evalコードの例
 
-🙅 나쁜 예 : 전달 받은 코드 안에 `$arr`이라는 변수가 있다고 가정한다. eval을 리퀘스트로 전달 받은 값 그대로 실행하므로 임의 코드 실행의 취약점이 있다.
+🙅 나쁜 예 : 전달 받은 코드 안에 `$arrInCode`이라는 변수가 있다고 가정한다. eval을 리퀘스트로 전달 받은 값 그대로 실행하므로 임의 코드 실행의 취약점이 있다.
 
-🙅 悪い例：受け取ったコードの中に `$arr` という変数があると仮定します。evalでリクエストで受け取った値をそのまま実行しますので、任意コード実行の脆弱性があります。
+🙅 悪い例：受け取ったコードの中に `$arrInCode` という変数があると仮定します。evalでリクエストで受け取った値をそのまま実行しますので、任意コード実行の脆弱性があります。
 
 ```php
 use Illuminate\Http\Request;
@@ -151,7 +152,7 @@ Route::post('/extract-arr', function (Request $request) {
         return response()->json(['error' => 'Decoded value is not an array.'], 400);
     }
 
-    return response()->json(['result' => $decoded]);
+    return response()->json(['result' => var_export($decoded, true)]);
 });
 ```
 
@@ -212,8 +213,8 @@ Route::post('/bad-unserialize', function (Request $request) {
 🙆‍♂️ 良い例：SafeClassのコードは開発者が確認できますので安全です。テンプレート通りにシリアライズされたデータの状態を読み込んでオブジェクトを生成しますので、シリアライズデータにクラスに合わない部分があれば無視されてオブジェクト化されるため、脆弱性が発生しません。
 
 ```php
-use Illuminate\Http\Request;
 use App\Models\SafeClass;
+use Illuminate\Http\Request;
 
 Route::post('/good-unserialize', function (Request $request) {
     $data = $request->input('payload');
@@ -250,7 +251,7 @@ Route::post('/good-unserialize', function (Request $request) {
 
 위와 같은 XML 파일이 있다고 하자. 이 파일을 파싱하면 리눅스 유저의 정보(사용자 이름, UID, 홈 디렉터리, 디폴트 셸 등)가 적혀 있는 etc/passwd 파일을 읽어서 표시할 수 있다는 문제가 있다. 이를 통해서 해커는 서버의 여러 정보에 접근할 수 있으며 이러한 정보가 쌓이면 시스템을 해킹할 가능성이 높아지므로 가능한 서버의 정보를 유출하지 않는 대책을 세우는 것이 필요하다.
 
-このようなXMLファイルがあるとします。このファイルをパースすると、Linuxユーザーの情報（ユーザー名、UID、ホームディレクトリ、デフォルトシェルなど）が書かれている/etc/passwdファイルを読み込んで表示する問題が発生します。これによって攻撃者はサーバの様々な情報にアクセスでき、情報が蓄積されるとシステムがハッキングされる可能性が高まりますので、サーバ情報の漏洩を防ぐ対策が必要です。
+このようなXMLファイルがあるとします。このファイルをパースすると、Linuxユーザーの情報（ユーザー名、UID、ホームディレクトリ、デフォルトシェルなど）が書かれている/etc/passwdファイルを読み込んで表示する問題が発生します。これによって攻撃者はサーバの様々な情報にアクセスでき、情報が集まるとシステムがハッキングされる可能性が高まりますので、サーバ情報の漏洩を防ぐ対策が必要です。
 
 단순히 정보 유출 뿐만 아니라, 외부 파일을 파싱하는데 리소스가 드는 점을 이용해서 ENTITY가 외부 파일을 순환 참조하는 것을 통해 서버의 부하를 일으켜 장애를 일으킬 수 있다.
 
@@ -264,9 +265,9 @@ Route::post('/good-unserialize', function (Request $request) {
 
 さらにXMLはシリアライズ／デシリアライズによるデータ交換の手段としても使われますので、プログラミング言語のオブジェクトにもデシリアライズ可能です。このため、unserialize脆弱性のような`__destruct`メソッドの呼び出しによるコード実行の問題も発生することがあります。
 
-이러한 XML의 Entity 태그를 이용한 공격 방식을 **XXE(External XML Entity Injection)**라고 부른다.
+이러한 XML의 Entity 태그를 이용한 공격 방식을 ***XXE***(External XML Entity Injection)라고 부른다.
 
-このようなXMLのEntityタグを利用した攻撃手法を**XXE（External XML Entity Injection）**と呼びます。
+このようなXMLのEntityタグを利用した攻撃手法を ***XXE***（External XML Entity Injection）と呼びます。
 
 #### XXE 공격의 대책
 #### XXE攻撃の対策
