@@ -266,9 +266,9 @@ Route::post('/good-unserialize', function (Request $request) {
 
 さらにXMLはシリアライズ／デシリアライズによるデータ交換の手段としても使われますので、プログラミング言語のオブジェクトにもデシリアライズ可能です。このため、unserialize脆弱性のような`__destruct`メソッドの呼び出しによるコード実行の問題も発生することがあります。
 
-이러한 XML의 Entity 태그를 이용한 공격 방식을 ***XXE***(External XML Entity Injection)라고 부른다.
+이러한 XML의 ENTITY 태그를 이용한 공격 방식을 ***XXE***(External XML Entity Injection)라고 부른다.
 
-このようなXMLのEntityタグを利用した攻撃手法を ***XXE***（External XML Entity Injection）と呼びます。
+このようなXMLのENTITYタグを利用した攻撃手法を ***XXE***（External XML Entity Injection）と呼びます。
 
 #### XXE 공격의 대책
 #### XXE攻撃の対策
@@ -289,4 +289,4 @@ Route::post('/good-unserialize', function (Request $request) {
 
 何かを始めるとき、思慮深い人はきちんと見通しを立てますが、考えの足りない人は向こう見ずに手をつけて失敗します。
 
-[^1]: 『安全なWebアプリケーションの作り方』 構造化データの読み込みにまつわる問題、ISBN: 978-4-7973-9316-3
+[^1]: 徳丸 浩、構造化データの読み込みにまつわる問題、『安全なWebアプリケーションの作り方 第2版』、SBクリエイティブ、343-370
