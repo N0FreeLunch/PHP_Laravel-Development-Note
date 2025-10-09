@@ -206,6 +206,11 @@ use Illuminate\Http\Request;
 Route::post('/bad-unserialize', function (Request $request) {
     $data = $request->input('payload');
     $result = unserialize($data);
+
+    if ($result === false && $data !== serialize(false)) {
+        return response('unserialize failed: invalid data', 400);
+    }
+
     return response()->json(['result' => 'unserialization succeed']);
 });
 ```
