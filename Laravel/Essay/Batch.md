@@ -58,6 +58,30 @@
 
 라라벨에서는 리눅스 cron을 기반의 스케쥴러를 제공하며, `app/Console/Kernel.php` 파일에 '아티산 콘솔'[^1]을 추가하여 리눅스 크론이 아티산 콘솔의 php 코드를 실행하도록 한다.
 
+#### 스케쥴러 코드의 예 [^2]
+
+```php
+namespace App\Console;
+
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+
+final class Kernel extends ConsoleKernel
+{
+    protected function schedule(Schedule $schedule): void
+    {
+        $schedule->command('billing:dispatch-issue-invoices')
+            ->dailyAt('01:00')
+            ->withoutOverlapping(30)
+            ->onOneServer();
+    }
+}
+```
+
+- `->dailyAt('01:00')` : 매일 01:00에 인보이스 발행 Job들을 큐에 적재
+- `->withoutOverlapping(30)`: 한 서버에서 크론 작업을 중첩하여 실행되는 것을 방지한다. (최대 30분 락을 건 코드)
+- `->onOneServer()`: 복수의 배치 서버에서 동일한 스케쥴러를 중복으로 실행하는 것을 방지 (레디스와 같은 캐시 드라이버가 요구된다.)
+
 ### 큐(Queue)
 
 큐는 선입 선출의 구조를 가진 자료구조를 의미한다. 바구니에 서로 다른 색의 공을 넣고 먼저 들어간 색의 공을 먼저 꺼내는 것과 같다.
@@ -72,9 +96,9 @@
 
 ### 아티산 커멘드
 
-라라벨에서 `php artisan CustomCommand`로 실행할 수 명령어를 만들 수 있는 기능이다. 스케줄러(`app/Console/Kernel.php`)에 아티산 커멘드를 등록하면 지정한 시간에 아티산 커멘드가 실행된다.
+라라벨에서 `php artisan CustomCommand`로 커멘드 라인 명령어로 실행할 수 명령어를 만들 수 있는 기능이다. 스케줄러(`app/Console/Kernel.php`)에 아티산 커멘드를 등록하면 지정한 시간에 아티산 커멘드가 실행된다.
 
-배치 처리가 코딩 미스에 의해 실패한 경우 수정 건을 디플로이 했지만 스케쥴러에 의한 실행 시점을 지났을 때 서버의 커멘드 라인을 통해서 직접 배치를 실행하는 용도로 사용할 수 있다.
+배치 처리가 실패한 후, 수정 코드를 디플로이 했지만, 스케쥴러에 의한 실행 시점을 지났을 때, 서버의 커멘드 라인을 통해서 직접 배치를 실행하는 용도로 사용할 수 있다.
 
 ## 라라벨에서 배치 처리 구성하기
 
@@ -110,7 +134,7 @@
 
 라라벨의 큐는 워커라는 프로세스에 의해서 실행되는데, 로컬 환경에서는 하나의 잡의 처리를 하나의 프로세스가 실행하여 코드 변경을 즉각 반영할 수 있는`php artisan queue:listen`을 사용하여 실행할 수 있고, 프로덕션 환경에서는 프로세스가 죽으면 다시 살려주는 리눅스 기반 supervisor를 또는 도커 CMD를 통해 `php artisan queue:work`, `php artisan queue:listen` 명령으로 실행된다.
 
-큐에서 잡을 꺼내어 처리하는 과정에서 문제가 발생해서 워커 프로세스가 죽더라도 다시 살려내는 supervisor를 이용해서 워커를 실행을 하거나, 컨테이너의 PID 1의 작업이 종료 되었을 때 도커가 재시작 될 수 있도록 도커 CMD에 `php artisan queue:work` 명령을 주어 워커를 동작시키도록 하자. [^2]
+큐에서 잡을 꺼내어 처리하는 과정에서 문제가 발생해서 워커 프로세스가 죽더라도 다시 살려내는 supervisor를 이용해서 워커를 실행을 하거나, 컨테이너의 PID 1의 작업이 종료 되었을 때 도커가 재시작 될 수 있도록 도커 CMD에 `php artisan queue:work` 명령을 주어 워커를 동작시키도록 하자. [^3]
 
 ### 워커의 옵션 설계
 
@@ -120,7 +144,7 @@ php는 php 엔진이 php 파서를 실행하고 종료하는 방식으로 동작
 - 프로세스의 종료에 따라 의도치 않은 불필요한 메모리 점유를 방지할 수 있어서 장기 서비스 제공에 안정성을 준다.
 - 코드를 작성할 때 메모리 점유를 덜 신경써도 된다는 이점이 있다.
 
-하나의 php 프로세스는 장기간의 코드 실행 보다는 한 번에 실행되어야 하는 최소한의 단위 코드를 여러 번 실행하는 편이 안정적이다. 하나의 프로세스의 실행 시간이 길어지면 php 코드가 실행될 때 발생할 수 있는 메모리 누수로 어느 시점 프로세스가 강제 종료되어 진행중인 작업의 무결성을 잃을 수 있기 때문이다. [^3]
+하나의 php 프로세스는 장기간의 코드 실행 보다는 한 번에 실행되어야 하는 최소한의 단위 코드를 여러 번 실행하는 편이 안정적이다. 하나의 프로세스의 실행 시간이 길어지면 php 코드가 실행될 때 발생할 수 있는 메모리 누수로 어느 시점 프로세스가 강제 종료되어 진행중인 작업의 무결성을 잃을 수 있기 때문이다. [^4]
 
 큐에 적재된 순서대로 잡을 처리하면서 하나의 잡을 처리할 때 하나의 프로세스만 사용하는 워커를 라라벨에서는 `php artisan queue:listen`로 사용할 수 있다. 하나의 잡이 실행되고 잡을 실행하는 자식 프로세스가 종료되기 때문에 부모 프로세스인 워커가 여러 잡을 처리해도 메모리 리셋이 이뤄지므로 메모리 누수 문제를 근본적으로 해결한다.
 
@@ -156,13 +180,83 @@ php에서는 한 번에 다량의 데이터를 가져오고 다량의 저장할 
 
 하나의 유닛은 트렌젝션 단위의 작은 처리이기 때문에 배치 처리를 위해 잡(Job)에서 불러다 쓰기도 하고, 유저 인터렉션을 담당하는 서비스 레이어 또는 컨트롤러(또는 유즈케이스)에서 불러다 쓸 수도 있기 때문에 유닛을 따로 분리하여 재사용성을 높이는 방식으로 코드를 짜는 편이 좋다. 특정 배치처리가 어떤 조건 미달로 실패했을 때, 사용자 측에서 직접 재실행 할 수 있는 기능을 제공할 수 있다.
 
+#### 배치 유닛의 예 [^5]
+
+```php
+namespace App\Batches\Units\Billing;
+
+use App\Models\Invoice;
+use App\Models\Subscription;
+use Illuminate\Support\Facades\DB;
+
+final class IssueInvoiceUnit
+{
+    public function run(int $subscriptionId, string $billingDate): void
+    {
+        DB::transaction(function () use ($subscriptionId, $billingDate) {
+            $subscription = Subscription::query()
+                ->whereKey($subscriptionId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $alreadyIssued = Invoice::query()
+                ->where('subscription_id', $subscription->id)
+                ->where('billing_date', $billingDate)
+                ->exists();
+
+            if ($alreadyIssued) {
+                return;
+            }
+
+            Invoice::query()->create([
+                'subscription_id' => $subscription->id,
+                'billing_date' => $billingDate,
+                'amount' => $subscription->monthly_fee,
+                'status' => 'issued',
+            ]);
+        });
+    }
+}
+```
+
 ### 잡 클래스 (`Job/*`)
 
-잡 클래스는 `Batches/Job/*`에 정의하고 싶지만, 라라벨의 제약으로 인해서 `Job/*` 폴더에 잡 클래스를 정의해야 큐에 적재할 수 있기 때문에 기존의 폴더 위치를 그대로 사용한다. [^4]
+잡 클래스는 `Batches/Job/*`에 정의하고 싶지만, 라라벨의 제약으로 인해서 `Job/*` 폴더에 잡 클래스를 정의해야 큐에 적재할 수 있기 때문에 기존의 폴더 위치를 그대로 사용한다. [^6]
 
 잡은 데이터베이스와 같은 저장소에 시리얼라이징 된 잡 객체를 저장하고 저장한 순서대로 디시리얼라이징하여 잡 로직을 큐에 적재된 순으로 실행하게 하기 위한 코드를 작성하는 부분이다.
 
 처리에 관한 상세한 로직은 배치 유닛에 정의하며 배치 유닛을 사용하기 위한 용도로 사용한다.
+
+#### 잡 클래스의 예 [^7]
+
+```php
+namespace App\Jobs\Billing;
+
+use App\Batches\Units\Billing\IssueInvoiceUnit;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+
+final class IssueInvoiceJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public function __construct(
+        public readonly int $subscriptionId,
+        public readonly string $billingDate,
+    ) {}
+
+    public function handle(IssueInvoiceUnit $unit): void
+    {
+        $unit->run(
+            subscriptionId: $this->subscriptionId,
+            billingDate: $this->billingDate,
+        );
+    }
+}
+```
 
 ### 잡 트리거 (`Batches/JobTriggers/*`)
 
@@ -180,6 +274,33 @@ php에서는 한 번에 다량의 데이터를 가져오고 다량의 저장할 
 
 잡트리거는 기본적으로 남은 작업만을 처리하기 위한 용도로 정의하는 것이 기본적이지만, 배치 작업의 문제가 생겼을 때 대응을 위해 배치 작업을 클리어하거나 리프레시할 수 있는 기능도 추가하는 편이 좋다.
 
+#### 잡 트리거의 예
+
+```php
+namespace App\Batches\JobTriggers\Billing;
+
+use App\Jobs\Billing\IssueInvoiceJob;
+use App\Models\Subscription;
+
+final class IssueInvoicesJobTrigger
+{
+    public function dispatchForDate(string $billingDate): void
+    {
+        Subscription::query()
+            ->where('status', 'active')
+            ->orderBy('id')
+            ->chunkById(500, function ($subscriptions) use ($billingDate) {
+                foreach ($subscriptions as $subscription) {
+                    IssueInvoiceJob::dispatch(
+                        subscriptionId: $subscription->id,
+                        billingDate: $billingDate,
+                    )->onQueue('billing');
+                }
+            });
+    }
+}
+```
+
 ### 아티산 커멘드
 
 잡 트리거를 배치 처리 흐름에 맞게 정의하기 위해서 사용한다.
@@ -191,6 +312,32 @@ php에서는 한 번에 다량의 데이터를 가져오고 다량의 저장할 
 아티산 커멘드로 정의할 때는 일괄 처리를 실행하기 위한 잡 트리거를 직접 가져다 사용한다.
 
 아티산 커멘드가 정의되었다면 스케쥴러에 언제 실행할 것인지 등록한다.
+
+#### 아티산 커멘드의 예
+
+```php
+namespace App\Console\Commands\Billing;
+
+use App\Batches\JobTriggers\Billing\IssueInvoicesJobTrigger;
+use Illuminate\Console\Command;
+
+final class DispatchIssueInvoices extends Command
+{
+    protected $signature = 'billing:dispatch-issue-invoices {--date= : billing date (YYYY-MM-DD)}';
+    protected $description = 'Dispatch invoice issuing jobs to the queue for a given billing date.';
+
+    public function handle(IssueInvoicesJobTrigger $trigger): int
+    {
+        $billingDate = $this->option('date') ?: now()->toDateString();
+
+        $trigger->dispatchForDate($billingDate);
+
+        $this->info("Dispatched invoice issuing jobs for date={$billingDate}.");
+
+        return self::SUCCESS;
+    }
+}
+```
 
 ## 전체 실행의 흐름
 
@@ -207,29 +354,39 @@ php에서는 한 번에 다량의 데이터를 가져오고 다량의 저장할 
 
 ```
 app
+ |- Console
+ |    |- Commands
+ |         |- Batches
+ |              |- Billing
+ |                   |- DispatchIssueInvoices.php
+ |              |- Maintenance
+ |                   |- DispatchDataRepair.php
+ |
+ |    |- Kernel.php
+ |
  |- Batches
-      |- JobTriggers
-          |- ATaskFolder
-              |- ATaskJobTrigger
-          |- BTaskFolder
-              |- BTaskJobTrigger
-          |- CTaskFolder
-              |- CTaskJobTrigger
-      |- Units
-          |- ATaskFolder
-              |- ATaskUnits
-          |- BTaskFolder
-              |- BTaskUnits
-          |- CTaskFolder
-              |- CTaskUnits
-
- |- Job
-     |- ATaskFolder
-         |- ATaskJob
-     |- BTaskFolder
-         |- BTaskJob
-     |- CTaskFolder
-         |- CTaskJob
+ |    |- JobTriggers
+ |    |     |- Billing
+ |    |     |    |- IssueInvoicesJobTrigger.php
+ |    |     |- Maintenance
+ |    |          |- DataRepairJobTrigger.php
+ |    |
+ |    |- Units
+ |          |- Billing
+ |          |    |- IssueInvoiceUnit.php
+ |          |- Maintenance
+ |               |- RepairRecordUnit.php
+ |
+ |- Jobs
+ |    |- Billing
+ |    |    |- IssueInvoiceJob.php
+ |    |- Maintenance
+ |         |- RepairRecordJob.php
+ |
+ |- Models
+      |- Subscription.php
+      |- Invoice.php
+      |- SomeDomainModel.php
 ```
 
 ## 서비스 개선
@@ -255,6 +412,10 @@ app
 자바의 스프링 프레임워크와 같이 배치 처리의 구성이 일정한 패턴을 따르는 경우도 있지만, 언어나 프레임워크, 사용하는 라이브러리에 따라 배치 처리의 툴의 기능이 다르기 때문에 배치 처리의 전략은 언어나 프레임워크마다 다를 수 있다. 또한 프레임워크나 라이브러리에서 명확한 가이드라인을 제공하지 않거나 프로젝트의 성격에 따라 배치 처리의 구성 방법은 달라질 수 있다. 여기서 소개한 방법은 지난 4년간 실무에서 별다른 문제 없이 사용해 온 패턴이다. 참고가 되길 바란다.
 
 [^1]: 아티산 콘솔이란 라라벨의 기능을 커멘드라인 명령어로 실행할 수 있는 기능을 제공하며, 라라벨 내장의 `php artisan SomeCommand` 명령 이외의 개발자가 제작한 아티산 커멘드를 `php artisan CustormCommand`으로 실행할 수 있는 기능이다. [아티산 콘솔의 작성법](https://laravel.com/docs/12.x/artisan)은 공식 문서를 참고하자.
-[^2]: `ENTRYPOINT`를 사용하면 `exec` 명령으로 `php artisan queue:work`를 사용해야 한다. `entrypoint.sh` 파일이 PID 1로 실행되므로 도커는 쉘 명령을 (exec 명령을 사용하지 않으면) `php artisan queue:work`으로 실행된 워커를 PID 1이 아닌 자식 프로세스 실행하게 되고, 기존 컨테이너가 새로운 컨테이너로 교체될 때 PID가 1이 아닌 경우 프로세스 종료 신호인 SIGTERM을 워커가 수신하지 못하여 워커의 정상 종료를 기다리지 않는다. 컨테이너를 교체할 때 기존 컨테이너의 마지막 잡 처리를 기다리지 않고 교체하여 레디스 락이나 트렌젝션의 롤백이 일어나지 않는 경우가 발생할 수 있다.
-[^3]: 메모리 릭이 발생하지 않도록 코드를 잘 만들면 되지만, 레거시 코드, 라이브러리 및 프레임워크 사용에서 장기 실행을 고려하지 않은 코드가 있을 가능성이 높은 언어 생태계이므로 항상 메모리 릭이 발생한다는 전제로 접근하는 편이 좋다.
-[^4]: 폴더 위치를 바꿀 수 있는 방법을 발견하지 못했으나, 폴더 위치를 바꿀 수 있는 방법을 발견했다면 구조상 `Job/*` 보다는 `Batches/Job/*`에 코드를 정의하는 것을 추천한다.
+[^2]: 예시 코드는 AI로 생성하였다.
+[^3]: `ENTRYPOINT`를 사용하면 `exec` 명령으로 `php artisan queue:work`를 사용해야 한다. `entrypoint.sh` 파일이 PID 1로 실행되므로 도커는 쉘 명령을 (exec 명령을 사용하지 않으면) `php artisan queue:work`으로 실행된 워커를 PID 1이 아닌 자식 프로세스 실행하게 되고, 기존 컨테이너가 새로운 컨테이너로 교체될 때 PID가 1이 아닌 경우 프로세스 종료 신호인 SIGTERM을 워커가 수신하지 못하여 워커의 정상 종료를 기다리지 않는다. 컨테이너를 교체할 때 기존 컨테이너의 마지막 잡 처리를 기다리지 않고 교체하여 레디스 락이나 트렌젝션의 롤백이 일어나지 않는 경우가 발생할 수 있다.
+[^4]: 메모리 릭이 발생하지 않도록 코드를 잘 만들면 되지만, 레거시 코드, 라이브러리 및 프레임워크 사용에서 장기 실행을 고려하지 않은 코드가 있을 가능성이 높은 언어 생태계이므로 항상 메모리 릭이 발생한다는 전제로 접근하는 편이 좋다.
+[^5]: 예시 코드는 AI로 생성하였다.
+[^6]: 폴더 위치를 바꿀 수 있는 방법을 발견하지 못했으나, 폴더 위치를 바꿀 수 있는 방법을 발견했다면 구조상 `Job/*` 보다는 `Batches/Job/*`에 코드를 정의하는 것을 추천한다.
+[^7]: 예시 코드는 AI로 생성하였다.
+[^8]: 예시 코드는 AI로 생성하였다.
