@@ -1,5 +1,5 @@
-# 라라벨에서의 배치 처리
-# Laravelにおけるバッチ処理
+# 라라벨에서의 큐 배치 설계: Trigger–Job–Unit 패턴
+# Laravelのキューでバッチを設計する：Trigger–Job–Unitパターン
 
 # 소개
 # はじめに
@@ -704,7 +704,7 @@ Springのようにバッチ処理構成がよく知られたパターンに沿�
 ここで紹介した方法は、私が担当しているプロジェクトで過去4年間、実務で大きな問題なく使ってきたパターンです。ここではこれを Trigger-Job-Unit パターンと呼ぶことにします。参考になれば嬉しいです。
 
 [^1]: 아티산 콘솔이란 라라벨의 기능을 커멘드라인 명령어로 실행할 수 있는 기능을 제공하며, 라라벨 내장의 `php artisan SomeCommand` 명령 이외의 개발자가 제작한 아티산 커멘드를 `php artisan CustomCommand`으로 실행할 수 있는 기능이다. [아티산 콘솔의 작성법](https://laravel.com/docs/12.x/artisan)은 공식 문서를 참고하자.
-[^1]: Artisanコンソールは、Laravelの機能をコマンドラインから実行できる仕組みです。Laravel標準の `php artisan SomeCommand` だけでなく、開発者が作成したArtisanコマンドも `php artisan CustomCommand` として実行できます。作り方は公式ドキュメント（https://laravel.com/docs/12.x/artisan）を参照してください。
+[^1]: Artisanコンソールは、Laravelの機能をコマンドラインから実行できる仕組みです。Laravel標準の `php artisan SomeCommand` だけでなく、開発者が作成したArtisanコマンドも `php artisan CustomCommand` として実行できます。作り方は[公式ドキュメント](https://laravel.com/docs/12.x/artisan)を参照してください。
 [^2]: 예시 코드는 OpenAI의 ChatGPT("ChatGPT 5.2")를 참고해 초안을 작성했으며, 최종 코드는 작성자가 검토·수정했습니다.
 [^2]: サンプルコードはOpenAIのChatGPT（"ChatGPT 5.2"）を参考に下書きを作成し、最終的には筆者が確認・修正しました。
 [^3]: `ENTRYPOINT`를 쓰는 경우 `entrypoint.sh`라는 쉘 스크립트가 컨테이너의 PID 1로 실행된다. 이때 스크립트에서 `php artisan queue:work`를 `exec` 명령 없이 실행하면 워커가 자식 프로세스로 실행될 수 있고, 컨테이너 종료/교체 시 Docker가 PID 1인 쉘 스크립트에 전달한 SIGTERM(종료 신호)이 워커까지 전달되지 못하는 경우가 있어 워커가 정상 종료(graceful shutdown)하지 못할 수 있다. 따라서 `exec php artisan queue:work ...` 형태로 워커가 PID 1로 실행되도록 구성하는 편이 안전하다. 그렇지 않으면 마지막 잡 처리를 마무리하지 못하거나(중단), 애플리케이션 레벨 정리 로직(락 해제 등)이 실행되지 않아 Redis 락이 남는 등의 문제가 생길 수 있다.
