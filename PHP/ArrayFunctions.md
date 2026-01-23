@@ -179,5 +179,5 @@ php 배열 기능이 좋지 않기 때문에 대안이 될 수 있으므로 인�
 - https://externals.io/message/125809
 
 [^1]: https://wiki.php.net/rfc/pipe-operator-v3
-[^2]: https://externals.io/message/126318#127032
+[^2]: https://thephp.foundation/blog/2025/12/08/partial-application
 [^3]: https://dev.to/robertobutti/using-collections-package-outside-of-laravel-1alk
