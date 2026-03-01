@@ -69,7 +69,8 @@ AGENTS.md 대신 STYLE_GUIDE.md와 같은 파일명을 사용할 수도 있다. 
 
 #### AGENTS.md는 업계 관계로 점점 더 채용되고 있지만 특히 Codex에서 적극적으로 지원하고 있다. 다음 문서를 참고하도록 하자.
 
-> Project scope: Starting at the project root (typically the Git root), Codex walks down to your current working directory. If Codex cannot find a project root, it only checks the current directory. In each directory along the path, it checks for AGENTS.override.md, then AGENTS.md, then any fallback names in project_doc_fallback_filenames. Codex includes at most one file per directory.
+> Project scope: Starting at the project root (typically the Git root), Codex walks down to your current working directory. If Codex cannot find a project root, it only checks the current directory. In each directory along the path, it checks for AGENTS.override.md, then AGENTS.md, then any fallback names in project_doc_fallback_filenames. Codex includes at most one file per directory.[^1]
+
 > Merge order: Codex concatenates files from the root down, joining them with blank lines. Files closer to your current directory override earlier guidance because they appear later in the combined prompt. [^1]
 
 > Codex applies guidance from the closest AGENTS.md to each changed file. You can place more specific instructions deeper in the tree when particular packages need extra scrutiny. [^2]
